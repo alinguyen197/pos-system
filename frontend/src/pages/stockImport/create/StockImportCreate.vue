@@ -10,16 +10,13 @@ import { useAppToast } from '@/composables/useAppToast'
 const router = useRouter()
 const { showSuccess, showError, showWarning } = useAppToast()
 
-const supplier = ref('NCC Cà phê Hạt Việt')
-const warehouse = ref('Kho Tổng - Q1')
+const supplier = ref('')
+const warehouse = ref('')
 const note = ref('')
 const importDate = ref(new Date().toISOString().slice(0, 16))
 
 const isSubmitting = ref(false)
 const errorMessage = ref('')
-
-const suppliers = ref(['NCC Cà phê Hạt Việt', 'NCC Sữa Vinamilk', 'NCC Bao bì Tín Phát', 'NCC Siro Monin', 'NCC Thực Phẩm Cholimex', 'NCC Gia Vị & Nông Sản Việt'])
-const warehouses = ref(['Kho Tổng - Q1', 'Kho Phụ - Q3'])
 
 interface AvailableIngredient {
   id: string
@@ -40,6 +37,47 @@ const addQty = ref<number>(1)
 const addUnitPrice = ref<number>(0)
 const addTotalPrice = ref<number>(0)
 const priceInputMode = ref<'unit' | 'total'>('total') // 'unit' or 'total'
+
+// --- Pack Mode (Nhập theo quy cách đóng gói) ---
+const isPackMode = ref(false)
+const packSize = ref<number>(1)      // Dung tích/cân nặng mỗi đơn vị đóng gói (VD: 2.1 kg/bình)
+const packCount = ref<number>(1)     // Số lượng đơn vị mua (VD: 2 bình)
+const packUnit = ref('bình')         // Loại đóng gói (bình, hộp, lon, gói...)
+
+const packUnitOptions = ['bình', 'hộp', 'lon', 'gói', 'thùng', 'chai', 'bịch', 'túi', 'thùng', 'cái', 'bao', 'kg', 'lít']
+
+// Tổng số lượng kho khi dùng pack mode = packSize * packCount
+const packTotalQty = computed(() => {
+  const s = Number(packSize.value) || 0
+  const c = Number(packCount.value) || 0
+  return Math.round(s * c * 1000) / 1000
+})
+
+// Sync addQty from packTotalQty khi pack mode bật
+watch([packSize, packCount], () => {
+  if (isPackMode.value) {
+    addQty.value = packTotalQty.value
+    // Recalculate prices
+    if (priceInputMode.value === 'total') {
+      if (addTotalPrice.value > 0 && addQty.value > 0) {
+        addUnitPrice.value = Math.round((addTotalPrice.value / addQty.value) * 100) / 100
+      }
+    } else {
+      if (addUnitPrice.value > 0) {
+        addTotalPrice.value = Math.round(addQty.value * addUnitPrice.value)
+      }
+    }
+  }
+})
+
+const togglePackMode = () => {
+  isPackMode.value = !isPackMode.value
+  if (isPackMode.value) {
+    // Khi bật pack mode, sync addQty từ pack calculation
+    addQty.value = packTotalQty.value
+  }
+}
+// -----------------------------------------------
 
 const loadData = async () => {
   try {
@@ -83,7 +121,8 @@ const onSelectIngredient = (ingId: string) => {
   addUnit.value = ing.unit || 'kg'
   if (ing.defaultCost > 0) {
     addUnitPrice.value = ing.defaultCost
-    addTotalPrice.value = Math.round((addQty.value || 1) * ing.defaultCost)
+    const qty = isPackMode.value ? packTotalQty.value : (addQty.value || 1)
+    addTotalPrice.value = Math.round(qty * ing.defaultCost)
   } else {
     addUnitPrice.value = 0
     addTotalPrice.value = 0
@@ -94,8 +133,9 @@ watch(selectedIngId, (newId) => {
   if (newId) onSelectIngredient(newId)
 })
 
-// Auto-sync when changing addQty
+// Auto-sync when changing addQty (chỉ khi không phải pack mode)
 const onQtyChange = () => {
+  if (isPackMode.value) return
   const qty = Number(addQty.value) || 0
   if (qty <= 0) return
 
@@ -113,7 +153,7 @@ const onQtyChange = () => {
 // When user inputs Unit Price
 const onUnitPriceInput = () => {
   priceInputMode.value = 'unit'
-  const qty = Number(addQty.value) || 1
+  const qty = isPackMode.value ? packTotalQty.value : (Number(addQty.value) || 1)
   const price = Number(addUnitPrice.value) || 0
   addTotalPrice.value = Math.round(qty * price)
 }
@@ -121,7 +161,7 @@ const onUnitPriceInput = () => {
 // When user inputs Total Price
 const onTotalPriceInput = () => {
   priceInputMode.value = 'total'
-  const qty = Number(addQty.value) || 1
+  const qty = isPackMode.value ? packTotalQty.value : (Number(addQty.value) || 1)
   const total = Number(addTotalPrice.value) || 0
   if (qty > 0) {
     addUnitPrice.value = Math.round((total / qty) * 100) / 100
@@ -134,6 +174,8 @@ interface ImportRow {
   qty: number
   unitPrice: number
   totalPrice: number
+  // Pack mode info (for display only)
+  packInfo?: string
 }
 
 const importItems = ref<ImportRow[]>([])
@@ -145,7 +187,8 @@ const addImportItem = () => {
     return
   }
 
-  const qty = Number(addQty.value)
+  // Xác định qty thực tế
+  const qty = isPackMode.value ? packTotalQty.value : Number(addQty.value)
   if (!qty || qty <= 0) {
     showWarning('Vui lòng nhập số lượng nhập hợp lệ (> 0)')
     return
@@ -162,16 +205,28 @@ const addImportItem = () => {
   const finalUnitPrice = unitP > 0 ? unitP : Math.round((total / qty) * 100) / 100
   const finalTotalPrice = total > 0 ? total : Math.round(qty * finalUnitPrice)
 
+  // Pack mode info string for display
+  let packInfo: string | undefined = undefined
+  if (isPackMode.value) {
+    packInfo = `${packCount.value} ${packUnit.value} × ${packSize.value} ${addUnit.value}`
+  }
+
   importItems.value.push({
     ingredient: ing,
     unit: addUnit.value || ing.unit,
     qty,
     unitPrice: finalUnitPrice,
     totalPrice: finalTotalPrice,
+    packInfo,
   })
 
   // Reset partial form for next addition
-  addQty.value = 1
+  if (isPackMode.value) {
+    packCount.value = 1
+    packSize.value = 1
+  } else {
+    addQty.value = 1
+  }
   addTotalPrice.value = 0
   addUnitPrice.value = 0
 }
@@ -208,6 +263,11 @@ const totalAmount = computed(() => {
 const formatCurrency = (val: number) => {
   return (Number(val) || 0).toLocaleString('vi-VN') + ' ₫'
 }
+
+// Computed qty display for the "Formula Preview" chip
+const previewQty = computed(() => {
+  return isPackMode.value ? packTotalQty.value : (Number(addQty.value) || 0)
+})
 
 const handleSave = async () => {
   if (importItems.value.length === 0) {
@@ -291,29 +351,25 @@ const handleSave = async () => {
         <h2 class="text-base font-bold font-display text-[#1e1b1b] border-b border-[#e9e0e0] pb-3">Thông tin phiếu nhập</h2>
 
         <div class="space-y-4">
-          <!-- Supplier (Searchable Select) -->
+          <!-- Supplier (Text Input) -->
           <div>
-            <label class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5">Nhà cung cấp *</label>
-            <Select
+            <label class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5">Nhà cung cấp</label>
+            <input
               v-model="supplier"
-              :options="suppliers"
-              editable
-              filter
-              placeholder="Tìm & chọn nhà cung cấp..."
-              class="w-full h-10 text-xs font-medium"
+              type="text"
+              placeholder="Ví dụ: NCC Cholimex, Vinamilk, Metro..."
+              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20 transition"
             />
           </div>
 
-          <!-- Warehouse (Searchable Select) -->
+          <!-- Warehouse (Text Input) -->
           <div>
-            <label class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5">Kho nhập *</label>
-            <Select
+            <label class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5">Kho nhập</label>
+            <input
               v-model="warehouse"
-              :options="warehouses"
-              editable
-              filter
-              placeholder="Tìm & chọn kho..."
-              class="w-full h-10 text-xs font-medium"
+              type="text"
+              placeholder="Ví dụ: Kho Tổng - Q1, Kho Phụ - Q3..."
+              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20 transition"
             />
           </div>
 
@@ -356,6 +412,26 @@ const handleSave = async () => {
 
         <!-- Add Item Selector & Calculator Box -->
         <div class="p-4 bg-[#faf5f4] rounded-xl border border-[#e9e0e0] space-y-3">
+
+          <!-- Pack Mode Toggle Banner -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-sm text-[#8d6749]">inventory_2</span>
+              <span class="text-[11px] font-bold text-[#42493d] uppercase tracking-wide">Chế độ nhập</span>
+            </div>
+            <button
+              type="button"
+              @click="togglePackMode"
+              class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-bold transition cursor-pointer"
+              :class="isPackMode
+                ? 'bg-[#8d6749] text-white shadow-sm'
+                : 'bg-white border border-[#c1c9b9]/70 text-[#42493d] hover:border-[#8d6749]/50'"
+            >
+              <span class="material-symbols-outlined text-sm">{{ isPackMode ? 'package_2' : 'straighten' }}</span>
+              <span>{{ isPackMode ? 'Nhập theo quy cách đóng gói' : 'Nhập trực tiếp số lượng' }}</span>
+            </button>
+          </div>
+
           <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
             <!-- Select Ingredient -->
             <div class="sm:col-span-6">
@@ -373,7 +449,7 @@ const handleSave = async () => {
 
             <!-- Import Unit -->
             <div class="sm:col-span-3">
-              <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">ĐVT nhập</label>
+              <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">ĐVT kho</label>
               <Select
                 v-model="addUnit"
                 :options="unitOptions"
@@ -384,8 +460,8 @@ const handleSave = async () => {
               />
             </div>
 
-            <!-- Quantity (supports decimals e.g. 2.1) -->
-            <div class="sm:col-span-3">
+            <!-- Direct Qty (when NOT pack mode) -->
+            <div v-if="!isPackMode" class="sm:col-span-3">
               <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Số lượng *</label>
               <input
                 v-model.number="addQty"
@@ -393,9 +469,77 @@ const handleSave = async () => {
                 type="number"
                 step="any"
                 min="0.001"
-                placeholder="Ví dụ: 2.1"
+                placeholder="Ví dụ: 4.2"
                 class="w-full h-10 px-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-bold text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20"
               />
+            </div>
+
+            <!-- Pack Mode Fields -->
+            <template v-if="isPackMode">
+              <!-- Pack qty placeholder to fill the 3rd column -->
+              <div class="sm:col-span-3">
+                <!-- empty on purpose, pack fields below take a new row -->
+              </div>
+            </template>
+          </div>
+
+          <!-- Pack Mode: quy cách đóng gói row -->
+          <div v-if="isPackMode" class="p-3 bg-[#fff8e1] rounded-xl border border-[#ffe082] space-y-2">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="material-symbols-outlined text-sm text-[#f57f17]">package_2</span>
+              <span class="text-[11px] font-bold text-[#f57f17] uppercase tracking-wide">Quy cách đóng gói</span>
+              <span class="text-[10px] text-[#a68a00] ml-1">— Nhập số đơn vị mua và dung tích/cân nặng mỗi đơn vị, hệ thống tự tính tổng vào kho</span>
+            </div>
+            <div class="grid grid-cols-3 gap-3">
+              <!-- Pack count: số lượng mua -->
+              <div>
+                <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Số lượng mua *</label>
+                <input
+                  v-model.number="packCount"
+                  type="number"
+                  step="1"
+                  min="1"
+                  placeholder="Ví dụ: 2"
+                  class="w-full h-10 px-3 bg-white border border-[#ffe082] rounded-xl text-xs font-bold text-[#1e1b1b] outline-none focus:border-[#f57f17] focus:ring-2 focus:ring-[#f57f17]/20"
+                />
+              </div>
+
+              <!-- Pack unit: loại đóng gói -->
+              <div>
+                <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Loại đóng gói</label>
+                <Select
+                  v-model="packUnit"
+                  :options="packUnitOptions"
+                  editable
+                  placeholder="bình, hộp, lon..."
+                  class="w-full h-10 text-xs font-medium"
+                />
+              </div>
+
+              <!-- Pack size: dung tích/cân nặng mỗi đơn vị -->
+              <div>
+                <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Quy cách ({{ addUnit }}/{{ packUnit }})</label>
+                <input
+                  v-model.number="packSize"
+                  type="number"
+                  step="any"
+                  min="0.001"
+                  :placeholder="`Ví dụ: 2.1`"
+                  class="w-full h-10 px-3 bg-white border border-[#ffe082] rounded-xl text-xs font-bold text-[#1e1b1b] outline-none focus:border-[#f57f17] focus:ring-2 focus:ring-[#f57f17]/20"
+                />
+              </div>
+            </div>
+
+            <!-- Pack calculation result -->
+            <div class="flex items-center gap-2 mt-1 p-2 bg-white rounded-lg border border-[#ffe082]">
+              <span class="material-symbols-outlined text-sm text-[#f57f17]">calculate</span>
+              <span class="text-[11px] text-[#42493d]">
+                <strong class="text-[#1e1b1b]">{{ packCount }} {{ packUnit }}</strong>
+                × <strong class="text-[#1e1b1b]">{{ packSize }} {{ addUnit }}/{{ packUnit }}</strong>
+                =
+                <strong class="text-[#326824] text-sm">{{ packTotalQty }} {{ addUnit }}</strong>
+                <span class="text-[#72796c] ml-1">(sẽ được nhập vào kho)</span>
+              </span>
             </div>
           </div>
 
@@ -444,10 +588,13 @@ const handleSave = async () => {
           </div>
 
           <!-- Formula Preview Chip -->
-          <div v-if="addQty > 0 && (addTotalPrice > 0 || addUnitPrice > 0)" class="flex items-center gap-2 text-[11px] text-[#72796c] bg-white px-3 py-1.5 rounded-lg border border-[#e9e0e0]">
+          <div v-if="previewQty > 0 && (addTotalPrice > 0 || addUnitPrice > 0)" class="flex items-center gap-2 text-[11px] text-[#72796c] bg-white px-3 py-1.5 rounded-lg border border-[#e9e0e0]">
             <span class="material-symbols-outlined text-sm text-[#8d6749]">calculate</span>
             <span>
-              Quy cách tính: <strong>{{ addQty }} {{ addUnit }}</strong> × <strong>{{ formatCurrency(addUnitPrice) }}</strong> = <strong class="text-[#326824]">{{ formatCurrency(addTotalPrice) }}</strong>
+              Quy cách tính:
+              <strong>{{ previewQty }} {{ addUnit }}</strong>
+              × <strong>{{ formatCurrency(addUnitPrice) }}</strong>
+              = <strong class="text-[#326824]">{{ formatCurrency(addTotalPrice) }}</strong>
             </span>
           </div>
         </div>
@@ -459,7 +606,7 @@ const handleSave = async () => {
               <tr>
                 <th class="py-3 px-3 w-10 text-center">STT</th>
                 <th class="py-3 px-3">Tên nguyên liệu</th>
-                <th class="py-3 px-3 w-28 text-center">ĐVT nhập</th>
+                <th class="py-3 px-3 w-28 text-center">ĐVT kho</th>
                 <th class="py-3 px-3 w-28 text-center">Số lượng</th>
                 <th class="py-3 px-3 w-32 text-right">Đơn giá vốn (₫)</th>
                 <th class="py-3 px-3 w-36 text-right">Thành tiền (₫)</th>
@@ -472,6 +619,11 @@ const handleSave = async () => {
                 <td class="py-3 px-3">
                   <div class="font-bold text-[#1e1b1b]">{{ item.ingredient.name }}</div>
                   <div class="text-[10px] text-[#72796c]">{{ item.ingredient.id }} • {{ item.ingredient.category }}</div>
+                  <!-- Pack info badge -->
+                  <div v-if="item.packInfo" class="mt-0.5 inline-flex items-center gap-1 text-[10px] text-[#a68a00] bg-[#fff8e1] px-1.5 py-0.5 rounded-md border border-[#ffe082]">
+                    <span class="material-symbols-outlined text-xs">package_2</span>
+                    {{ item.packInfo }}
+                  </div>
                 </td>
                 <td class="py-3 px-3 text-center">
                   <input

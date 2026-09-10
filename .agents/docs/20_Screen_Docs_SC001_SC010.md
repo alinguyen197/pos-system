@@ -143,6 +143,18 @@ Request body (POST /api/ingredients):
 
 **Mô tả:** Form tạo phiếu nhập kho, nhập nguyên liệu thực tế từ nhà cung cấp theo biến động thị trường (hỗ trợ quy cách đóng gói lẻ như 1 bình 2,1 kg = 57.000 ₫, tự động tính toán 2 chiều giữa Tổng tiền mua và Đơn giá vốn), cập nhật tồn kho tự động. **Route Frontend:** GET /stock-imports/create
 
+**Nghiệp vụ & Quy tắc UI:**
+1. **Thông tin phiếu nhập** (Nhà cung cấp, Kho nhập): Là `<input type="text">` thuần cho phép nhập tự do, không ràng buộc danh sách cố định.
+2. **Chế độ nhập số lượng**:
+   - **Nhập trực tiếp** (mặc định): Nhập thẳng số lượng theo ĐVT kho (VD: 4.2 kg).
+   - **Nhập theo quy cách đóng gói** (bật toggle): Người dùng nhập 3 trường:
+     - `Số lượng mua` (packCount): Số đơn vị đóng gói mua về (VD: 2 bình)
+     - `Loại đóng gói` (packUnit): bình, hộp, lon, gói... (editable Select)
+     - `Quy cách` (packSize): Dung tích/cân nặng mỗi đơn vị theo ĐVT kho (VD: 2.1 kg/bình)
+     - Hệ thống tự tính: `qty = packCount × packSize` (VD: 2 × 2.1 = 4.2 kg)
+     - Badge quy cách được lưu vào `packInfo` hiển thị trên dòng trong bảng.
+3. **Tính đơn giá 2 chiều**: Nhập Tổng tiền mua → tự tính Đơn giá/ĐVT, hoặc nhập Đơn giá → tự tính Tổng tiền.
+
 | Phương thức | Endpoint | Mô tả | Auth |
 |-------------|----------|-------|------|
 | GET | /api/ingredients/search | Lấy danh sách nguyên liệu để chọn | ✅ |
@@ -151,6 +163,9 @@ Request body (POST /api/ingredients):
 
 Request body (POST /api/stock-imports):
 `{ "supplier": "string", "warehouse": "string", "importDate": "YYYY-MM-DDTHH:mm", "note": "string", "items": [{ "ingredientId": "string", "dbId": number, "unit": "string", "qty": number, "unitPrice": number, "totalAmount": number }] }`
+
+> **Lưu ý:** `qty` trong request body luôn là số lượng thực tế theo ĐVT kho (đã quy đổi từ quy cách nếu dùng pack mode). `packInfo` chỉ là thông tin hiển thị trên FE, không gửi lên BE.
+
 
 ---
 
