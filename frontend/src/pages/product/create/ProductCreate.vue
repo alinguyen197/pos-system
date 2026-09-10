@@ -233,7 +233,7 @@ const saveProduct = async () => {
 </script>
 
 <template>
-  <div class="product-create-page flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-6">
+  <div class="product-create-page w-full flex flex-col gap-6 pb-16">
     <!-- Action Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2D7CC]">
       <div>

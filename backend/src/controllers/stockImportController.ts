@@ -9,7 +9,11 @@ const createStockImport = async (
   next: NextFunction
 ) => {
   try {
-    const result = await stockImportService.createStockImport(req.body)
+    const payload = {
+      ...req.body,
+      createdBy: (req as any).user?.id,
+    }
+    const result = await stockImportService.createStockImport(payload)
     return ApiResponder.success(
       res,
       result,
@@ -21,6 +25,49 @@ const createStockImport = async (
   }
 }
 
+const getStockImports = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const queryParams = {
+      ...req.query,
+      ...req.body,
+    }
+    const result = await stockImportService.getStockImports(queryParams)
+    return ApiResponder.success(
+      res,
+      result,
+      'Lấy danh sách phiếu nhập kho thành công',
+      EHttpStatuses.OK
+    )
+  } catch (error: any) {
+    next(error)
+  }
+}
+
+const getStockImportById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params
+    const result = await stockImportService.getStockImportById(id)
+    return ApiResponder.success(
+      res,
+      result,
+      'Lấy thông tin chi tiết phiếu nhập kho thành công',
+      EHttpStatuses.OK
+    )
+  } catch (error: any) {
+    next(error)
+  }
+}
+
 export default {
   createStockImport,
+  getStockImports,
+  getStockImportById,
 }

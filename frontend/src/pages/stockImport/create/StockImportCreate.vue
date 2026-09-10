@@ -1,17 +1,22 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Select from 'primevue/select'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Dialog from 'primevue/dialog'
 import { fetchIngredients } from '@/api/ingredient.api'
 import { fetchMasterCodes } from '@/api/masterCode.api'
-import { createStockImport } from '@/api/stockImport.api'
+import { createStockImport, fetchStockImports, StockImportRecord } from '@/api/stockImport.api'
 import { useAppToast } from '@/composables/useAppToast'
+import { useListQuery } from '@/composables/useListQuery'
 
 const router = useRouter()
 const { showSuccess, showError, showWarning } = useAppToast()
 
+// --- Form State: Tạo đơn nhập kho mới ---
 const supplier = ref('')
-const warehouse = ref('')
+const warehouse = ref('Kho tổng')
 const note = ref('')
 const importDate = ref(new Date().toISOString().slice(0, 16))
 
@@ -36,28 +41,24 @@ const addUnit = ref('kg')
 const addQty = ref<number>(1)
 const addUnitPrice = ref<number>(0)
 const addTotalPrice = ref<number>(0)
-const priceInputMode = ref<'unit' | 'total'>('total') // 'unit' or 'total'
+const priceInputMode = ref<'unit' | 'total'>('total')
 
 // --- Pack Mode (Nhập theo quy cách đóng gói) ---
 const isPackMode = ref(false)
-const packSize = ref<number>(1)      // Dung tích/cân nặng mỗi đơn vị đóng gói (VD: 2.1 kg/bình)
-const packCount = ref<number>(1)     // Số lượng đơn vị mua (VD: 2 bình)
-const packUnit = ref('bình')         // Loại đóng gói (bình, hộp, lon, gói...)
+const packSize = ref<number>(1)
+const packCount = ref<number>(1)
+const packUnit = ref('bình')
+const packUnitOptions = ['bình', 'hộp', 'lon', 'gói', 'thùng', 'chai', 'bịch', 'túi', 'bao', 'cái', 'kg', 'lít']
 
-const packUnitOptions = ['bình', 'hộp', 'lon', 'gói', 'thùng', 'chai', 'bịch', 'túi', 'thùng', 'cái', 'bao', 'kg', 'lít']
-
-// Tổng số lượng kho khi dùng pack mode = packSize * packCount
 const packTotalQty = computed(() => {
   const s = Number(packSize.value) || 0
   const c = Number(packCount.value) || 0
   return Math.round(s * c * 1000) / 1000
 })
 
-// Sync addQty from packTotalQty khi pack mode bật
 watch([packSize, packCount], () => {
   if (isPackMode.value) {
     addQty.value = packTotalQty.value
-    // Recalculate prices
     if (priceInputMode.value === 'total') {
       if (addTotalPrice.value > 0 && addQty.value > 0) {
         addUnitPrice.value = Math.round((addTotalPrice.value / addQty.value) * 100) / 100
@@ -73,11 +74,77 @@ watch([packSize, packCount], () => {
 const togglePackMode = () => {
   isPackMode.value = !isPackMode.value
   if (isPackMode.value) {
-    // Khi bật pack mode, sync addQty từ pack calculation
     addQty.value = packTotalQty.value
   }
 }
-// -----------------------------------------------
+
+interface ImportRow {
+  ingredient: AvailableIngredient
+  unit: string
+  qty: number
+  unitPrice: number
+  totalPrice: number
+  packInfo?: string
+  isPackMode?: boolean
+  packSize?: number
+  packCount?: number
+  packUnit?: string
+}
+
+const importItems = ref<ImportRow[]>([])
+
+// --- Lịch sử các lần nhập hàng (History List & Search State) ---
+const searchKeyword = ref('')
+const searchWarehouse = ref('all')
+const searchFromDate = ref('')
+const searchToDate = ref('')
+
+const warehouseOptions = ref([
+  { label: 'Tất cả kho', value: 'all' },
+  { label: 'Kho tổng', value: 'Kho tổng' },
+  { label: 'Kho phụ - Q3', value: 'Kho phụ - Q3' },
+  { label: 'Bếp trung tâm', value: 'Bếp trung tâm' },
+])
+
+const {
+  items: historyImports,
+  pagination,
+  summary: historySummary,
+  loading: loadingHistory,
+  fetchList: fetchHistoryList,
+  handleSort: handleHistorySort,
+  handlePageChange: handleHistoryPageChange,
+  handlePageSizeChange: handleHistoryPageSizeChange,
+} = useListQuery<StockImportRecord>(fetchStockImports, { sortBy: 'id', sortOrder: 'desc' }, 10)
+
+// Detail Modal State
+const showDetailModal = ref(false)
+const selectedImport = ref<StockImportRecord | null>(null)
+
+const openDetailModal = (item: StockImportRecord) => {
+  selectedImport.value = item
+  showDetailModal.value = true
+}
+
+const formatNumber = (val: number | string | undefined | null) => {
+  if (val === undefined || val === null || val === '') return '0'
+  const num = Number(val)
+  if (isNaN(num)) return '0'
+  const rounded = Math.round(num * 100) / 100
+  return rounded.toLocaleString('vi-VN', { maximumFractionDigits: 2 })
+}
+
+const formatCurrency = (val: number | string | undefined | null) => {
+  return `${formatNumber(val)} ₫`
+}
+
+const formatDateTime = (dateStr?: string | Date) => {
+  if (!dateStr) return '-'
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return String(dateStr)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
 
 const loadData = async () => {
   try {
@@ -106,8 +173,53 @@ const loadData = async () => {
         onSelectIngredient(availableIngredients.value[0].id)
       }
     }
+
+    await loadHistory()
   } catch (error) {
-    console.error('Error loading stock import available ingredients:', error)
+    console.error('Error loading stock import data:', error)
+  }
+}
+
+const getHistorySearchParams = () => {
+  return {
+    keyword: searchKeyword.value.trim(),
+    warehouse: searchWarehouse.value,
+    fromDate: searchFromDate.value || undefined,
+    toDate: searchToDate.value || undefined,
+  }
+}
+
+const loadHistory = async (silent: boolean = false) => {
+  await fetchHistoryList(getHistorySearchParams(), silent)
+}
+
+const onSearchHistory = () => {
+  pagination.page = 1
+  loadHistory()
+}
+
+const onResetSearchHistory = () => {
+  searchKeyword.value = ''
+  searchWarehouse.value = 'all'
+  searchFromDate.value = ''
+  searchToDate.value = ''
+  pagination.page = 1
+  loadHistory()
+}
+
+const onHistoryPage = (event: any) => {
+  const newPageSize = event.rows
+  const newPage = event.page + 1
+  if (newPageSize !== pagination.pageSize) {
+    handleHistoryPageSizeChange(newPageSize, getHistorySearchParams())
+  } else {
+    handleHistoryPageChange(newPage, getHistorySearchParams())
+  }
+}
+
+const onHistorySort = (event: any) => {
+  if (event.sortField) {
+    handleHistorySort(event.sortField, getHistorySearchParams())
   }
 }
 
@@ -133,7 +245,6 @@ watch(selectedIngId, (newId) => {
   if (newId) onSelectIngredient(newId)
 })
 
-// Auto-sync when changing addQty (chỉ khi không phải pack mode)
 const onQtyChange = () => {
   if (isPackMode.value) return
   const qty = Number(addQty.value) || 0
@@ -150,7 +261,6 @@ const onQtyChange = () => {
   }
 }
 
-// When user inputs Unit Price
 const onUnitPriceInput = () => {
   priceInputMode.value = 'unit'
   const qty = isPackMode.value ? packTotalQty.value : (Number(addQty.value) || 1)
@@ -158,7 +268,6 @@ const onUnitPriceInput = () => {
   addTotalPrice.value = Math.round(qty * price)
 }
 
-// When user inputs Total Price
 const onTotalPriceInput = () => {
   priceInputMode.value = 'total'
   const qty = isPackMode.value ? packTotalQty.value : (Number(addQty.value) || 1)
@@ -168,18 +277,6 @@ const onTotalPriceInput = () => {
   }
 }
 
-interface ImportRow {
-  ingredient: AvailableIngredient
-  unit: string
-  qty: number
-  unitPrice: number
-  totalPrice: number
-  // Pack mode info (for display only)
-  packInfo?: string
-}
-
-const importItems = ref<ImportRow[]>([])
-
 const addImportItem = () => {
   const ing = availableIngredients.value.find((i) => i.id === selectedIngId.value)
   if (!ing) {
@@ -187,7 +284,6 @@ const addImportItem = () => {
     return
   }
 
-  // Xác định qty thực tế
   const qty = isPackMode.value ? packTotalQty.value : Number(addQty.value)
   if (!qty || qty <= 0) {
     showWarning('Vui lòng nhập số lượng nhập hợp lệ (> 0)')
@@ -205,7 +301,6 @@ const addImportItem = () => {
   const finalUnitPrice = unitP > 0 ? unitP : Math.round((total / qty) * 100) / 100
   const finalTotalPrice = total > 0 ? total : Math.round(qty * finalUnitPrice)
 
-  // Pack mode info string for display
   let packInfo: string | undefined = undefined
   if (isPackMode.value) {
     packInfo = `${packCount.value} ${packUnit.value} × ${packSize.value} ${addUnit.value}`
@@ -218,9 +313,13 @@ const addImportItem = () => {
     unitPrice: finalUnitPrice,
     totalPrice: finalTotalPrice,
     packInfo,
+    isPackMode: isPackMode.value,
+    packSize: isPackMode.value ? packSize.value : undefined,
+    packCount: isPackMode.value ? packCount.value : undefined,
+    packUnit: isPackMode.value ? packUnit.value : undefined,
   })
 
-  // Reset partial form for next addition
+  // Reset inputs
   if (isPackMode.value) {
     packCount.value = 1
     packSize.value = 1
@@ -260,11 +359,6 @@ const totalAmount = computed(() => {
   return importItems.value.reduce((sum, item) => sum + (Number(item.totalPrice) || (item.qty * item.unitPrice)), 0)
 })
 
-const formatCurrency = (val: number) => {
-  return (Number(val) || 0).toLocaleString('vi-VN') + ' ₫'
-}
-
-// Computed qty display for the "Formula Preview" chip
 const previewQty = computed(() => {
   return isPackMode.value ? packTotalQty.value : (Number(addQty.value) || 0)
 })
@@ -281,23 +375,40 @@ const handleSave = async () => {
     isSubmitting.value = true
     errorMessage.value = ''
 
-    await createStockImport({
-      supplier: supplier.value,
-      warehouse: warehouse.value,
+    const res = await createStockImport({
+      supplier: supplier.value.trim() || 'Nhà cung cấp lẻ',
+      warehouse: warehouse.value.trim() || 'Kho tổng',
       importDate: importDate.value,
       note: note.value,
       items: importItems.value.map((i) => ({
         ingredientId: i.ingredient.id,
         dbId: i.ingredient.dbId,
+        ingredientName: i.ingredient.name,
         unit: i.unit,
         qty: Number(i.qty) || 0,
         unitPrice: Number(i.unitPrice) || 0,
         totalAmount: Number(i.totalPrice) || 0,
+        isPackMode: i.isPackMode,
+        packSize: i.packSize,
+        packCount: i.packCount,
+        packUnit: i.packUnit,
       })),
     })
 
-    showSuccess('Đã tạo phiếu nhập kho và cập nhật tồn kho thành công!')
-    router.push('/ingredients')
+    const code = res?.importCode || 'mới'
+    showSuccess(`Đã tạo phiếu nhập kho #${code} và cập nhật tồn kho thành công!`)
+
+    // Reset Form
+    importItems.value = []
+    supplier.value = ''
+    note.value = ''
+    importDate.value = new Date().toISOString().slice(0, 16)
+
+    // Reload History & Ingredients
+    await Promise.all([
+      loadHistory(true),
+      loadData(),
+    ])
   } catch (error: any) {
     console.error('Error saving stock import:', error)
     const msg = error?.response?.data?.message || error?.message || 'Lỗi khi lưu phiếu nhập kho'
@@ -310,21 +421,21 @@ const handleSave = async () => {
 </script>
 
 <template>
-  <div class="stock-import-create-page flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-6 max-w-6xl mx-auto pb-10">
+  <div class="stock-import-create-page w-full flex flex-col gap-6 max-w-7xl mx-auto pb-16">
     <!-- Header Title & Action Bar -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2D7CC]">
       <div>
-        <h1 class="text-2xl font-bold font-display text-[#1e1b1b]">Tạo đơn nhập kho mới</h1>
-        <p class="text-xs text-[#42493d] mt-1 font-medium">Lập phiếu nhập kho nguyên liệu từ nhà cung cấp, linh hoạt ĐVT và tự động tính đơn giá vốn</p>
+        <h1 class="text-2xl font-bold font-display text-[#1e1b1b]">Quản lý & Nhập hàng kho</h1>
+        <p class="text-xs text-[#42493d] mt-1 font-medium">Lập phiếu nhập kho nguyên liệu, tính toán quy cách đóng gói và theo dõi lịch sử các lần nhập hàng</p>
       </div>
       <div class="flex items-center gap-3">
         <button
-          @click="router.back()"
+          @click="router.push('/ingredients')"
           type="button"
-          :disabled="isSubmitting"
-          class="h-10 px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#42493d] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition disabled:opacity-50 cursor-pointer"
+          class="h-10 px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#42493d] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition cursor-pointer flex items-center gap-1.5"
         >
-          Hủy bỏ
+          <span class="material-symbols-outlined text-base">arrow_back</span>
+          <span>Về kho nguyên liệu</span>
         </button>
         <button
           @click="handleSave"
@@ -344,11 +455,14 @@ const handleSave = async () => {
       <span>{{ errorMessage }}</span>
     </div>
 
-    <!-- Main Bento Grid -->
+    <!-- PHẦN 1: BENTO GRID TẠO ĐƠN NHẬP KHO MỚI -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- General Info Card -->
       <div class="bg-white rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col gap-4">
-        <h2 class="text-base font-bold font-display text-[#1e1b1b] border-b border-[#E2D7CC] pb-3">Thông tin phiếu nhập</h2>
+        <h2 class="text-base font-bold font-display text-[#1e1b1b] border-b border-[#E2D7CC] pb-3 flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#8E3E2F]">post_add</span>
+          <span>Thông tin phiếu nhập</span>
+        </h2>
 
         <div class="space-y-4">
           <!-- Supplier (Text Input) -->
@@ -357,7 +471,7 @@ const handleSave = async () => {
             <input
               v-model="supplier"
               type="text"
-              placeholder="Ví dụ: NCC Cholimex, Vinamilk, Metro..."
+              placeholder="Ví dụ: NCC Cholimex, Vinamilk, Siêu thị Metro..."
               class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 transition"
             />
           </div>
@@ -368,7 +482,7 @@ const handleSave = async () => {
             <input
               v-model="warehouse"
               type="text"
-              placeholder="Ví dụ: Kho Tổng - Q1, Kho Phụ - Q3..."
+              placeholder="Ví dụ: Kho tổng, Kho Phụ - Q3, Bếp chính..."
               class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 transition"
             />
           </div>
@@ -404,7 +518,10 @@ const handleSave = async () => {
       <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col gap-4">
         <div class="flex justify-between items-center border-b border-[#E2D7CC] pb-3">
           <div>
-            <h2 class="text-base font-bold font-display text-[#1e1b1b]">Thêm nguyên liệu vào đơn</h2>
+            <h2 class="text-base font-bold font-display text-[#1e1b1b] flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#8E3E2F]">add_shopping_cart</span>
+              <span>Thêm nguyên liệu vào đơn</span>
+            </h2>
             <p class="text-[11px] text-[#72796c] mt-0.5">Nhập số lượng & tổng tiền mua để hệ thống tự động tính đơn giá vốn</p>
           </div>
           <span class="text-xs font-semibold text-[#8E3E2F] bg-[#F2ECE4] px-3 py-1 rounded-lg">Đã chọn: {{ importItems.length }} mục</span>
@@ -473,14 +590,6 @@ const handleSave = async () => {
                 class="w-full h-10 px-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-bold text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
               />
             </div>
-
-            <!-- Pack Mode Fields -->
-            <template v-if="isPackMode">
-              <!-- Pack qty placeholder to fill the 3rd column -->
-              <div class="sm:col-span-3">
-                <!-- empty on purpose, pack fields below take a new row -->
-              </div>
-            </template>
           </div>
 
           <!-- Pack Mode: quy cách đóng gói row -->
@@ -619,7 +728,6 @@ const handleSave = async () => {
                 <td class="py-3 px-3">
                   <div class="font-bold text-[#1e1b1b]">{{ item.ingredient.name }}</div>
                   <div class="text-[10px] text-[#72796c]">{{ item.ingredient.id }} • {{ item.ingredient.category }}</div>
-                  <!-- Pack info badge -->
                   <div v-if="item.packInfo" class="mt-0.5 inline-flex items-center gap-1 text-[10px] text-[#a68a00] bg-[#fff8e1] px-1.5 py-0.5 rounded-md border border-[#ffe082]">
                     <span class="material-symbols-outlined text-xs">package_2</span>
                     {{ item.packInfo }}
@@ -682,6 +790,290 @@ const handleSave = async () => {
         </div>
       </div>
     </div>
+
+    <!-- =========================================================
+         PHẦN 2: BẢNG DỮ LIỆU CÁC LẦN NHẬP HÀNG (HISTORY & MANAGEMENT)
+         ========================================================= -->
+    <div class="bg-white rounded-2xl border border-[#E2D7CC] shadow-sm overflow-hidden flex flex-col">
+      <!-- Section Header with Stats -->
+      <div class="p-5 border-b border-[#E2D7CC] bg-[#F9F6F0] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-bold font-display text-[#1e1b1b] flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#8E3E2F]">history</span>
+            <span>Lịch sử các lần nhập hàng</span>
+          </h2>
+          <p class="text-xs text-[#42493d] mt-0.5 font-medium">Theo dõi danh sách các phiếu nhập kho, nhà cung cấp và tổng chi phí nhập hàng</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="px-3.5 py-2 bg-white rounded-xl border border-[#E2D7CC] flex items-center gap-2">
+            <span class="text-[11px] text-[#72796c] font-bold uppercase">Tổng phiếu:</span>
+            <span class="text-xs font-bold text-[#8E3E2F]">{{ historySummary?.totalImports ?? pagination.totalRecords }} phiếu</span>
+          </div>
+          <div class="px-3.5 py-2 bg-white rounded-xl border border-[#E2D7CC] flex items-center gap-2">
+            <span class="text-[11px] text-[#72796c] font-bold uppercase">Tổng chi phí:</span>
+            <span class="text-xs font-bold text-[#326824]">{{ formatCurrency(historySummary?.totalSpend || 0) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1. Form Tìm kiếm & Bộ lọc (Search Form) -->
+      <div class="p-4 border-b border-[#E2D7CC] bg-white">
+        <form @submit.prevent="onSearchHistory" class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+          <!-- Keyword Input -->
+          <div class="sm:col-span-4">
+            <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Từ khóa tìm kiếm</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#72796c] text-lg">search</span>
+              <input
+                v-model="searchKeyword"
+                type="text"
+                placeholder="Mã phiếu (PNK-...), NCC, ghi chú..."
+                class="w-full h-10 pl-9 pr-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+              />
+            </div>
+          </div>
+
+          <!-- Warehouse Select -->
+          <div class="sm:col-span-3">
+            <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Kho nhập</label>
+            <Select
+              v-model="searchWarehouse"
+              :options="warehouseOptions"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full h-10 text-xs font-medium"
+            />
+          </div>
+
+          <!-- Date Range: From -->
+          <div class="sm:col-span-2">
+            <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Từ ngày</label>
+            <input
+              v-model="searchFromDate"
+              type="date"
+              class="w-full h-10 px-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+            />
+          </div>
+
+          <!-- Date Range: To -->
+          <div class="sm:col-span-2">
+            <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Đến ngày</label>
+            <input
+              v-model="searchToDate"
+              type="date"
+              class="w-full h-10 px-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+            />
+          </div>
+
+          <!-- Search Actions -->
+          <div class="sm:col-span-1 flex items-center gap-1.5">
+            <button
+              type="submit"
+              class="w-full h-10 bg-[#8E3E2F] hover:bg-[#6E281C] text-white rounded-xl flex items-center justify-center transition cursor-pointer shadow-sm"
+              title="Tìm kiếm phiếu nhập"
+            >
+              <span class="material-symbols-outlined text-lg">search</span>
+            </button>
+            <button
+              type="button"
+              @click="onResetSearchHistory"
+              class="w-full h-10 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#42493d] rounded-xl flex items-center justify-center border border-[#c1c9b9]/60 transition cursor-pointer"
+              title="Đặt lại bộ lọc"
+            >
+              <span class="material-symbols-outlined text-lg">refresh</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- 2. PrimeVue DataTable: Danh sách Phiếu nhập kho -->
+      <DataTable
+        :value="historyImports"
+        :loading="loadingHistory"
+        lazy
+        paginator
+        class="flex-1"
+        :rows="pagination.pageSize"
+        :totalRecords="pagination.totalRecords"
+        :first="(pagination.page - 1) * pagination.pageSize"
+        :rowsPerPageOptions="[5, 10, 20]"
+        @page="onHistoryPage"
+        @sort="onHistorySort"
+        tableStyle="min-width: 50rem"
+        responsiveLayout="scroll"
+        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+        currentPageReportTemplate="Hiển thị {first} đến {last} trong tổng số {totalRecords} phiếu nhập"
+      >
+        <template #empty>
+          <div class="py-10 text-center text-[#72796c] flex flex-col items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-4xl text-[#c1c9b9]">inventory</span>
+            <span class="text-xs font-bold text-[#1e1b1b]">Chưa có lịch sử nhập hàng nào</span>
+            <span class="text-[11px] text-[#72796c]">Các phiếu nhập kho sau khi tạo sẽ hiển thị tại đây</span>
+          </div>
+        </template>
+
+        <Column field="importCode" header="Mã phiếu" sortable>
+          <template #body="slotProps">
+            <span class="font-mono font-bold text-[#8E3E2F] bg-[#F9F6F0] px-2.5 py-1 rounded-lg border border-[#E2D7CC]">
+              {{ slotProps.data.importCode }}
+            </span>
+          </template>
+        </Column>
+
+        <Column field="importDate" header="Thời gian nhập" sortable>
+          <template #body="slotProps">
+            <div class="flex items-center gap-1.5 text-xs text-[#1e1b1b] font-medium">
+              <span class="material-symbols-outlined text-[#72796c] text-sm">schedule</span>
+              <span>{{ formatDateTime(slotProps.data.importDate) }}</span>
+            </div>
+          </template>
+        </Column>
+
+        <Column field="supplier" header="Nhà cung cấp" sortable>
+          <template #body="slotProps">
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[#8E3E2F] text-sm">storefront</span>
+              <span class="font-bold text-[#1e1b1b] text-xs">{{ slotProps.data.supplier || 'Nhà cung cấp lẻ' }}</span>
+            </div>
+          </template>
+        </Column>
+
+        <Column field="warehouse" header="Kho nhập">
+          <template #body="slotProps">
+            <span class="px-2.5 py-1 rounded-md bg-[#F2ECE4] text-[#42493d] font-semibold text-[11px] inline-block">
+              {{ slotProps.data.warehouse || 'Kho tổng' }}
+            </span>
+          </template>
+        </Column>
+
+        <Column field="itemCount" header="Số mặt hàng" bodyClass="text-center" headerClass="text-center">
+          <template #body="slotProps">
+            <span class="font-bold text-xs text-[#42493d]">{{ slotProps.data.itemCount }} loại</span>
+          </template>
+        </Column>
+
+        <Column field="totalAmount" header="Tổng tiền phiếu" sortable bodyClass="text-right" headerClass="text-right">
+          <template #body="slotProps">
+            <span class="font-bold font-display text-sm text-[#326824]">
+              {{ formatCurrency(slotProps.data.totalAmount) }}
+            </span>
+          </template>
+        </Column>
+
+        <Column field="note" header="Ghi chú">
+          <template #body="slotProps">
+            <span class="text-xs text-[#72796c] line-clamp-1" :title="slotProps.data.note">
+              {{ slotProps.data.note || '—' }}
+            </span>
+          </template>
+        </Column>
+
+        <Column header="Thao tác" bodyClass="text-center" headerClass="text-center">
+          <template #body="slotProps">
+            <button
+              @click="openDetailModal(slotProps.data)"
+              class="h-8 px-3 bg-[#F2ECE4] hover:bg-[#8E3E2F] text-[#8E3E2F] hover:text-white rounded-lg font-bold text-xs transition flex items-center justify-center gap-1 cursor-pointer mx-auto"
+              title="Xem chi tiết phiếu nhập"
+            >
+              <span class="material-symbols-outlined text-sm">visibility</span>
+              <span>Chi tiết</span>
+            </button>
+          </template>
+        </Column>
+      </DataTable>
+    </div>
+
+    <!-- =========================================================
+         MODAL: XEM CHI TIẾT PHIẾU NHẬP KHO
+         ========================================================= -->
+    <Dialog
+      v-model:visible="showDetailModal"
+      :header="`Chi tiết Phiếu nhập kho #${selectedImport?.importCode || ''}`"
+      modal
+      class="w-full max-w-2xl p-0"
+    >
+      <div v-if="selectedImport" class="p-5 flex flex-col gap-4">
+        <!-- Receipt Meta Info Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="p-3 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC]">
+            <span class="text-[10px] font-bold text-[#72796c] uppercase block">Mã phiếu</span>
+            <span class="text-sm font-bold font-mono text-[#8E3E2F]">{{ selectedImport.importCode }}</span>
+          </div>
+          <div class="p-3 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC]">
+            <span class="text-[10px] font-bold text-[#72796c] uppercase block">Ngày nhập</span>
+            <span class="text-xs font-bold text-[#1e1b1b]">{{ formatDateTime(selectedImport.importDate) }}</span>
+          </div>
+          <div class="p-3 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC]">
+            <span class="text-[10px] font-bold text-[#72796c] uppercase block">Nhà cung cấp</span>
+            <span class="text-xs font-bold text-[#1e1b1b] truncate block" :title="selectedImport.supplier">{{ selectedImport.supplier }}</span>
+          </div>
+          <div class="p-3 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC]">
+            <span class="text-[10px] font-bold text-[#72796c] uppercase block">Kho nhập</span>
+            <span class="text-xs font-bold text-[#1e1b1b] truncate block">{{ selectedImport.warehouse }}</span>
+          </div>
+        </div>
+
+        <div v-if="selectedImport.note" class="p-3 bg-[#faf5f4] rounded-xl border border-[#E2D7CC] text-xs text-[#42493d]">
+          <strong class="text-[#1e1b1b]">Ghi chú:</strong> {{ selectedImport.note }}
+        </div>
+
+        <!-- Items Table inside Modal -->
+        <div class="border border-[#E2D7CC] rounded-xl overflow-hidden">
+          <table class="w-full text-left text-xs text-[#1e1b1b]">
+            <thead class="bg-[#F5EFE8] text-[#42493d] font-semibold uppercase tracking-wider border-b border-[#E2D7CC]">
+              <tr>
+                <th class="py-2.5 px-3 w-10 text-center">STT</th>
+                <th class="py-2.5 px-3">Tên nguyên liệu</th>
+                <th class="py-2.5 px-3 text-center">Số lượng nhập</th>
+                <th class="py-2.5 px-3 text-right">Đơn giá vốn</th>
+                <th class="py-2.5 px-3 text-right">Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-[#F2ECE4]">
+              <tr v-for="(item, idx) in selectedImport.items || []" :key="idx" class="hover:bg-[#F9F6F0]">
+                <td class="py-2.5 px-3 text-center font-bold text-[#72796c]">{{ idx + 1 }}</td>
+                <td class="py-2.5 px-3">
+                  <div class="font-bold text-[#1e1b1b]">{{ item.ingredientName || item.name || 'Nguyên liệu' }}</div>
+                  <div v-if="item.isPackMode && item.packCount && item.packSize" class="mt-0.5 inline-flex items-center gap-1 text-[10px] text-[#a68a00] bg-[#fff8e1] px-1.5 py-0.5 rounded border border-[#ffe082]">
+                    <span class="material-symbols-outlined text-xs">package_2</span>
+                    {{ item.packCount }} {{ item.packUnit }} × {{ item.packSize }} {{ item.unit }}
+                  </div>
+                  <div v-else-if="item.note" class="text-[10px] text-[#72796c] italic">{{ item.note }}</div>
+                </td>
+                <td class="py-2.5 px-3 text-center font-bold font-mono">
+                  {{ formatNumber(item.qty) }} {{ item.unit }}
+                </td>
+                <td class="py-2.5 px-3 text-right font-medium">
+                  {{ formatCurrency(item.unitPrice) }}
+                </td>
+                <td class="py-2.5 px-3 text-right font-bold text-[#326824]">
+                  {{ formatCurrency(item.totalAmount) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Total Receipt Footer -->
+        <div class="p-3.5 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC] flex justify-between items-center">
+          <span class="text-xs font-bold text-[#42493d]">Tổng giá trị phiếu nhập kho:</span>
+          <span class="text-lg font-bold font-display text-[#326824]">{{ formatCurrency(selectedImport.totalAmount) }}</span>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end p-3">
+          <button
+            type="button"
+            @click="showDetailModal = false"
+            class="h-9 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl transition cursor-pointer"
+          >
+            Đóng
+          </button>
+        </div>
+      </template>
+    </Dialog>
   </div>
 </template>
 
