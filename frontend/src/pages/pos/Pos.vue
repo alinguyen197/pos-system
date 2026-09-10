@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Dialog from 'primevue/dialog'
@@ -471,7 +471,7 @@ onMounted(() => {
             </div>
             <div class="h-6 w-px bg-[#E2D7CC]"></div>
             <div class="flex flex-col">
-              <span class="text-[10px] font-bold text-[#72796c] uppercase tracking-wider">Số ly</span>
+              <span class="text-[10px] font-bold text-[#72796c] uppercase tracking-wider">Số phần</span>
               <span class="text-sm font-bold text-[#1e1b1b]">{{ shiftSummary.totalCupsSold }}</span>
             </div>
           </div>
@@ -819,7 +819,7 @@ onMounted(() => {
 
           <div class="p-3 flex justify-between items-center text-gray-600 text-[11px]">
             <span>Tổng số đơn bán trong ca: <strong>{{ shiftSummary.totalOrders }} đơn</strong></span>
-            <span>Tổng số ly bán ra: <strong>{{ shiftSummary.totalCupsSold }} ly</strong></span>
+            <span>Tổng số phần bán ra: <strong>{{ shiftSummary.totalCupsSold }} phần</strong></span>
           </div>
         </div>
       </div>

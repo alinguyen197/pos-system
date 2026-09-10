@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import Chart from 'primevue/chart'
 import { useRouter } from 'vue-router'
@@ -10,7 +10,7 @@ const isLoading = ref(true)
 const metrics = ref([
   { title: 'Doanh thu hôm nay', value: '0 ₫', trend: '0% so với hôm qua', icon: 'payments', isDanger: false, rawVal: 0 },
   { title: 'Số đơn hàng', value: '0', trend: '0 so với hôm qua', icon: 'receipt_long', isDanger: false, rawVal: 0 },
-  { title: 'Số ly đã bán', value: '0', trend: 'Hôm nay', icon: 'local_cafe', isDanger: false, rawVal: 0 },
+  { title: 'Số phần đã bán', value: '0', trend: 'Hôm nay', icon: 'restaurant', isDanger: false, rawVal: 0 },
   { title: 'Tồn kho thấp', value: '0', trend: 'Nguyên liệu cần nhập', icon: 'warning', isDanger: false, rawVal: 0 },
 ])
 
@@ -87,7 +87,7 @@ const fetchDashboardData = async () => {
       metrics.value[1].trend = summary.orderTrendText
 
       metrics.value[2].value = `${summary.todayCupsSold}`
-      metrics.value[2].trend = 'Tổng số ly bán ra hôm nay'
+      metrics.value[2].trend = 'Tổng số phần bán ra hôm nay'
 
       metrics.value[3].value = `${summary.lowStockCount}`
       metrics.value[3].isDanger = summary.lowStockCount > 0
@@ -241,7 +241,7 @@ onMounted(() => {
               <tr>
                 <th class="py-3 px-4 w-12 text-center">#</th>
                 <th class="py-3 px-4">Tên sản phẩm</th>
-                <th class="py-3 px-4 text-center">Số ly bán</th>
+                <th class="py-3 px-4 text-center">Số phần bán</th>
                 <th class="py-3 px-4 text-right">Doanh thu</th>
               </tr>
             </thead>
@@ -254,7 +254,7 @@ onMounted(() => {
                   >{{ item.rank }}</span>
                 </td>
                 <td class="py-3.5 px-4 font-semibold text-[#1e1b1b]">{{ item.name }}</td>
-                <td class="py-3.5 px-4 text-center font-semibold text-[#326824]">{{ item.qty }} ly</td>
+                <td class="py-3.5 px-4 text-center font-semibold text-[#326824]">{{ item.qty }} phần</td>
                 <td class="py-3.5 px-4 text-right font-bold text-[#1e1b1b]">{{ item.revenue.toLocaleString('vi-VN') }} ₫</td>
               </tr>
               <tr v-if="topProducts.length === 0">

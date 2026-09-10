@@ -654,10 +654,10 @@ const exportSalesReport = async (
     const categoryReport = await getSalesByCategory(period, fromDate, toDate)
 
     let csvContent = '\uFEFF' // BOM for UTF-8 Excel support
-    csvContent += 'BÁO CÁO DOANH SỐ VÀ LỢI NHUẬN SKY COFFEE\n'
+    csvContent += 'BÁO CÁO DOANH SỐ VÀ LỢI NHUẬN MÌ TRỘN CÔ XI\n'
     csvContent += `Kỳ báo cáo: ${period} (${summary.fromDate} đến ${summary.toDate})\n`
     csvContent += `Tổng số đơn hàng: ${summary.orderCount}\n`
-    csvContent += `Tổng số ly bán ra: ${summary.totalItemsCount}\n`
+    csvContent += `Tổng số phần bán ra: ${summary.totalItemsCount}\n`
     csvContent += `Giá trị đơn trung bình (AOV): ${summary.avgOrderValue.toLocaleString('vi-VN')} VND\n`
     csvContent += `Tổng doanh thu: ${summary.totalRevenue.toLocaleString('vi-VN')} VND\n`
     csvContent += `Tổng chi phí NVL: ${summary.totalCost.toLocaleString('vi-VN')} VND\n`
@@ -666,7 +666,7 @@ const exportSalesReport = async (
 
     csvContent += '--- DOANH THU THEO NGÀY ---\n'
     csvContent +=
-      'Ngày,Thứ,Số đơn,Số ly bán,Doanh thu (VND),Chi phí vốn (VND),Lợi nhuận gộp (VND),Tỷ lệ lãi gộp (%)\n'
+      'Ngày,Thứ,Số đơn,Số phần bán,Doanh thu (VND),Chi phí vốn (VND),Lợi nhuận gộp (VND),Tỷ lệ lãi gộp (%)\n'
     dateReport.forEach((row) => {
       csvContent += `"${row.date}","${row.dayOfWeek}",${row.orderCount},${row.itemsCount},${row.revenue},${row.cost},${row.profit},"${row.margin}"\n`
     })

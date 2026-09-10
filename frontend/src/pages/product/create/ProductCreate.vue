@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Select from 'primevue/select'
@@ -15,8 +15,8 @@ const { showSuccess, showWarning } = useAppToast()
 const productName = ref('')
 const productCode = ref('')
 const sellingPrice = ref(35000)
-const category = ref<string>('Cà phê')
-const unit = ref('ly')
+const category = ref<string>('Mì trộn')
+const unit = ref('phần')
 const isActiveStatus = ref(true)
 const isCustomCategory = ref(false)
 const isSubmitting = ref(false)

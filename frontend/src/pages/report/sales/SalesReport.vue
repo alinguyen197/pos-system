@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -297,7 +297,7 @@ onMounted(() => {
           <span class="material-symbols-outlined text-[#0284c7] text-xl">shopping_cart</span>
         </div>
         <div class="text-2xl font-bold font-display text-[#0284c7] mt-2">{{ summary.avgOrderValue.toLocaleString('vi-VN') }} ₫</div>
-        <span class="text-[11px] text-[#0284c7] font-bold mt-1">Tổng {{ summary.totalItemsCount.toLocaleString('vi-VN') }} ly/món bán ra</span>
+        <span class="text-[11px] text-[#0284c7] font-bold mt-1">Tổng {{ summary.totalItemsCount.toLocaleString('vi-VN') }} phần bán ra</span>
       </div>
 
       <!-- Card 3: Ingredient BOM Cost -->
@@ -416,9 +416,9 @@ onMounted(() => {
             </template>
           </Column>
 
-          <Column field="itemsCount" header="Số ly bán" bodyClass="text-center" headerClass="text-center" sortable>
+          <Column field="itemsCount" header="Số phần bán" bodyClass="text-center" headerClass="text-center" sortable>
             <template #body="slotProps">
-              <span class="font-bold text-[#326824]">{{ slotProps.data.itemsCount }} ly</span>
+              <span class="font-bold text-[#326824]">{{ slotProps.data.itemsCount }} phần</span>
             </template>
           </Column>
 

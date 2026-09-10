@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from 'primevue/datatable'
@@ -40,7 +40,7 @@ const editForm = ref({
   id: '' as string | number,
   name: '',
   category: '',
-  unit: 'ly',
+  unit: 'phần',
   sellingPrice: 0,
   costPrice: 0,
   status: 'Đang kinh doanh',
