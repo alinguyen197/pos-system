@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -45,8 +45,8 @@ const errorInfo = computed(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#fff8f7] flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl border border-[#e9e0e0] shadow-lg p-8 sm:p-12 max-w-md w-full text-center flex flex-col items-center gap-5">
+  <div class="min-h-screen bg-[#F9F6F0] flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl border border-[#E2D7CC] shadow-lg p-8 sm:p-12 max-w-md w-full text-center flex flex-col items-center gap-5">
       <div class="w-20 h-20 rounded-full bg-[#ffdad6] text-[#ba1a1a] flex items-center justify-center shadow-inner">
         <span class="material-symbols-outlined text-4xl">{{ errorInfo.icon }}</span>
       </div>
@@ -59,13 +59,13 @@ const errorInfo = computed(() => {
       <div class="flex items-center gap-3 mt-4 w-full">
         <button
           @click="router.back()"
-          class="flex-1 py-3 px-4 bg-[#f5eceb] hover:bg-[#efe6e6] text-[#42493d] text-xs font-bold rounded-xl border border-[#c1c9b9]/60 transition"
+          class="flex-1 py-3 px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#42493d] text-xs font-bold rounded-xl border border-[#c1c9b9]/60 transition"
         >
           Quay lại
         </button>
         <router-link
           to="/"
-          class="flex-1 py-3 px-4 bg-[#8d6749] hover:bg-[#6e4e34] text-white text-xs font-bold rounded-xl transition text-center shadow-sm"
+          class="flex-1 py-3 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white text-xs font-bold rounded-xl transition text-center shadow-sm"
         >
           Trang chủ
         </router-link>

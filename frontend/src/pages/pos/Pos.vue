@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Dialog from 'primevue/dialog'
@@ -443,18 +443,18 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="pos-layout flex flex-col lg:flex-row h-[calc(100vh-80px)] overflow-hidden bg-[#fff8f7] rounded-2xl border border-[#e9e0e0] shadow-sm">
+  <div class="pos-layout flex flex-col lg:flex-row h-[calc(100vh-80px)] overflow-hidden bg-[#F9F6F0] rounded-2xl border border-[#E2D7CC] shadow-sm">
     <!-- Left Section: Products (60%) -->
-    <section class="lg:w-[60%] flex flex-col h-full border-r border-[#e9e0e0] bg-white p-5 gap-4 overflow-hidden">
+    <section class="lg:w-[60%] flex flex-col h-full border-r border-[#E2D7CC] bg-white p-5 gap-4 overflow-hidden">
       <!-- Stitch 2.0 Shift Summary Bar (With Shift & Staff Info) -->
-      <div class="bg-white border border-[#e9e0e0] rounded-xl p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0 shadow-sm">
+      <div class="bg-white border border-[#E2D7CC] rounded-xl p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0 shadow-sm">
         <div class="flex flex-col gap-1">
           <div class="flex items-center gap-2">
             <span class="bg-[#326824]/10 text-[#326824] px-2.5 py-0.5 rounded-lg text-[11px] font-bold">
               {{ shiftSummary.shiftName || 'Ca sáng (06:00 - 14:00)' }}
             </span>
             <span class="text-[11px] text-gray-700 font-semibold flex items-center gap-1">
-              <span class="material-symbols-outlined text-xs text-[#8d6749]">person</span>
+              <span class="material-symbols-outlined text-xs text-[#8E3E2F]">person</span>
               {{ currentStaffName }}
             </span>
           </div>
@@ -464,12 +464,12 @@ onMounted(() => {
               <span class="text-[10px] font-bold text-[#72796c] uppercase tracking-wider">Doanh thu ca</span>
               <span class="text-base font-bold text-[#326824] font-display">{{ formatCurrency(shiftSummary.shiftRevenue) }}</span>
             </div>
-            <div class="h-6 w-px bg-[#e9e0e0]"></div>
+            <div class="h-6 w-px bg-[#E2D7CC]"></div>
             <div class="flex flex-col">
               <span class="text-[10px] font-bold text-[#72796c] uppercase tracking-wider">Đơn hàng</span>
               <span class="text-sm font-bold text-[#1e1b1b]">{{ shiftSummary.totalOrders }}</span>
             </div>
-            <div class="h-6 w-px bg-[#e9e0e0]"></div>
+            <div class="h-6 w-px bg-[#E2D7CC]"></div>
             <div class="flex flex-col">
               <span class="text-[10px] font-bold text-[#72796c] uppercase tracking-wider">Số ly</span>
               <span class="text-sm font-bold text-[#1e1b1b]">{{ shiftSummary.totalCupsSold }}</span>
@@ -480,7 +480,7 @@ onMounted(() => {
         <div class="flex items-center gap-2 self-end sm:self-center">
           <button
             @click="openShiftEndModal"
-            class="h-10 flex items-center gap-1.5 px-4 bg-[#8d6749] hover:bg-[#6e4e34] text-white rounded-xl transition text-xs font-semibold shadow-sm cursor-pointer"
+            class="h-10 flex items-center gap-1.5 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white rounded-xl transition text-xs font-semibold shadow-sm cursor-pointer"
             title="Bàn giao ca làm việc & Đăng xuất"
           >
             <span class="material-symbols-outlined text-base">output</span>
@@ -489,7 +489,7 @@ onMounted(() => {
 
           <button
             @click="router.push('/reports/sales')"
-            class="h-10 flex items-center gap-1.5 px-4 bg-[#f5eceb] hover:bg-[#efe6e6] text-[#42493d] border border-[#c1c9b9]/60 rounded-xl transition text-xs font-semibold cursor-pointer"
+            class="h-10 flex items-center gap-1.5 px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#42493d] border border-[#c1c9b9]/60 rounded-xl transition text-xs font-semibold cursor-pointer"
           >
             <span class="material-symbols-outlined text-base">bar_chart</span>
             <span>Xem báo cáo</span>
@@ -505,13 +505,13 @@ onMounted(() => {
             v-model="searchQuery"
             type="text"
             placeholder="Tìm kiếm sản phẩm theo tên hoặc mã SP..."
-            class="w-full h-10 pl-11 pr-4 bg-white border border-[#c1c9b9]/70 rounded-xl focus:outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20 text-xs font-medium text-[#1e1b1b]"
+            class="w-full h-10 pl-11 pr-4 bg-white border border-[#c1c9b9]/70 rounded-xl focus:outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 text-xs font-medium text-[#1e1b1b]"
           />
         </div>
 
         <button
           @click="openOrderHistory(1)"
-          class="h-10 flex items-center gap-1.5 px-4 bg-[#f5eceb] text-[#5D4037] border border-[#c1c9b9]/60 rounded-xl hover:bg-[#efe6e6] text-xs font-semibold transition whitespace-nowrap cursor-pointer"
+          class="h-10 flex items-center gap-1.5 px-4 bg-[#F2ECE4] text-[#5D4037] border border-[#c1c9b9]/60 rounded-xl hover:bg-[#E8DFD5] text-xs font-semibold transition whitespace-nowrap cursor-pointer"
         >
           <span class="material-symbols-outlined text-base">history</span>
           <span>Lịch sử đơn</span>
@@ -525,7 +525,7 @@ onMounted(() => {
           :key="cat"
           @click="selectedCategory = cat"
           class="h-9 px-4 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center cursor-pointer"
-          :class="selectedCategory === cat ? 'bg-[#8d6749] text-white shadow-sm' : 'bg-[#f5eceb] text-[#42493d] hover:bg-[#efe6e6]'"
+          :class="selectedCategory === cat ? 'bg-[#8E3E2F] text-white shadow-sm' : 'bg-[#F2ECE4] text-[#42493d] hover:bg-[#E8DFD5]'"
         >
           {{ cat }}
         </button>
@@ -546,11 +546,11 @@ onMounted(() => {
             v-for="p in filteredProducts"
             :key="p.id"
             @click="!isProductSuspended(p) && addToCart(p)"
-            class="bg-white rounded-xl border border-[#e9e0e0] shadow-sm overflow-hidden flex flex-col transition group relative"
+            class="bg-white rounded-xl border border-[#E2D7CC] shadow-sm overflow-hidden flex flex-col transition group relative"
             :class="[
               isProductSuspended(p)
                 ? 'opacity-50 bg-[#f9f9f9] cursor-not-allowed select-none pointer-events-none'
-                : 'cursor-pointer hover:shadow-md hover:border-[#8d6749]'
+                : 'cursor-pointer hover:shadow-md hover:border-[#8E3E2F]'
             ]"
           >
             <span class="absolute top-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-md backdrop-blur-sm z-10 font-bold">
@@ -573,7 +573,7 @@ onMounted(() => {
               <span class="material-symbols-outlined text-base">block</span>
             </div>
 
-            <div class="h-32 w-full bg-[#f5eceb] relative overflow-hidden">
+            <div class="h-32 w-full bg-[#F2ECE4] relative overflow-hidden">
               <img
                 :src="
                   p.img ||
@@ -602,13 +602,13 @@ onMounted(() => {
     <!-- Right Section: Cart & Order (40%) -->
     <section class="lg:w-[40%] bg-white flex flex-col h-full z-10 shadow-lg">
       <!-- Order Tabs Header -->
-      <div class="flex items-center gap-1.5 px-4 pt-3 bg-white shrink-0 overflow-x-auto border-b border-[#e9e0e0] scrollbar-none">
+      <div class="flex items-center gap-1.5 px-4 pt-3 bg-white shrink-0 overflow-x-auto border-b border-[#E2D7CC] scrollbar-none">
         <div
           v-for="tab in orderTabs"
           :key="tab.id"
           @click="activeTabId = tab.id"
-          class="flex items-center gap-1 px-3 py-1.5 rounded-t-xl text-xs font-bold whitespace-nowrap cursor-pointer transition border-t border-x border-[#e9e0e0]"
-          :class="activeTabId === tab.id ? 'bg-[#8d6749] text-white border-[#8d6749]' : 'bg-[#f5eceb] text-[#42493d] hover:bg-[#efe6e6]'"
+          class="flex items-center gap-1 px-3 py-1.5 rounded-t-xl text-xs font-bold whitespace-nowrap cursor-pointer transition border-t border-x border-[#E2D7CC]"
+          :class="activeTabId === tab.id ? 'bg-[#8E3E2F] text-white border-[#8E3E2F]' : 'bg-[#F2ECE4] text-[#42493d] hover:bg-[#E8DFD5]'"
         >
           <span>Đơn #{{ tab.name }}</span>
           <button @click.stop="closeTab(tab.id)" class="hover:bg-black/20 p-0.5 rounded text-[10px] flex items-center justify-center">
@@ -618,7 +618,7 @@ onMounted(() => {
 
         <button
           @click="addTab"
-          class="p-1 rounded-lg text-[#8d6749] hover:bg-[#f5eceb] transition flex items-center justify-center font-bold"
+          class="p-1 rounded-lg text-[#8E3E2F] hover:bg-[#F2ECE4] transition flex items-center justify-center font-bold"
           title="Tạo đơn hàng mới"
         >
           <span class="material-symbols-outlined text-lg">add</span>
@@ -626,7 +626,7 @@ onMounted(() => {
       </div>
 
       <!-- Active Order Info Header -->
-      <div class="p-3 px-4 border-b border-[#e9e0e0] flex justify-between items-center bg-[#fff8f7] shrink-0">
+      <div class="p-3 px-4 border-b border-[#E2D7CC] flex justify-between items-center bg-[#F9F6F0] shrink-0">
         <div>
           <h2 class="text-xs font-bold font-display text-[#1e1b1b]">Đơn hàng #{{ activeTab.name }}</h2>
           <p class="text-[11px] text-[#72796c] font-medium">Khách lẻ - {{ activeTab.tableNo }}</p>
@@ -645,11 +645,11 @@ onMounted(() => {
               v-model="activeTab.promoCode"
               type="text"
               placeholder="Nhập mã giảm giá (VD: GIAM10K)"
-              class="flex-1 h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20"
+              class="flex-1 h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             />
             <button
               @click="applyPromoCode"
-              class="h-10 px-4 bg-[#8d6749] text-white rounded-xl text-xs font-semibold hover:bg-[#6e4e34] transition flex items-center justify-center cursor-pointer shadow-sm"
+              class="h-10 px-4 bg-[#8E3E2F] text-white rounded-xl text-xs font-semibold hover:bg-[#6E281C] transition flex items-center justify-center cursor-pointer shadow-sm"
             >
               Áp dụng
             </button>
@@ -661,7 +661,7 @@ onMounted(() => {
                 activeTab.promoCode = 'GIAM10K';
                 applyPromoCode()
               "
-              class="h-6 px-2.5 bg-[#f5eceb] border border-[#c1c9b9]/60 text-[#8d6749] rounded-lg text-[10px] font-bold hover:bg-[#efe6e6] transition flex items-center cursor-pointer"
+              class="h-6 px-2.5 bg-[#F2ECE4] border border-[#c1c9b9]/60 text-[#8E3E2F] rounded-lg text-[10px] font-bold hover:bg-[#E8DFD5] transition flex items-center cursor-pointer"
             >
               GIAM10K
             </button>
@@ -670,7 +670,7 @@ onMounted(() => {
                 activeTab.promoCode = 'FREESHIP';
                 applyPromoCode()
               "
-              class="h-6 px-2.5 bg-[#f5eceb] border border-[#c1c9b9]/60 text-[#8d6749] rounded-lg text-[10px] font-bold hover:bg-[#efe6e6] transition flex items-center cursor-pointer"
+              class="h-6 px-2.5 bg-[#F2ECE4] border border-[#c1c9b9]/60 text-[#8E3E2F] rounded-lg text-[10px] font-bold hover:bg-[#E8DFD5] transition flex items-center cursor-pointer"
             >
               FREESHIP
             </button>
@@ -684,15 +684,15 @@ onMounted(() => {
         </div>
 
         <!-- Cart Items List -->
-        <div v-for="(item, idx) in activeTab.cart" :key="item.product.id" class="flex flex-col gap-1 pb-3 border-b border-dashed border-[#e9e0e0]">
+        <div v-for="(item, idx) in activeTab.cart" :key="item.product.id" class="flex flex-col gap-1 pb-3 border-b border-dashed border-[#E2D7CC]">
           <div class="flex items-start justify-between gap-2">
             <div class="flex-1">
               <h4 class="text-xs font-bold text-[#1e1b1b]">{{ item.product.name }}</h4>
               <p class="text-[10px] text-[#72796c]">{{ formatCurrency(item.product.rawPrice) }}</p>
             </div>
 
-            <div class="flex items-center gap-1 bg-[#f5eceb] p-0.5 rounded-xl">
-              <button @click="updateQty(idx, -1)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-white text-[#1e1b1b] shadow-sm hover:bg-[#efe6e6] cursor-pointer">
+            <div class="flex items-center gap-1 bg-[#F2ECE4] p-0.5 rounded-xl">
+              <button @click="updateQty(idx, -1)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-white text-[#1e1b1b] shadow-sm hover:bg-[#E8DFD5] cursor-pointer">
                 <span class="material-symbols-outlined text-xs">remove</span>
               </button>
               <input
@@ -702,9 +702,9 @@ onMounted(() => {
                 @change="setQty(idx, ($event.target as HTMLInputElement).value)"
                 @keydown.enter="($event.target as HTMLInputElement).blur()"
                 @focus="($event.target as HTMLInputElement).select()"
-                class="w-16 h-6 text-center text-xs font-bold text-[#1e1b1b] bg-white rounded-lg border border-[#c1c9b9]/60 focus:outline-none focus:border-[#8d6749] focus:ring-1 focus:ring-[#8d6749]/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                class="w-16 h-6 text-center text-xs font-bold text-[#1e1b1b] bg-white rounded-lg border border-[#c1c9b9]/60 focus:outline-none focus:border-[#8E3E2F] focus:ring-1 focus:ring-[#8E3E2F]/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
-              <button @click="updateQty(idx, 1)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-white text-[#1e1b1b] shadow-sm hover:bg-[#efe6e6] cursor-pointer">
+              <button @click="updateQty(idx, 1)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-white text-[#1e1b1b] shadow-sm hover:bg-[#E8DFD5] cursor-pointer">
                 <span class="material-symbols-outlined text-xs">add</span>
               </button>
             </div>
@@ -719,13 +719,13 @@ onMounted(() => {
             v-model="item.note"
             type="text"
             placeholder="Ghi chú món (VD: ít đường, đá riêng...)"
-            class="w-full h-8 px-2.5 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-xs text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20"
+            class="w-full h-8 px-2.5 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-xs text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
           />
         </div>
       </div>
 
       <!-- Checkout & Payment Section Footer -->
-      <div class="p-4 bg-[#fff8f7] border-t border-[#e9e0e0] space-y-3 shrink-0">
+      <div class="p-4 bg-[#F9F6F0] border-t border-[#E2D7CC] space-y-3 shrink-0">
         <div class="space-y-1 text-xs text-[#42493d]">
           <div class="flex justify-between">
             <span>Tạm tính ({{ activeTab.cart.reduce((s, i) => s + i.quantity, 0) }} món)</span>
@@ -735,7 +735,7 @@ onMounted(() => {
             <span>Giảm giá</span>
             <span class="font-semibold text-[#326824]">-{{ formatCurrency(activeTab.discountAmount) }}</span>
           </div>
-          <div class="flex justify-between text-base font-bold text-[#1e1b1b] pt-1.5 border-t border-[#e9e0e0]">
+          <div class="flex justify-between text-base font-bold text-[#1e1b1b] pt-1.5 border-t border-[#E2D7CC]">
             <span>Tổng cộng thanh toán</span>
             <span class="text-[#326824] text-lg font-display">{{ formatCurrency(finalPrice) }}</span>
           </div>
@@ -753,7 +753,7 @@ onMounted(() => {
             :key="method.id"
             @click="activeTab.paymentMethod = method.id"
             class="p-1.5 rounded-xl border flex flex-col items-center gap-0.5 text-[10px] font-semibold transition"
-            :class="activeTab.paymentMethod === method.id ? 'border-[#8d6749] bg-[#8d6749]/10 text-[#8d6749]' : 'border-[#c1c9b9]/60 bg-white text-[#42493d] hover:bg-[#f5eceb]'"
+            :class="activeTab.paymentMethod === method.id ? 'border-[#8E3E2F] bg-[#8E3E2F]/10 text-[#8E3E2F]' : 'border-[#c1c9b9]/60 bg-white text-[#42493d] hover:bg-[#F2ECE4]'"
           >
             <span class="material-symbols-outlined text-base">{{ method.icon }}</span>
             <span class="truncate w-full text-center">{{ method.label }}</span>
@@ -776,7 +776,7 @@ onMounted(() => {
     <!-- Shift End / Handover Modal -->
     <Dialog v-model:visible="showShiftEndModal" modal header="Báo cáo Bàn giao Ca làm việc (Kết Ca)" :style="{ width: '520px' }">
       <div class="space-y-4 py-1 text-xs">
-        <div class="p-3.5 bg-[#fdfbf7] border border-[#e9e0e0] rounded-xl space-y-1.5">
+        <div class="p-3.5 bg-[#fdfbf7] border border-[#E2D7CC] rounded-xl space-y-1.5">
           <div class="flex justify-between items-center">
             <span class="font-bold text-sm text-[#326824]">{{ shiftSummary.shiftName || 'Ca sáng (06:00 - 14:00)' }}</span>
             <Tag value="Đang trực ca" severity="success" />
@@ -812,7 +812,7 @@ onMounted(() => {
             <span class="font-semibold">-{{ formatCurrency(shiftSummary.totalDiscount) }}</span>
           </div>
 
-          <div class="p-3 flex justify-between items-center bg-[#f5eceb]/60 text-sm font-bold text-[#326824]">
+          <div class="p-3 flex justify-between items-center bg-[#F2ECE4]/60 text-sm font-bold text-[#326824]">
             <span>TỔNG DOANH THU CA</span>
             <span class="text-base font-display">{{ formatCurrency(shiftSummary.shiftRevenue) }}</span>
           </div>
@@ -836,12 +836,12 @@ onMounted(() => {
     <Dialog v-model:visible="showQrModal" modal header="Thanh toán VietQR / Chuyển khoản" :style="{ width: '420px' }">
       <div class="text-center py-2 space-y-3">
         <p class="text-xs text-[#42493d] font-medium">Quét mã QR qua ứng dụng Ngân hàng để thanh toán:</p>
-        <div class="p-3 border-2 border-[#8d6749] rounded-2xl inline-block bg-white shadow-md">
+        <div class="p-3 border-2 border-[#8E3E2F] rounded-2xl inline-block bg-white shadow-md">
           <img :src="qrData.qrUrl" alt="VietQR Code" class="w-52 h-52 object-contain" />
         </div>
         <div class="space-y-1">
           <div class="text-2xl font-bold font-display text-[#326824]">{{ formatCurrency(qrData.amount) }}</div>
-          <p class="text-xs text-[#72796c] font-semibold">Nội dung CK: <span class="text-[#8d6749] font-bold">{{ qrData.addInfo }}</span></p>
+          <p class="text-xs text-[#72796c] font-semibold">Nội dung CK: <span class="text-[#8E3E2F] font-bold">{{ qrData.addInfo }}</span></p>
           <p class="text-[11px] text-gray-500">Chủ tài khoản: {{ qrData.accountName }}</p>
         </div>
       </div>
@@ -857,7 +857,7 @@ onMounted(() => {
     <Dialog v-model:visible="showHistoryModal" modal header="Lịch sử đơn hàng" :style="{ width: '850px' }">
       <div class="py-2 space-y-3">
         <!-- Date Filter & Record Count Header Bar -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-3 bg-[#fdfbf7] border border-[#e9e0e0] rounded-xl">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-3 bg-[#fdfbf7] border border-[#E2D7CC] rounded-xl">
           <div class="flex items-center gap-2 flex-wrap">
             <span class="text-xs font-bold text-gray-700">Lọc ngày:</span>
             <DatePicker
@@ -871,21 +871,21 @@ onMounted(() => {
             />
             <button
               @click="openOrderHistory(1)"
-              class="h-10 flex items-center gap-1.5 px-4 bg-[#8d6749] hover:bg-[#6e4e34] text-white rounded-xl text-xs font-semibold transition shadow-sm cursor-pointer"
+              class="h-10 flex items-center gap-1.5 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white rounded-xl text-xs font-semibold transition shadow-sm cursor-pointer"
             >
               <span class="material-symbols-outlined text-base">search</span>
               <span>Tìm kiếm</span>
             </button>
             <button
               @click="setHistoryDateToday"
-              class="h-10 px-3.5 bg-[#f5eceb] text-[#8d6749] border border-[#c1c9b9]/60 rounded-xl text-xs font-semibold hover:bg-[#efe6e6] transition cursor-pointer"
+              class="h-10 px-3.5 bg-[#F2ECE4] text-[#8E3E2F] border border-[#c1c9b9]/60 rounded-xl text-xs font-semibold hover:bg-[#E8DFD5] transition cursor-pointer"
             >
               Hôm nay
             </button>
             <button
               v-if="historyDateRange && historyDateRange.length > 0"
               @click="clearHistoryDateFilter"
-              class="h-10 px-3.5 bg-[#f5eceb] text-[#42493d] border border-[#c1c9b9]/60 rounded-xl text-xs font-semibold hover:bg-[#efe6e6] transition cursor-pointer"
+              class="h-10 px-3.5 bg-[#F2ECE4] text-[#42493d] border border-[#c1c9b9]/60 rounded-xl text-xs font-semibold hover:bg-[#E8DFD5] transition cursor-pointer"
             >
               Tất cả ngày
             </button>
@@ -914,7 +914,7 @@ onMounted(() => {
         >
           <Column field="orderNumber" header="Mã đơn" sortable>
             <template #body="slotProps">
-              <span class="font-bold text-xs text-[#8d6749]">{{ slotProps.data.orderNumber }}</span>
+              <span class="font-bold text-xs text-[#8E3E2F]">{{ slotProps.data.orderNumber }}</span>
             </template>
           </Column>
           <Column field="orderDate" header="Thời gian">
@@ -953,10 +953,10 @@ onMounted(() => {
     <Dialog v-model:visible="showOrderDetailModal" modal :header="`Chi tiết đơn hàng #${selectedOrderDetail?.orderNumber}`" :style="{ width: '550px' }">
       <div v-if="selectedOrderDetail" class="space-y-4 py-1 text-xs">
         <!-- Summary Header Card -->
-        <div class="p-3.5 bg-[#fdfbf7] border border-[#e9e0e0] rounded-xl flex justify-between items-center">
+        <div class="p-3.5 bg-[#fdfbf7] border border-[#E2D7CC] rounded-xl flex justify-between items-center">
           <div class="space-y-1">
             <div class="flex items-center gap-2">
-              <span class="font-bold text-sm text-[#8d6749]">#{{ selectedOrderDetail.orderNumber }}</span>
+              <span class="font-bold text-sm text-[#8E3E2F]">#{{ selectedOrderDetail.orderNumber }}</span>
               <Tag
                 :value="selectedOrderDetail.status === 'completed' ? 'Hoàn thành' : 'Đã hủy'"
                 :severity="selectedOrderDetail.status === 'completed' ? 'success' : 'danger'"
@@ -974,7 +974,7 @@ onMounted(() => {
         <!-- Products List -->
         <div>
           <h4 class="font-bold text-gray-800 text-xs mb-2 flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-base text-[#8d6749]">format_list_bulleted</span>
+            <span class="material-symbols-outlined text-base text-[#8E3E2F]">format_list_bulleted</span>
             Danh sách sản phẩm bán ra ({{ selectedOrderDetail.items?.length || 0 }} món):
           </h4>
 
@@ -991,7 +991,7 @@ onMounted(() => {
                 <div>
                   <h5 class="font-bold text-gray-800 text-xs">{{ item.product?.name || 'Sản phẩm' }}</h5>
                   <p class="text-[11px] text-gray-500">{{ item.quantity }} x {{ formatCurrency(item.unitPrice) }}</p>
-                  <p v-if="item.note" class="text-[10px] text-[#8d6749] italic">Ghi chú: {{ item.note }}</p>
+                  <p v-if="item.note" class="text-[10px] text-[#8E3E2F] italic">Ghi chú: {{ item.note }}</p>
                 </div>
               </div>
               <div class="text-right">

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from 'primevue/datatable'
@@ -175,14 +175,14 @@ const confirmDelete = async () => {
 <template>
   <div class="user-list-page flex flex-col gap-6">
     <!-- Header Title & Action -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#e9e0e0]">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2D7CC]">
       <div>
         <h1 class="text-2xl font-bold font-display text-[#1e1b1b]">Quản lý Tài khoản & Người dùng</h1>
         <p class="text-xs text-[#42493d] mt-1 font-medium">Danh sách nhân viên cửa hàng, phân quyền vai trò và trạng thái truy cập</p>
       </div>
       <button
         @click="router.push('/users/create')"
-        class="h-10 px-4 bg-[#8d6749] hover:bg-[#6e4e34] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 cursor-pointer"
+        class="h-10 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 cursor-pointer"
       >
         <span class="material-symbols-outlined text-lg">person_add</span>
         <span>Thêm người dùng mới</span>
@@ -190,16 +190,16 @@ const confirmDelete = async () => {
     </div>
 
     <!-- Main Card -->
-    <div class="bg-white rounded-2xl border border-[#e9e0e0] shadow-sm overflow-hidden flex flex-col">
+    <div class="bg-white rounded-2xl border border-[#E2D7CC] shadow-sm overflow-hidden flex flex-col">
       <!-- Search & Filters -->
-      <div class="p-5 border-b border-[#e9e0e0] flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#fff8f7]">
+      <div class="p-5 border-b border-[#E2D7CC] flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#F9F6F0]">
         <div class="relative w-full sm:w-80">
           <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#72796c] text-xl">search</span>
           <input
             v-model="searchKeyword"
             type="text"
             placeholder="Tìm tên, email hoặc ID..."
-            class="w-full h-10 pl-11 pr-4 bg-white border border-[#c1c9b9]/70 rounded-xl focus:outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20 text-xs font-medium text-[#1e1b1b]"
+            class="w-full h-10 pl-11 pr-4 bg-white border border-[#c1c9b9]/70 rounded-xl focus:outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 text-xs font-medium text-[#1e1b1b]"
           />
         </div>
 
@@ -209,7 +209,7 @@ const confirmDelete = async () => {
             :key="r.code"
             @click="selectedRoleCode = r.code"
             class="h-9 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center"
-            :class="selectedRoleCode === r.code ? 'bg-[#8d6749] text-white shadow-sm' : 'bg-[#f5eceb] text-[#42493d] hover:bg-[#efe6e6]'"
+            :class="selectedRoleCode === r.code ? 'bg-[#8E3E2F] text-white shadow-sm' : 'bg-[#F2ECE4] text-[#42493d] hover:bg-[#E8DFD5]'"
           >
             {{ r.label }}
           </button>
@@ -238,9 +238,9 @@ const confirmDelete = async () => {
 
         <Column header="Avatar" class="w-16">
           <template #body="slotProps">
-            <div class="w-9 h-9 rounded-full bg-[#f5eceb] overflow-hidden border border-[#e9e0e0] flex items-center justify-center">
+            <div class="w-9 h-9 rounded-full bg-[#F2ECE4] overflow-hidden border border-[#E2D7CC] flex items-center justify-center">
               <img v-if="slotProps.data.avatarUrl" :src="slotProps.data.avatarUrl" :alt="slotProps.data.name" class="w-full h-full object-cover" />
-              <span v-else class="material-symbols-outlined text-[#8d6749] text-xl">person</span>
+              <span v-else class="material-symbols-outlined text-[#8E3E2F] text-xl">person</span>
             </div>
           </template>
         </Column>
@@ -268,7 +268,7 @@ const confirmDelete = async () => {
             <span
               class="px-2.5 py-1 rounded-md font-bold text-[11px] inline-block uppercase"
               :class="{
-                'bg-[#8d6749]/10 text-[#8d6749]': slotProps.data.role === 'admin',
+                'bg-[#8E3E2F]/10 text-[#8E3E2F]': slotProps.data.role === 'admin',
                 'bg-[#326824]/10 text-[#326824]': slotProps.data.role === 'manager',
                 'bg-[#00639b]/10 text-[#00639b]': slotProps.data.role === 'staff',
                 'bg-[#72796c]/10 text-[#72796c]': slotProps.data.role === 'viewer',
@@ -295,14 +295,14 @@ const confirmDelete = async () => {
             <div class="flex items-center justify-center gap-1">
               <button
                 @click="openEditModal(slotProps.data)"
-                class="p-1.5 text-[#8d6749] hover:bg-[#f5eceb] rounded-lg transition cursor-pointer"
+                class="p-1.5 text-[#8E3E2F] hover:bg-[#F2ECE4] rounded-lg transition cursor-pointer"
                 title="Sửa thông tin"
               >
                 <span class="material-symbols-outlined text-lg">edit</span>
               </button>
               <button
                 @click="handleToggleStatus(slotProps.data)"
-                class="p-1.5 text-[#8d6749] hover:bg-[#f5eceb] rounded-lg transition cursor-pointer"
+                class="p-1.5 text-[#8E3E2F] hover:bg-[#F2ECE4] rounded-lg transition cursor-pointer"
                 :title="slotProps.data.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa tài khoản'"
               >
                 <span class="material-symbols-outlined text-lg">{{ slotProps.data.status === 'active' ? 'lock' : 'lock_open' }}</span>
@@ -329,7 +329,7 @@ const confirmDelete = async () => {
             v-model="editForm.name"
             type="text"
             required
-            class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20"
+            class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
           />
         </div>
         <div>
@@ -338,7 +338,7 @@ const confirmDelete = async () => {
             v-model="editForm.email"
             type="email"
             required
-            class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20"
+            class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
           />
         </div>
         <div>
@@ -367,7 +367,7 @@ const confirmDelete = async () => {
             v-model="editForm.password"
             type="password"
             placeholder="••••••••"
-            class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20"
+            class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
           />
         </div>
       </div>
@@ -375,14 +375,14 @@ const confirmDelete = async () => {
         <div class="flex justify-end gap-2 pt-3">
           <button
             @click="showEditModal = false"
-            class="h-10 px-4 bg-[#f5eceb] text-[#42493d] font-semibold text-xs rounded-xl hover:bg-[#efe6e6] transition cursor-pointer"
+            class="h-10 px-4 bg-[#F2ECE4] text-[#42493d] font-semibold text-xs rounded-xl hover:bg-[#E8DFD5] transition cursor-pointer"
           >
             Hủy
           </button>
           <button
             @click="handleSaveEdit"
             :disabled="savingEdit"
-            class="h-10 px-4 bg-[#8d6749] text-white font-semibold text-xs rounded-xl hover:bg-[#6e4e34] transition flex items-center gap-1.5 disabled:opacity-70 cursor-pointer shadow-sm"
+            class="h-10 px-4 bg-[#8E3E2F] text-white font-semibold text-xs rounded-xl hover:bg-[#6E281C] transition flex items-center gap-1.5 disabled:opacity-70 cursor-pointer shadow-sm"
           >
             <span v-if="savingEdit" class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
             <span>Lưu thay đổi</span>
@@ -400,7 +400,7 @@ const confirmDelete = async () => {
         <div class="flex justify-end gap-2 pt-2">
           <button
             @click="showDeleteModal = false"
-            class="h-10 px-4 bg-[#f5eceb] text-[#42493d] font-semibold text-xs rounded-xl hover:bg-[#efe6e6] transition cursor-pointer"
+            class="h-10 px-4 bg-[#F2ECE4] text-[#42493d] font-semibold text-xs rounded-xl hover:bg-[#E8DFD5] transition cursor-pointer"
           >
             Hủy
           </button>

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Select from 'primevue/select'
@@ -312,7 +312,7 @@ const handleSave = async () => {
 <template>
   <div class="stock-import-create-page flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-6 max-w-6xl mx-auto pb-10">
     <!-- Header Title & Action Bar -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#e9e0e0]">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2D7CC]">
       <div>
         <h1 class="text-2xl font-bold font-display text-[#1e1b1b]">Tạo đơn nhập kho mới</h1>
         <p class="text-xs text-[#42493d] mt-1 font-medium">Lập phiếu nhập kho nguyên liệu từ nhà cung cấp, linh hoạt ĐVT và tự động tính đơn giá vốn</p>
@@ -322,14 +322,14 @@ const handleSave = async () => {
           @click="router.back()"
           type="button"
           :disabled="isSubmitting"
-          class="h-10 px-4 bg-[#f5eceb] hover:bg-[#efe6e6] text-[#42493d] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition disabled:opacity-50 cursor-pointer"
+          class="h-10 px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#42493d] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition disabled:opacity-50 cursor-pointer"
         >
           Hủy bỏ
         </button>
         <button
           @click="handleSave"
           :disabled="isSubmitting"
-          class="h-10 px-5 bg-[#8d6749] hover:bg-[#6e4e34] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+          class="h-10 px-5 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
         >
           <span v-if="!isSubmitting" class="material-symbols-outlined text-lg">check</span>
           <span v-else class="material-symbols-outlined text-lg animate-spin">refresh</span>
@@ -347,8 +347,8 @@ const handleSave = async () => {
     <!-- Main Bento Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- General Info Card -->
-      <div class="bg-white rounded-2xl p-6 border border-[#e9e0e0] shadow-sm flex flex-col gap-4">
-        <h2 class="text-base font-bold font-display text-[#1e1b1b] border-b border-[#e9e0e0] pb-3">Thông tin phiếu nhập</h2>
+      <div class="bg-white rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col gap-4">
+        <h2 class="text-base font-bold font-display text-[#1e1b1b] border-b border-[#E2D7CC] pb-3">Thông tin phiếu nhập</h2>
 
         <div class="space-y-4">
           <!-- Supplier (Text Input) -->
@@ -358,7 +358,7 @@ const handleSave = async () => {
               v-model="supplier"
               type="text"
               placeholder="Ví dụ: NCC Cholimex, Vinamilk, Metro..."
-              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20 transition"
+              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 transition"
             />
           </div>
 
@@ -369,7 +369,7 @@ const handleSave = async () => {
               v-model="warehouse"
               type="text"
               placeholder="Ví dụ: Kho Tổng - Q1, Kho Phụ - Q3..."
-              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20 transition"
+              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 transition"
             />
           </div>
 
@@ -378,7 +378,7 @@ const handleSave = async () => {
             <input
               v-model="importDate"
               type="datetime-local"
-              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20"
+              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             />
           </div>
 
@@ -388,35 +388,35 @@ const handleSave = async () => {
               v-model="note"
               rows="3"
               placeholder="Nhập ghi chú thêm (ví dụ: Số hoá đơn VAT, ghi chú giao hàng...)"
-              class="w-full px-3.5 py-2.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20"
+              class="w-full px-3.5 py-2.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             ></textarea>
           </div>
         </div>
 
         <!-- Total Cost Summary Badge -->
-        <div class="mt-auto p-4 bg-[#fff8f7] rounded-xl border border-[#e9e0e0] flex justify-between items-center">
+        <div class="mt-auto p-4 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC] flex justify-between items-center">
           <span class="text-xs font-bold text-[#42493d]">Tổng tiền đơn nhập:</span>
           <span class="text-xl font-bold font-display text-[#326824]">{{ formatCurrency(totalAmount) }}</span>
         </div>
       </div>
 
       <!-- Ingredient Items List Table Card -->
-      <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-[#e9e0e0] shadow-sm flex flex-col gap-4">
-        <div class="flex justify-between items-center border-b border-[#e9e0e0] pb-3">
+      <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col gap-4">
+        <div class="flex justify-between items-center border-b border-[#E2D7CC] pb-3">
           <div>
             <h2 class="text-base font-bold font-display text-[#1e1b1b]">Thêm nguyên liệu vào đơn</h2>
             <p class="text-[11px] text-[#72796c] mt-0.5">Nhập số lượng & tổng tiền mua để hệ thống tự động tính đơn giá vốn</p>
           </div>
-          <span class="text-xs font-semibold text-[#8d6749] bg-[#f5eceb] px-3 py-1 rounded-lg">Đã chọn: {{ importItems.length }} mục</span>
+          <span class="text-xs font-semibold text-[#8E3E2F] bg-[#F2ECE4] px-3 py-1 rounded-lg">Đã chọn: {{ importItems.length }} mục</span>
         </div>
 
         <!-- Add Item Selector & Calculator Box -->
-        <div class="p-4 bg-[#faf5f4] rounded-xl border border-[#e9e0e0] space-y-3">
+        <div class="p-4 bg-[#faf5f4] rounded-xl border border-[#E2D7CC] space-y-3">
 
           <!-- Pack Mode Toggle Banner -->
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-sm text-[#8d6749]">inventory_2</span>
+              <span class="material-symbols-outlined text-sm text-[#8E3E2F]">inventory_2</span>
               <span class="text-[11px] font-bold text-[#42493d] uppercase tracking-wide">Chế độ nhập</span>
             </div>
             <button
@@ -424,8 +424,8 @@ const handleSave = async () => {
               @click="togglePackMode"
               class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-bold transition cursor-pointer"
               :class="isPackMode
-                ? 'bg-[#8d6749] text-white shadow-sm'
-                : 'bg-white border border-[#c1c9b9]/70 text-[#42493d] hover:border-[#8d6749]/50'"
+                ? 'bg-[#8E3E2F] text-white shadow-sm'
+                : 'bg-white border border-[#c1c9b9]/70 text-[#42493d] hover:border-[#8E3E2F]/50'"
             >
               <span class="material-symbols-outlined text-sm">{{ isPackMode ? 'package_2' : 'straighten' }}</span>
               <span>{{ isPackMode ? 'Nhập theo quy cách đóng gói' : 'Nhập trực tiếp số lượng' }}</span>
@@ -470,7 +470,7 @@ const handleSave = async () => {
                 step="any"
                 min="0.001"
                 placeholder="Ví dụ: 4.2"
-                class="w-full h-10 px-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-bold text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20"
+                class="w-full h-10 px-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-bold text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
               />
             </div>
 
@@ -547,7 +547,7 @@ const handleSave = async () => {
             <!-- Total Price / Thành tiền -->
             <div class="sm:col-span-5">
               <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">
-                Tổng tiền mua (VNĐ) <span class="text-[#8d6749] font-normal lowercase">(ví dụ 57.000)</span>
+                Tổng tiền mua (VNĐ) <span class="text-[#8E3E2F] font-normal lowercase">(ví dụ 57.000)</span>
               </label>
               <input
                 v-model.number="addTotalPrice"
@@ -555,7 +555,7 @@ const handleSave = async () => {
                 type="number"
                 min="0"
                 placeholder="57,000"
-                class="w-full h-10 px-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-bold text-[#326824] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20"
+                class="w-full h-10 px-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-bold text-[#326824] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
               />
             </div>
 
@@ -570,7 +570,7 @@ const handleSave = async () => {
                 type="number"
                 min="0"
                 placeholder="27,143"
-                class="w-full h-10 px-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-semibold text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20"
+                class="w-full h-10 px-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-semibold text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
               />
             </div>
 
@@ -579,7 +579,7 @@ const handleSave = async () => {
               <button
                 @click="addImportItem"
                 type="button"
-                class="w-full h-10 px-4 bg-[#8d6749] hover:bg-[#6e4e34] text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1 cursor-pointer shadow-sm"
+                class="w-full h-10 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1 cursor-pointer shadow-sm"
               >
                 <span class="material-symbols-outlined text-base">add</span>
                 <span>Thêm vào đơn</span>
@@ -588,8 +588,8 @@ const handleSave = async () => {
           </div>
 
           <!-- Formula Preview Chip -->
-          <div v-if="previewQty > 0 && (addTotalPrice > 0 || addUnitPrice > 0)" class="flex items-center gap-2 text-[11px] text-[#72796c] bg-white px-3 py-1.5 rounded-lg border border-[#e9e0e0]">
-            <span class="material-symbols-outlined text-sm text-[#8d6749]">calculate</span>
+          <div v-if="previewQty > 0 && (addTotalPrice > 0 || addUnitPrice > 0)" class="flex items-center gap-2 text-[11px] text-[#72796c] bg-white px-3 py-1.5 rounded-lg border border-[#E2D7CC]">
+            <span class="material-symbols-outlined text-sm text-[#8E3E2F]">calculate</span>
             <span>
               Quy cách tính:
               <strong>{{ previewQty }} {{ addUnit }}</strong>
@@ -600,9 +600,9 @@ const handleSave = async () => {
         </div>
 
         <!-- Table of Import Items -->
-        <div class="overflow-x-auto border border-[#e9e0e0] rounded-xl">
+        <div class="overflow-x-auto border border-[#E2D7CC] rounded-xl">
           <table class="w-full text-left text-xs text-[#1e1b1b]">
-            <thead class="bg-[#fbf1f1] text-[#42493d] font-semibold uppercase tracking-wider border-b border-[#e9e0e0]">
+            <thead class="bg-[#F5EFE8] text-[#42493d] font-semibold uppercase tracking-wider border-b border-[#E2D7CC]">
               <tr>
                 <th class="py-3 px-3 w-10 text-center">STT</th>
                 <th class="py-3 px-3">Tên nguyên liệu</th>
@@ -613,8 +613,8 @@ const handleSave = async () => {
                 <th class="py-3 px-2 w-12 text-center">Xóa</th>
               </tr>
             </thead>
-            <tbody v-if="importItems.length > 0" class="divide-y divide-[#f5eceb]">
-              <tr v-for="(item, idx) in importItems" :key="idx" class="hover:bg-[#fbf1f1]/50 transition">
+            <tbody v-if="importItems.length > 0" class="divide-y divide-[#F2ECE4]">
+              <tr v-for="(item, idx) in importItems" :key="idx" class="hover:bg-[#F5EFE8]/50 transition">
                 <td class="py-3 px-3 text-center font-bold text-[#72796c]">{{ idx + 1 }}</td>
                 <td class="py-3 px-3">
                   <div class="font-bold text-[#1e1b1b]">{{ item.ingredient.name }}</div>
@@ -629,7 +629,7 @@ const handleSave = async () => {
                   <input
                     v-model="item.unit"
                     type="text"
-                    class="w-20 px-2 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-center font-semibold text-xs outline-none focus:border-[#8d6749]"
+                    class="w-20 px-2 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-center font-semibold text-xs outline-none focus:border-[#8E3E2F]"
                   />
                 </td>
                 <td class="py-3 px-3 text-center">
@@ -639,7 +639,7 @@ const handleSave = async () => {
                     type="number"
                     step="any"
                     min="0.001"
-                    class="w-20 px-2 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-center font-bold text-xs outline-none focus:border-[#8d6749]"
+                    class="w-20 px-2 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-center font-bold text-xs outline-none focus:border-[#8E3E2F]"
                   />
                 </td>
                 <td class="py-3 px-3 text-right">
@@ -649,7 +649,7 @@ const handleSave = async () => {
                     type="number"
                     step="any"
                     min="0"
-                    class="w-24 px-2 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-right font-medium text-xs outline-none focus:border-[#8d6749]"
+                    class="w-24 px-2 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-right font-medium text-xs outline-none focus:border-[#8E3E2F]"
                   />
                 </td>
                 <td class="py-3 px-3 text-right">
@@ -659,7 +659,7 @@ const handleSave = async () => {
                     type="number"
                     step="any"
                     min="0"
-                    class="w-28 px-2 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-right font-bold text-xs text-[#326824] outline-none focus:border-[#8d6749]"
+                    class="w-28 px-2 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-right font-bold text-xs text-[#326824] outline-none focus:border-[#8E3E2F]"
                   />
                 </td>
                 <td class="py-3 px-2 text-center">

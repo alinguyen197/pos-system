@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Toolbar from 'primevue/toolbar'
@@ -99,7 +99,7 @@ const handleLogout = () => {
             v-else
             :label="(currentUser.name || 'A').charAt(0).toUpperCase()"
             shape="circle"
-            style="background-color: #ffffff; color: #8d6749; font-weight: 800; width: 32px; height: 32px;"
+            style="background-color: #ffffff; color: #8E3E2F; font-weight: 800; width: 32px; height: 32px;"
           />
           <div class="hidden sm:flex flex-col text-left text-white leading-tight">
             <span class="text-xs font-bold truncate max-w-[120px]">{{ currentUser.name || 'User' }}</span>
@@ -109,8 +109,8 @@ const handleLogout = () => {
         </div>
 
         <!-- User Profile Popover Dialog -->
-        <OverlayPanel ref="op" class="user-menu-popover shadow-2xl rounded-2xl border border-[#e9e0e0] p-0 overflow-hidden w-72">
-          <div class="p-4 bg-[#fff8f7] border-b border-[#e9e0e0] flex items-center gap-3">
+        <OverlayPanel ref="op" class="user-menu-popover shadow-2xl rounded-2xl border border-[#E2D7CC] p-0 overflow-hidden w-72">
+          <div class="p-4 bg-[#F9F6F0] border-b border-[#E2D7CC] flex items-center gap-3">
             <Avatar
               v-if="currentUser.avatarUrl"
               :image="currentUser.avatarUrl"
@@ -122,7 +122,7 @@ const handleLogout = () => {
               :label="(currentUser.name || 'A').charAt(0).toUpperCase()"
               shape="circle"
               size="large"
-              style="background-color: #8d6749; color: #ffffff; font-weight: 800;"
+              style="background-color: #8E3E2F; color: #ffffff; font-weight: 800;"
             />
             <div class="flex flex-col min-w-0 text-left">
               <span class="text-sm font-bold text-[#1e1b1b] truncate">{{ currentUser.name || 'User' }}</span>
@@ -141,7 +141,7 @@ const handleLogout = () => {
               </span>
             </div>
 
-            <hr class="border-[#e9e0e0] my-1" />
+            <hr class="border-[#E2D7CC] my-1" />
 
             <button
               type="button"

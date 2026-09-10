@@ -1,23 +1,24 @@
 @import 'primeicons/primeicons.css';
 
 :root {
-  --font-family-body: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-family-title: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-family-body: 'Be Vietnam Pro', 'Inter', system-ui, -apple-system, sans-serif;
+  --font-family-title: 'Be Vietnam Pro', 'Manrope', system-ui, -apple-system, sans-serif;
 
-  /* Stitch BrewManager Theme Palette */
-  --color-brand-coffee: #8d6749;
-  --color-brand-coffee-dark: #6e4e34;
-  --color-bg-canvas: #f5f5dc;
+  /* XUXI Mi Tron Co Xi Brand Palette */
+  --color-brand-xuxi: #8E3E2F;
+  --color-brand-xuxi-dark: #6E281C;
+  --color-brand-accent: #C46D28;
+  --color-bg-canvas: #F9F6F0;
   --color-surface: #ffffff;
-  --color-surface-low: #fbf1f1;
-  --color-surface-high: #efe6e6;
-  
-  --color-text-main: #1e1b1b;
-  --color-text-muted: #42493d;
+  --color-surface-low: #F5EFE8;
+  --color-surface-high: #E8DFD5;
 
-  --color-accent-green: #326824;
-  --color-warning: #d97706;
-  --color-danger: #ba1a1a;
+  --color-text-main: #2A1C16;
+  --color-text-muted: #6E584D;
+
+  --color-accent-green: #27AE60;
+  --color-warning: #C46D28;
+  --color-danger: #8E3E2F;
 }
 
 body {
@@ -48,7 +49,7 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #8d6749;
+  background: #8E3E2F;
 }
 
 /* PrimeVue Component Overrides for Stitch Alignment */
@@ -111,13 +112,13 @@ textarea,
   &:focus,
   &:focus-within,
   &.p-focus {
-    border-color: #8d6749 !important;
+    border-color: #8E3E2F !important;
     box-shadow: 0 0 0 3px rgba(141, 103, 73, 0.18) !important;
     outline: none !important;
   }
 
   &:disabled {
-    background-color: #f5eceb !important;
+    background-color: #F2ECE4 !important;
     opacity: 0.65 !important;
     cursor: not-allowed !important;
   }
@@ -157,11 +158,11 @@ select {
   cursor: pointer !important;
 
   &:hover {
-    border-color: #8d6749 !important;
+    border-color: #8E3E2F !important;
   }
 
   &:focus {
-    border-color: #8d6749 !important;
+    border-color: #8E3E2F !important;
     box-shadow: 0 0 0 3px rgba(141, 103, 73, 0.18) !important;
   }
 }
@@ -184,20 +185,20 @@ select {
   box-shadow: none !important;
 
   &:hover:not(.p-disabled) {
-    border-color: #8d6749 !important;
+    border-color: #8E3E2F !important;
   }
 
   &:focus,
   &:focus-within,
   &.p-focus {
-    border-color: #8d6749 !important;
+    border-color: #8E3E2F !important;
     box-shadow: 0 0 0 3px rgba(141, 103, 73, 0.18) !important;
     outline: none !important;
   }
 
   &:disabled,
   &.p-disabled {
-    background-color: #f5eceb !important;
+    background-color: #F2ECE4 !important;
     opacity: 0.65 !important;
     cursor: not-allowed !important;
   }
@@ -252,7 +253,7 @@ select {
 /* Select Overlay Panel (Dropdown list) */
 .p-select-overlay {
   background: #ffffff !important;
-  border: 1px solid #e9e0e0 !important;
+  border: 1px solid #E2D7CC !important;
   border-radius: 12px !important;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
   overflow: hidden !important;
@@ -266,13 +267,13 @@ select {
     margin: 2px 4px !important;
 
     &.p-select-option-selected {
-      background-color: #f5eceb !important;
-      color: #8d6749 !important;
+      background-color: #F2ECE4 !important;
+      color: #8E3E2F !important;
       font-weight: 700 !important;
     }
 
     &:hover:not(.p-select-option-selected) {
-      background-color: #fbf1f1 !important;
+      background-color: #F5EFE8 !important;
     }
   }
 
@@ -289,7 +290,7 @@ select {
       outline: none !important;
 
       &:focus {
-        border-color: #8d6749 !important;
+        border-color: #8E3E2F !important;
         box-shadow: 0 0 0 2px rgba(141, 103, 73, 0.18) !important;
       }
     }
@@ -373,13 +374,13 @@ select {
 /* Primary Button (Coffee Brown) */
 .app-btn-primary,
 .p-button-primary {
-  background-color: #8d6749 !important;
-  border: 1px solid #8d6749 !important;
+  background-color: #8E3E2F !important;
+  border: 1px solid #8E3E2F !important;
   color: #ffffff !important;
 
   &:hover {
-    background-color: #6e4e34 !important;
-    border-color: #6e4e34 !important;
+    background-color: #6E281C !important;
+    border-color: #6E281C !important;
     transform: translateY(-1px);
     box-shadow: 0 4px 6px -1px rgba(110, 78, 52, 0.25) !important;
   }
@@ -392,12 +393,12 @@ select {
 /* Secondary Button (Neutral Surface) */
 .app-btn-secondary,
 .p-button-secondary {
-  background-color: #f5eceb !important;
+  background-color: #F2ECE4 !important;
   border: 1px solid rgba(193, 201, 185, 0.6) !important;
   color: #42493d !important;
 
   &:hover {
-    background-color: #efe6e6 !important;
+    background-color: #E8DFD5 !important;
     color: #1e1b1b !important;
   }
 }
@@ -452,9 +453,9 @@ select {
   color: #42493d !important;
 
   &:hover {
-    background-color: #f5eceb !important;
-    border-color: #8d6749 !important;
-    color: #8d6749 !important;
+    background-color: #F2ECE4 !important;
+    border-color: #8E3E2F !important;
+    color: #8E3E2F !important;
   }
 }
 
@@ -482,7 +483,7 @@ select {
     color: #1e40af !important;
   }
   &.p-tag-secondary {
-    background-color: #efe6e6 !important;
+    background-color: #E8DFD5 !important;
     color: #42493d !important;
   }
 }
@@ -490,7 +491,7 @@ select {
 /* DataTable Overrides */
 .p-datatable {
   .p-datatable-thead > tr > th {
-    background-color: #fbf1f1 !important;
+    background-color: #F5EFE8 !important;
     color: #42493d !important;
     font-weight: 600 !important;
     font-size: 0.85rem !important;
@@ -501,7 +502,7 @@ select {
   .p-datatable-tbody > tr > td {
     padding: 0.65rem 0.85rem !important;
     font-size: 0.875rem !important;
-    border-bottom: 1px solid #f5eceb !important;
+    border-bottom: 1px solid #F2ECE4 !important;
   }
 
   .p-datatable-tbody > tr:hover {
@@ -514,11 +515,11 @@ select {
   border-radius: 16px !important;
   overflow: hidden !important;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-  border: 1px solid #e9e0e0 !important;
+  border: 1px solid #E2D7CC !important;
 
   .p-dialog-header {
-    background-color: #fff8f7 !important;
-    border-bottom: 1px solid #e9e0e0 !important;
+    background-color: #F9F6F0 !important;
+    border-bottom: 1px solid #E2D7CC !important;
     padding: 1rem 1.25rem !important;
 
     .p-dialog-title {
@@ -534,8 +535,8 @@ select {
   }
 
   .p-dialog-footer {
-    background-color: #fff8f7 !important;
-    border-top: 1px solid #e9e0e0 !important;
+    background-color: #F9F6F0 !important;
+    border-top: 1px solid #E2D7CC !important;
     padding: 0.875rem 1.25rem !important;
   }
 }

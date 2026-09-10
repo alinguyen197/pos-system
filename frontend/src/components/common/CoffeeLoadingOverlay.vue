@@ -17,8 +17,8 @@
 
           <!-- Coffee Filter / Dripper Pot at top -->
           <g class="dripper-pot">
-            <path d="M 50 14 L 110 14 L 92 36 L 68 36 Z" fill="#8d6749" rx="3" />
-            <rect x="73" y="36" width="14" height="4" fill="#6e4e34" rx="1" />
+            <path d="M 50 14 L 110 14 L 92 36 L 68 36 Z" fill="#8E3E2F" rx="3" />
+            <rect x="73" y="36" width="14" height="4" fill="#6E281C" rx="1" />
           </g>
 
           <!-- Animated Pouring Stream -->
@@ -32,10 +32,10 @@
           </defs>
 
           <!-- Cup Background -->
-          <path d="M 50 70 Q 50 124 80 124 Q 110 124 110 70 Z" fill="#FFF8F7" stroke="#8d6749" stroke-width="4" />
+          <path d="M 50 70 Q 50 124 80 124 Q 110 124 110 70 Z" fill="#F9F6F0" stroke="#8E3E2F" stroke-width="4" />
 
           <!-- Cup Handle -->
-          <path d="M 110 78 C 126 78, 126 106, 110 108" fill="none" stroke="#8d6749" stroke-width="4" stroke-linecap="round" />
+          <path d="M 110 78 C 126 78, 126 106, 110 108" fill="none" stroke="#8E3E2F" stroke-width="4" stroke-linecap="round" />
 
           <!-- Rising Liquid Layer inside Cup -->
           <g clip-path="url(#cup-inner-clip)">
@@ -46,14 +46,14 @@
           </g>
 
           <!-- Cup Rim Base Accent -->
-          <ellipse cx="80" cy="124" rx="20" ry="3" fill="#e9e0e0" />
+          <ellipse cx="80" cy="124" rx="20" ry="3" fill="#E2D7CC" />
         </svg>
       </div>
 
       <!-- Text Indicator -->
       <div class="loading-text-box">
-        <h3 class="title">Đang pha cà phê...</h3>
-        <p class="subtitle">Vui lòng chờ trong giây lát</p>
+        <h3 class="title">Đang tải dữ liệu...</h3>
+        <p class="subtitle">Mì Trộn Cô Xi • Vui lòng chờ trong giây lát</p>
       </div>
     </div>
   </div>
@@ -85,7 +85,7 @@
 
 .loading-card {
   background: rgba(255, 255, 255, 0.96);
-  border: 1px solid #e9e0e0;
+  border: 1px solid #E2D7CC;
   border-radius: 1.5rem;
   padding: 1.75rem 2rem;
   display: flex;
@@ -112,7 +112,7 @@
 /* Steam Animation */
 .steam-line {
   fill: none;
-  stroke: #8d6749;
+  stroke: #8E3E2F;
   stroke-width: 2.5;
   stroke-linecap: round;
   opacity: 0;

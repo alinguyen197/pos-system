@@ -65,7 +65,7 @@ const isLoginPage = computed(() => {
 <style scoped lang="scss">
 .login-layout {
   min-height: 100vh;
-  background-color: var(--color-bg-canvas, #f5f5dc);
+  background-color: var(--color-bg-canvas, #F9F6F0);
 }
 
 :deep(.p-toast),

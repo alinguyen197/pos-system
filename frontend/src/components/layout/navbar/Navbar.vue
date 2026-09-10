@@ -34,11 +34,11 @@ const isActiveRoute = (item: { path: string; matchPrefix: boolean }) => {
     <!-- Brand Logo -->
     <div class="brand-box">
       <div class="brand-icon">
-        <i class="pi pi-coffee"></i>
+        <img src="/logo.png" alt="Mì Trộn Cô Xi Logo" class="brand-logo-img" />
       </div>
       <div class="brand-text">
-        <span class="title">Sky Coffee</span>
-        <span class="subtitle">Coffee Systems</span>
+        <span class="title">Mì Trộn Cô Xi</span>
+        <span class="subtitle">XUXI Management</span>
       </div>
     </div>
 

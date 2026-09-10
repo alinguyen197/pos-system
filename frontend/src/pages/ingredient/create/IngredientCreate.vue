@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Select from 'primevue/select'
@@ -136,7 +136,7 @@ const handleSubmit = async () => {
 <template>
   <div class="ingredient-create-page flex-1 min-h-0 overflow-y-auto pr-2 flex flex-col gap-6 max-w-4xl mx-auto pb-10">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#e9e0e0]">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2D7CC]">
       <div>
         <h1 class="text-2xl font-bold font-display text-[#1e1b1b]">Thêm Nguyên liệu mới</h1>
         <p class="text-xs text-[#42493d] mt-1 font-medium">Khai báo danh mục nguyên liệu đầu vào, phân loại, đơn vị tính và định mức tồn kho</p>
@@ -146,7 +146,7 @@ const handleSubmit = async () => {
           type="button"
           @click="router.back()"
           :disabled="isSubmitting"
-          class="h-10 px-4 bg-[#f5eceb] hover:bg-[#efe6e6] text-[#42493d] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition disabled:opacity-50 cursor-pointer"
+          class="h-10 px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#42493d] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition disabled:opacity-50 cursor-pointer"
         >
           Hủy bỏ
         </button>
@@ -154,7 +154,7 @@ const handleSubmit = async () => {
           type="button"
           @click="handleSubmit"
           :disabled="isSubmitting"
-          class="h-10 px-5 bg-[#8d6749] hover:bg-[#6e4e34] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+          class="h-10 px-5 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
         >
           <span v-if="!isSubmitting" class="material-symbols-outlined text-lg">check</span>
           <span v-else class="material-symbols-outlined text-lg animate-spin">refresh</span>
@@ -170,14 +170,14 @@ const handleSubmit = async () => {
     </div>
 
     <!-- Form Container Card -->
-    <div class="bg-white rounded-2xl border border-[#e9e0e0] shadow-sm p-6 sm:p-8">
+    <div class="bg-white rounded-2xl border border-[#E2D7CC] shadow-sm p-6 sm:p-8">
       <form @submit.prevent="handleSubmit" class="space-y-6">
-        <div class="border-b border-[#e9e0e0] pb-4 flex items-center justify-between">
+        <div class="border-b border-[#E2D7CC] pb-4 flex items-center justify-between">
           <div>
             <h2 class="text-base font-bold font-display text-[#1e1b1b]">Thông tin nguyên liệu</h2>
             <p class="text-xs text-[#72796c] mt-0.5">Khai báo thông số nhận diện và đơn vị tính lưu kho</p>
           </div>
-          <span class="text-[11px] font-semibold text-[#8d6749] bg-[#f5eceb] px-3 py-1 rounded-lg">Khai báo danh mục</span>
+          <span class="text-[11px] font-semibold text-[#8E3E2F] bg-[#F2ECE4] px-3 py-1 rounded-lg">Khai báo danh mục</span>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -189,7 +189,7 @@ const handleSubmit = async () => {
               type="text"
               required
               placeholder="Ví dụ: Tương cà Cholimex, Sữa tươi tiệt trùng, Cà phê Robusta..."
-              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20"
+              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             />
           </div>
 
@@ -200,7 +200,7 @@ const handleSubmit = async () => {
               <button
                 type="button"
                 @click="isCustomCategory = !isCustomCategory"
-                class="text-[11px] text-[#8d6749] underline hover:text-[#6e4e34] font-semibold cursor-pointer"
+                class="text-[11px] text-[#8E3E2F] underline hover:text-[#6E281C] font-semibold cursor-pointer"
               >
                 {{ isCustomCategory ? '← Chọn từ danh sách' : '+ Nhập phân loại mới' }}
               </button>
@@ -212,7 +212,7 @@ const handleSubmit = async () => {
               type="text"
               required
               placeholder="Nhập tên phân loại mới (Ví dụ: Gia vị, Trái cây, Bánh...)"
-              class="w-full h-10 px-3.5 bg-white border border-[#8d6749] rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:ring-2 focus:ring-[#8d6749]/20"
+              class="w-full h-10 px-3.5 bg-white border border-[#8E3E2F] rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:ring-2 focus:ring-[#8E3E2F]/20"
             />
             <Select
               v-else
@@ -248,7 +248,7 @@ const handleSubmit = async () => {
               min="0"
               required
               placeholder="5"
-              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20"
+              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             />
             <span class="text-[11px] text-[#72796c] mt-1 block">Hệ thống sẽ phát cảnh báo khi tồn kho xuống dưới mức này</span>
           </div>
@@ -262,15 +262,15 @@ const handleSubmit = async () => {
               step="any"
               min="0"
               placeholder="0"
-              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20"
+              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             />
             <span class="text-[11px] text-[#72796c] mt-1 block">Số lượng hiện có sẵn trong kho (nếu có)</span>
           </div>
         </div>
 
         <!-- Info Note Card -->
-        <div class="p-4 bg-[#fff8f7] rounded-xl border border-[#e9e0e0] flex items-start gap-3 text-xs text-[#42493d]">
-          <span class="material-symbols-outlined text-[#8d6749] text-xl shrink-0 mt-0.5">lightbulb</span>
+        <div class="p-4 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC] flex items-start gap-3 text-xs text-[#42493d]">
+          <span class="material-symbols-outlined text-[#8E3E2F] text-xl shrink-0 mt-0.5">lightbulb</span>
           <div class="space-y-1">
             <p class="font-bold text-[#1e1b1b]">Đơn giá vốn được xác định khi nhập kho:</p>
             <p>

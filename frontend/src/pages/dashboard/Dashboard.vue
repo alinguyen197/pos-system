@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import Chart from 'primevue/chart'
 import { useRouter } from 'vue-router'
@@ -49,7 +49,7 @@ const doughnutData = ref({
   datasets: [
     {
       data: [] as number[],
-      backgroundColor: ['#8d6749', '#326824', '#d97706', '#72796c', '#0284c7', '#9333ea'],
+      backgroundColor: ['#8E3E2F', '#326824', '#d97706', '#72796c', '#0284c7', '#9333ea'],
       borderWidth: 2,
       borderColor: '#ffffff',
     },
@@ -117,7 +117,7 @@ const fetchDashboardData = async () => {
         datasets: [
           {
             data: category.values,
-            backgroundColor: ['#8d6749', '#326824', '#d97706', '#72796c', '#0284c7', '#9333ea'].slice(0, category.labels.length),
+            backgroundColor: ['#8E3E2F', '#326824', '#d97706', '#72796c', '#0284c7', '#9333ea'].slice(0, category.labels.length),
             borderWidth: 2,
             borderColor: '#ffffff',
           },
@@ -142,7 +142,7 @@ onMounted(() => {
 <template>
   <div class="dashboard-page flex flex-col gap-6 pb-10">
     <!-- Header Banner -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#e9e0e0]">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2D7CC]">
       <div>
         <h1 class="text-2xl font-bold font-display text-[#1e1b1b]">Tổng quan cửa hàng</h1>
         <p class="text-xs text-[#42493d] mt-1 font-medium">Báo cáo tình hình kinh doanh & tồn kho thời gian thực</p>
@@ -150,21 +150,21 @@ onMounted(() => {
       <div class="flex items-center gap-3">
         <button
           @click="fetchDashboardData"
-          class="w-10 h-10 bg-white hover:bg-[#f5eceb] border border-[#c1c9b9]/60 rounded-xl transition text-[#5D4037] flex items-center justify-center cursor-pointer shadow-sm"
+          class="w-10 h-10 bg-white hover:bg-[#F2ECE4] border border-[#c1c9b9]/60 rounded-xl transition text-[#5D4037] flex items-center justify-center cursor-pointer shadow-sm"
           title="Tải lại dữ liệu"
         >
           <span class="material-symbols-outlined text-lg" :class="{ 'animate-spin': isLoading }">refresh</span>
         </button>
         <button
           @click="router.push('/pos')"
-          class="h-10 px-4 bg-[#8d6749] hover:bg-[#6e4e34] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 cursor-pointer"
+          class="h-10 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 cursor-pointer"
         >
           <span class="material-symbols-outlined text-lg">point_of_sale</span>
           <span>Vào màn hình POS</span>
         </button>
         <button
           @click="router.push('/stock-imports/create')"
-          class="h-10 px-4 bg-[#f5eceb] hover:bg-[#efe6e6] text-[#326824] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition flex items-center gap-2 cursor-pointer"
+          class="h-10 px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#326824] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition flex items-center gap-2 cursor-pointer"
         >
           <span class="material-symbols-outlined text-lg">add_circle</span>
           <span>Tạo phiếu nhập kho</span>
@@ -178,7 +178,7 @@ onMounted(() => {
         v-for="(m, idx) in metrics"
         :key="idx"
         class="bg-white rounded-2xl p-5 border shadow-sm transition hover:shadow-md relative overflow-hidden group"
-        :class="m.isDanger ? 'border-[#ffdad6] bg-[#fff8f7]' : 'border-[#e9e0e0]'"
+        :class="m.isDanger ? 'border-[#ffdad6] bg-[#F9F6F0]' : 'border-[#E2D7CC]'"
       >
         <div class="flex justify-between items-start mb-3">
           <span class="text-xs font-semibold uppercase tracking-wider text-[#42493d]">{{ m.title }}</span>
@@ -203,10 +203,10 @@ onMounted(() => {
     <!-- Charts Row -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Line Chart -->
-      <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-[#e9e0e0] shadow-sm flex flex-col">
+      <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-base font-bold font-display text-[#1e1b1b]">Doanh thu 30 ngày gần nhất</h2>
-          <span class="text-xs font-semibold text-[#8d6749] bg-[#f5eceb] px-3 py-1 rounded-lg">Thời gian thực</span>
+          <span class="text-xs font-semibold text-[#8E3E2F] bg-[#F2ECE4] px-3 py-1 rounded-lg">Thời gian thực</span>
         </div>
         <div class="h-64 relative w-full flex items-center justify-center">
           <Chart v-if="lineChartData.labels.length > 0" type="line" :data="lineChartData" :options="lineChartOptions" class="h-full w-full" />
@@ -215,7 +215,7 @@ onMounted(() => {
       </div>
 
       <!-- Doughnut Chart -->
-      <div class="bg-white rounded-2xl p-6 border border-[#e9e0e0] shadow-sm flex flex-col">
+      <div class="bg-white rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col">
         <h2 class="text-base font-bold font-display text-[#1e1b1b] mb-4">Doanh thu theo danh mục</h2>
         <div class="h-64 relative w-full flex items-center justify-center">
           <Chart v-if="doughnutData.labels.length > 0" type="doughnut" :data="doughnutData" :options="doughnutOptions" class="h-full w-full" />
@@ -227,17 +227,17 @@ onMounted(() => {
     <!-- Tables Row -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Top Products -->
-      <div class="bg-white rounded-2xl border border-[#e9e0e0] shadow-sm overflow-hidden flex flex-col">
-        <div class="p-5 border-b border-[#e9e0e0] flex justify-between items-center bg-[#f5eceb]/40">
+      <div class="bg-white rounded-2xl border border-[#E2D7CC] shadow-sm overflow-hidden flex flex-col">
+        <div class="p-5 border-b border-[#E2D7CC] flex justify-between items-center bg-[#F2ECE4]/40">
           <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-[#8d6749] text-xl">star</span>
+            <span class="material-symbols-outlined text-[#8E3E2F] text-xl">star</span>
             <h2 class="text-base font-bold font-display text-[#1e1b1b]">Top sản phẩm bán chạy</h2>
           </div>
-          <button @click="router.push('/products')" class="text-xs font-bold text-[#8d6749] hover:underline">Xem tất cả</button>
+          <button @click="router.push('/products')" class="text-xs font-bold text-[#8E3E2F] hover:underline">Xem tất cả</button>
         </div>
         <div class="overflow-x-auto overflow-y-auto max-h-[380px]">
           <table class="w-full text-left text-xs text-[#1e1b1b]">
-            <thead class="bg-[#fbf1f1] text-[#42493d] font-semibold uppercase tracking-wider border-b border-[#e9e0e0]">
+            <thead class="bg-[#F5EFE8] text-[#42493d] font-semibold uppercase tracking-wider border-b border-[#E2D7CC]">
               <tr>
                 <th class="py-3 px-4 w-12 text-center">#</th>
                 <th class="py-3 px-4">Tên sản phẩm</th>
@@ -245,12 +245,12 @@ onMounted(() => {
                 <th class="py-3 px-4 text-right">Doanh thu</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-[#f5eceb]">
-              <tr v-for="item in topProducts" :key="item.rank" class="hover:bg-[#fbf1f1]/50 transition">
+            <tbody class="divide-y divide-[#F2ECE4]">
+              <tr v-for="item in topProducts" :key="item.rank" class="hover:bg-[#F5EFE8]/50 transition">
                 <td class="py-3.5 px-4 font-bold text-center">
                   <span
                     class="w-6 h-6 rounded-full inline-flex items-center justify-center text-xs"
-                    :class="item.rank === 1 ? 'bg-[#8d6749] text-white' : 'bg-[#e9e0e0] text-[#42493d]'"
+                    :class="item.rank === 1 ? 'bg-[#8E3E2F] text-white' : 'bg-[#E2D7CC] text-[#42493d]'"
                   >{{ item.rank }}</span>
                 </td>
                 <td class="py-3.5 px-4 font-semibold text-[#1e1b1b]">{{ item.name }}</td>
@@ -284,7 +284,7 @@ onMounted(() => {
                 <th class="py-3 px-4 text-right">Trạng thái</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-[#f5eceb]">
+            <tbody class="divide-y divide-[#F2ECE4]">
               <tr v-for="(ing, i) in alertStockItems" :key="i" class="hover:bg-[#ffdad6]/10 transition">
                 <td class="py-3.5 px-4 font-semibold text-[#1e1b1b]">{{ ing.name }}</td>
                 <td class="py-3.5 px-4 text-center font-bold text-[#ba1a1a]">{{ ing.stock }}</td>

@@ -1,6 +1,6 @@
 <template>
   <footer class="app-footer">
-    <span>© 2026 Sky Coffee Management System — BrewManager Precision Ledger</span>
+    <span>🍜 © 2026 Mì Trộn Cô Xi — XUXI Management System</span>
   </footer>
 </template>
 

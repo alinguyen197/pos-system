@@ -16,10 +16,10 @@ const loading = ref(false)
 const showPassword = ref(false)
 
 const demoAccounts = [
-  { role: 'admin', label: 'Admin', email: 'admin@skycoffee.vn', color: 'bg-[#8d6749] text-white' },
-  { role: 'manager', label: 'Quản lý', email: 'manager@skycoffee.vn', color: 'bg-[#326824] text-white' },
-  { role: 'staff', label: 'Nhân viên', email: 'staff@skycoffee.vn', color: 'bg-[#00639b] text-white' },
-  { role: 'viewer', label: 'Người xem', email: 'viewer@skycoffee.vn', color: 'bg-[#72796c] text-white' },
+  { role: 'admin', label: 'Admin', email: 'admin@skycoffee.vn', color: 'bg-[#8E3E2F] text-white' },
+  { role: 'manager', label: 'Quản lý', email: 'manager@skycoffee.vn', color: 'bg-[#6E281C] text-white' },
+  { role: 'staff', label: 'Nhân viên', email: 'staff@skycoffee.vn', color: 'bg-[#C46D28] text-white' },
+  { role: 'viewer', label: 'Người xem', email: 'viewer@skycoffee.vn', color: 'bg-[#6E584D] text-white' },
 ]
 
 const selectDemoAccount = (account: typeof demoAccounts[0]) => {
@@ -87,42 +87,42 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <div class="login-wrapper min-h-screen bg-[#fff8f7] text-[#1e1b1b] flex flex-col justify-between font-sans relative overflow-hidden">
+  <div class="login-wrapper min-h-screen bg-[#F9F6F0] text-[#1e1b1b] flex flex-col justify-between font-sans relative overflow-hidden">
     <!-- Navbar -->
-    <header class="w-full bg-white border-b border-[#e9e0e0] px-6 py-4 flex justify-between items-center z-10">
+    <header class="w-full bg-white border-b border-[#E2D7CC] px-6 py-4 flex justify-between items-center z-10">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-[#8d6749] text-white flex items-center justify-center shadow-md">
-          <span class="material-symbols-outlined text-2xl">local_cafe</span>
+        <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-[#8E3E2F]/25 shadow-md bg-white flex items-center justify-center flex-shrink-0">
+          <img src="/logo.png" alt="Mì Trộn Cô Xi Logo" class="w-full h-full object-cover" />
         </div>
         <div>
-          <h1 class="text-xl font-bold font-display text-[#1e1b1b] leading-none">Sky Coffee</h1>
-          <p class="text-xs text-[#72796c] mt-0.5 font-medium">Coffee & Management System</p>
+          <h1 class="text-xl font-bold font-display text-[#2A1C16] leading-none">Mì Trộn Cô Xi</h1>
+          <p class="text-xs text-[#6E584D] mt-0.5 font-medium">XUXI • Hệ thống Quản lý</p>
         </div>
       </div>
       <div class="flex items-center gap-4 text-sm font-medium text-[#42493d]">
-        <span class="px-3 py-1.5 rounded-lg bg-[#f5eceb] text-[#326824] font-semibold text-xs">v2.0 Stitch RBAC</span>
+        <span class="px-3 py-1.5 rounded-lg bg-[#F2ECE4] text-[#326824] font-semibold text-xs">v2.0 Stitch RBAC</span>
       </div>
     </header>
 
     <!-- Main Section -->
     <main class="flex-grow flex items-center justify-center px-4 py-10 relative z-10">
       <!-- Background Blurs -->
-      <div class="absolute -top-20 -left-20 w-80 h-80 bg-[#8d6749]/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-20 -right-20 w-96 h-96 bg-[#326824]/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -top-20 -left-20 w-80 h-80 bg-[#8E3E2F]/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-20 -right-20 w-96 h-96 bg-[#C46D28]/10 rounded-full blur-3xl pointer-events-none"></div>
 
       <!-- Login Card -->
-      <div class="w-full max-w-[460px] bg-white rounded-2xl border border-[#e9e0e0] shadow-xl p-8 sm:p-10 relative">
+      <div class="w-full max-w-[460px] bg-white rounded-2xl border border-[#E2D7CC] shadow-xl p-8 sm:p-10 relative">
         <div class="text-center mb-6">
-          <div class="w-14 h-14 bg-[#f5eceb] text-[#8d6749] rounded-2xl flex items-center justify-center mx-auto mb-3 border border-[#e9e0e0]">
-            <span class="material-symbols-outlined text-3xl">lock</span>
+          <div class="w-16 h-16 rounded-full overflow-hidden mx-auto mb-3 border-2 border-[#E2D7CC] shadow-md bg-white flex items-center justify-center">
+            <img src="/logo.png" alt="Mì Trộn Cô Xi Logo" class="w-full h-full object-cover" />
           </div>
           <h2 class="text-2xl font-bold font-display text-[#1e1b1b]">Đăng nhập hệ thống</h2>
           <p class="text-xs text-[#42493d] mt-1">Chọn tài khoản mộc mẫu hoặc đăng nhập với thông tin thực tế</p>
         </div>
 
         <!-- Demo Account Quick Selector -->
-        <div class="mb-6 p-3 bg-[#fff8f7] rounded-xl border border-[#e9e0e0]">
-          <div class="text-[11px] font-bold text-[#8d6749] uppercase tracking-wider mb-2 flex items-center justify-between">
+        <div class="mb-6 p-3 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC]">
+          <div class="text-[11px] font-bold text-[#8E3E2F] uppercase tracking-wider mb-2 flex items-center justify-between">
             <span>Chọn nhanh tài khoản mẫu:</span>
             <span class="text-[10px] text-[#72796c] font-normal">Pass: 123123</span>
           </div>
@@ -132,7 +132,7 @@ const handleLogin = async () => {
               :key="acc.role"
               type="button"
               @click="selectDemoAccount(acc)"
-              class="px-2.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center justify-between border border-[#e9e0e0] hover:scale-[1.02] cursor-pointer"
+              class="px-2.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center justify-between border border-[#E2D7CC] hover:scale-[1.02] cursor-pointer"
               :class="acc.color"
             >
               <span>{{ acc.label }}</span>
@@ -153,7 +153,7 @@ const handleLogin = async () => {
                 type="email"
                 required
                 placeholder="admin@skycoffee.vn"
-                class="w-full h-11 pl-11 pr-4 rounded-xl border border-[#c1c9b9]/70 focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20 transition outline-none text-xs text-[#1e1b1b] bg-white font-medium"
+                class="w-full h-11 pl-11 pr-4 rounded-xl border border-[#c1c9b9]/70 focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 transition outline-none text-xs text-[#1e1b1b] bg-white font-medium"
               />
             </div>
           </div>
@@ -170,7 +170,7 @@ const handleLogin = async () => {
                 v-model="password"
                 :type="showPassword ? 'text' : 'password'"
                 required
-                class="w-full h-11 pl-11 pr-11 rounded-xl border border-[#c1c9b9]/70 focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20 transition outline-none text-xs text-[#1e1b1b] bg-white font-medium"
+                class="w-full h-11 pl-11 pr-11 rounded-xl border border-[#c1c9b9]/70 focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 transition outline-none text-xs text-[#1e1b1b] bg-white font-medium"
               />
               <button
                 type="button"
@@ -186,7 +186,7 @@ const handleLogin = async () => {
           <button
             type="submit"
             :disabled="loading"
-            class="w-full h-11 px-4 bg-[#8d6749] hover:bg-[#6e4e34] active:scale-[0.99] text-white font-semibold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 disabled:opacity-70 mt-3 cursor-pointer"
+            class="w-full h-11 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] active:scale-[0.99] text-white font-semibold text-xs rounded-xl shadow-md transition flex items-center justify-center gap-2 disabled:opacity-70 mt-3 cursor-pointer"
           >
             <span v-if="loading" class="material-symbols-outlined animate-spin text-base">progress_activity</span>
             <span v-else class="material-symbols-outlined text-lg">login</span>
@@ -197,8 +197,8 @@ const handleLogin = async () => {
     </main>
 
     <!-- Footer -->
-    <footer class="py-3 text-center text-[11px] text-[#72796c] border-t border-[#e9e0e0] bg-white">
-      © 2026 Sky Coffee Systems. Integrated with RBAC Screen Level Security.
+    <footer class="py-3 text-center text-[11px] text-[#72796c] border-t border-[#E2D7CC] bg-white">
+      © 2026 Mì Trộn Cô Xi — XUXI Management System. Bảo mật RBAC.
     </footer>
   </div>
 </template>

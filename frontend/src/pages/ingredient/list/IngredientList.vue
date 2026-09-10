@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from 'primevue/datatable'
@@ -248,7 +248,7 @@ const handleConfirmDelete = async () => {
 <template>
   <div class="ingredient-list-page h-full flex flex-col gap-4 overflow-hidden">
     <!-- Header Title & Action -->
-    <div class="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#e9e0e0]">
+    <div class="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2D7CC]">
       <div>
         <h1 class="text-2xl font-bold font-display text-[#1e1b1b]">Quản lý Kho Nguyên liệu</h1>
         <p class="text-xs text-[#42493d] mt-1 font-medium">Theo dõi tồn kho thực tế, định mức cảnh báo và đơn giá vốn</p>
@@ -256,14 +256,14 @@ const handleConfirmDelete = async () => {
       <div class="flex items-center gap-3">
         <button
           @click="router.push('/stock-imports/create')"
-          class="h-10 px-4 bg-[#f5eceb] hover:bg-[#efe6e6] text-[#326824] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition flex items-center gap-2 cursor-pointer"
+          class="h-10 px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#326824] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition flex items-center gap-2 cursor-pointer"
         >
           <span class="material-symbols-outlined text-lg">add_circle</span>
           <span>Tạo phiếu nhập kho</span>
         </button>
         <button
           @click="router.push('/ingredients/create')"
-          class="h-10 px-4 bg-[#8d6749] hover:bg-[#6e4e34] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 cursor-pointer"
+          class="h-10 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 cursor-pointer"
         >
           <span class="material-symbols-outlined text-lg">add</span>
           <span>Thêm nguyên liệu mới</span>
@@ -274,8 +274,8 @@ const handleConfirmDelete = async () => {
     <!-- Summary Cards Row (5 Stock Status Cards) -->
     <div class="shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       <!-- Card 1: Total Ingredients -->
-      <div class="bg-white rounded-2xl p-4 border border-[#e9e0e0] shadow-sm flex items-center gap-3.5">
-        <div class="w-11 h-11 rounded-xl bg-[#f5eceb] text-[#8d6749] flex items-center justify-center shrink-0">
+      <div class="bg-white rounded-2xl p-4 border border-[#E2D7CC] shadow-sm flex items-center gap-3.5">
+        <div class="w-11 h-11 rounded-xl bg-[#F2ECE4] text-[#8E3E2F] flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined text-2xl">inventory_2</span>
         </div>
         <div>
@@ -285,18 +285,18 @@ const handleConfirmDelete = async () => {
       </div>
 
       <!-- Card 2: Total Inventory Value -->
-      <div class="bg-white rounded-2xl p-4 border border-[#e9e0e0] shadow-sm flex items-center gap-3.5">
-        <div class="w-11 h-11 rounded-xl bg-[#efebe9] text-[#8d6749] flex items-center justify-center shrink-0">
+      <div class="bg-white rounded-2xl p-4 border border-[#E2D7CC] shadow-sm flex items-center gap-3.5">
+        <div class="w-11 h-11 rounded-xl bg-[#efebe9] text-[#8E3E2F] flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
         </div>
         <div>
           <span class="text-[11px] font-bold text-[#72796c] uppercase block">Tổng giá trị kho</span>
-          <span class="text-xl font-bold font-display text-[#8d6749]">{{ formattedTotalStockValue }}</span>
+          <span class="text-xl font-bold font-display text-[#8E3E2F]">{{ formattedTotalStockValue }}</span>
         </div>
       </div>
 
       <!-- Card 3: Safe Stock -->
-      <div class="bg-white rounded-2xl p-4 border border-[#e9e0e0] shadow-sm flex items-center gap-3.5">
+      <div class="bg-white rounded-2xl p-4 border border-[#E2D7CC] shadow-sm flex items-center gap-3.5">
         <div class="w-11 h-11 rounded-xl bg-[#c9edb5]/60 text-[#326824] flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined text-2xl">check_circle</span>
         </div>
@@ -307,7 +307,7 @@ const handleConfirmDelete = async () => {
       </div>
 
       <!-- Card 4: Need Import / Low Stock -->
-      <div class="bg-white rounded-2xl p-4 border border-[#e9e0e0] shadow-sm flex items-center gap-3.5">
+      <div class="bg-white rounded-2xl p-4 border border-[#E2D7CC] shadow-sm flex items-center gap-3.5">
         <div class="w-11 h-11 rounded-xl bg-[#fff7ed] text-[#8c6b00] flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined text-2xl">warning</span>
         </div>
@@ -318,7 +318,7 @@ const handleConfirmDelete = async () => {
       </div>
 
       <!-- Card 5: Out of Stock -->
-      <div class="bg-white rounded-2xl p-4 border border-[#e9e0e0] shadow-sm flex items-center gap-3.5">
+      <div class="bg-white rounded-2xl p-4 border border-[#E2D7CC] shadow-sm flex items-center gap-3.5">
         <div class="w-11 h-11 rounded-xl bg-[#ffdad6] text-[#ba1a1a] flex items-center justify-center shrink-0">
           <span class="material-symbols-outlined text-2xl">error</span>
         </div>
@@ -330,9 +330,9 @@ const handleConfirmDelete = async () => {
     </div>
 
     <!-- Main Card -->
-    <div class="flex-1 min-h-0 bg-white rounded-2xl border border-[#e9e0e0] shadow-sm overflow-hidden flex flex-col">
+    <div class="flex-1 min-h-0 bg-white rounded-2xl border border-[#E2D7CC] shadow-sm overflow-hidden flex flex-col">
       <!-- Search & Filters -->
-      <div class="shrink-0 p-4 border-b border-[#e9e0e0] bg-[#fff8f7]">
+      <div class="shrink-0 p-4 border-b border-[#E2D7CC] bg-[#F9F6F0]">
         <!-- Form Search with Category Select Dropdown, Search and Reset buttons -->
         <form @submit.prevent="handleSearch" class="flex flex-col sm:flex-row items-end gap-3 w-full">
           <div class="w-full sm:w-64">
@@ -343,7 +343,7 @@ const handleConfirmDelete = async () => {
                 v-model="searchKeyword"
                 type="text"
                 placeholder="Tìm tên nguyên liệu, mã NL..."
-                class="w-full h-10 pl-11 pr-4 bg-white border border-[#c1c9b9]/70 rounded-xl focus:outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20 text-xs font-medium text-[#1e1b1b]"
+                class="w-full h-10 pl-11 pr-4 bg-white border border-[#c1c9b9]/70 rounded-xl focus:outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 text-xs font-medium text-[#1e1b1b]"
               />
             </div>
           </div>
@@ -365,7 +365,7 @@ const handleConfirmDelete = async () => {
           <div class="flex items-center gap-2 w-full sm:w-auto">
             <button
               type="submit"
-              class="h-10 px-4 bg-[#8d6749] hover:bg-[#6e4e34] text-white font-semibold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5 whitespace-nowrap flex-1 sm:flex-none cursor-pointer"
+              class="h-10 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5 whitespace-nowrap flex-1 sm:flex-none cursor-pointer"
             >
               <span class="material-symbols-outlined text-base">search</span>
               <span>Tìm kiếm</span>
@@ -373,7 +373,7 @@ const handleConfirmDelete = async () => {
             <button
               type="button"
               @click="onResetSearch"
-              class="h-10 px-3.5 bg-[#f5eceb] hover:bg-[#efe6e6] text-[#42493d] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition flex items-center justify-center gap-1.5 whitespace-nowrap flex-1 sm:flex-none cursor-pointer"
+              class="h-10 px-3.5 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#42493d] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition flex items-center justify-center gap-1.5 whitespace-nowrap flex-1 sm:flex-none cursor-pointer"
               title="Đặt lại bộ lọc"
             >
               <span class="material-symbols-outlined text-base">refresh</span>
@@ -425,7 +425,7 @@ const handleConfirmDelete = async () => {
 
         <Column field="category" header="Phân loại">
           <template #body="slotProps">
-            <span class="px-2.5 py-1 rounded-md bg-[#f5eceb] text-[#42493d] font-semibold text-[11px] inline-block">
+            <span class="px-2.5 py-1 rounded-md bg-[#F2ECE4] text-[#42493d] font-semibold text-[11px] inline-block">
               {{ slotProps.data.category }}
             </span>
           </template>
@@ -449,7 +449,7 @@ const handleConfirmDelete = async () => {
                 </span>
                 <span class="text-[#72796c] text-[11px]">/ {{ slotProps.data.minStock }}</span>
               </div>
-              <div class="w-20 bg-[#e9e0e0] h-1.5 rounded-full overflow-hidden">
+              <div class="w-20 bg-[#E2D7CC] h-1.5 rounded-full overflow-hidden">
                 <div
                   class="h-full rounded-full transition-all duration-300"
                   :class="
@@ -468,7 +468,7 @@ const handleConfirmDelete = async () => {
 
         <Column field="unit" header="ĐVT lưu kho" bodyClass="text-center" headerClass="text-center">
           <template #body="slotProps">
-            <span class="px-2 py-0.5 rounded bg-[#f5eceb] text-[#42493d] font-semibold text-[11px]">{{ slotProps.data.unit }}</span>
+            <span class="px-2 py-0.5 rounded bg-[#F2ECE4] text-[#42493d] font-semibold text-[11px]">{{ slotProps.data.unit }}</span>
           </template>
         </Column>
 
@@ -481,7 +481,7 @@ const handleConfirmDelete = async () => {
 
         <Column header="Tổng giá trị tồn" bodyClass="text-right" headerClass="text-right">
           <template #body="slotProps">
-            <span class="font-bold text-[#8d6749]">
+            <span class="font-bold text-[#8E3E2F]">
               {{ ((slotProps.data.stock || 0) * (slotProps.data.rawCost || 0)).toLocaleString('vi-VN') }} ₫
             </span>
           </template>
@@ -503,7 +503,7 @@ const handleConfirmDelete = async () => {
             <div class="flex items-center justify-center gap-1">
               <button
                 @click="openEdit(slotProps.data)"
-                class="p-1.5 text-[#8d6749] hover:bg-[#f5eceb] rounded-lg transition"
+                class="p-1.5 text-[#8E3E2F] hover:bg-[#F2ECE4] rounded-lg transition"
                 title="Sửa nguyên liệu"
               >
                 <span class="material-symbols-outlined text-lg">edit</span>
@@ -534,7 +534,7 @@ const handleConfirmDelete = async () => {
             v-model="editForm.name"
             type="text"
             placeholder="Tên nguyên liệu..."
-            class="w-full h-10 px-3.5 border border-[#c1c9b9]/70 rounded-xl text-xs bg-white outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20 font-medium"
+            class="w-full h-10 px-3.5 border border-[#c1c9b9]/70 rounded-xl text-xs bg-white outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 font-medium"
           />
         </div>
 
@@ -545,7 +545,7 @@ const handleConfirmDelete = async () => {
               <button
                 type="button"
                 @click="isEditCustomCategory = !isEditCustomCategory"
-                class="text-[10px] text-[#8d6749] underline font-semibold cursor-pointer"
+                class="text-[10px] text-[#8E3E2F] underline font-semibold cursor-pointer"
               >
                 {{ isEditCustomCategory ? '← Chọn từ list' : '+ Nhập mới' }}
               </button>
@@ -555,7 +555,7 @@ const handleConfirmDelete = async () => {
               v-model="editForm.category"
               type="text"
               placeholder="Tên phân loại..."
-              class="w-full h-10 px-3.5 border border-[#8d6749] rounded-xl text-xs bg-white outline-none focus:ring-2 focus:ring-[#8d6749]/20 font-medium"
+              class="w-full h-10 px-3.5 border border-[#8E3E2F] rounded-xl text-xs bg-white outline-none focus:ring-2 focus:ring-[#8E3E2F]/20 font-medium"
             />
             <Select
               v-else
@@ -588,7 +588,7 @@ const handleConfirmDelete = async () => {
               step="any"
               min="0"
               placeholder="0"
-              class="w-full h-10 px-3.5 border border-[#c1c9b9]/70 rounded-xl text-xs bg-white outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20 font-medium"
+              class="w-full h-10 px-3.5 border border-[#c1c9b9]/70 rounded-xl text-xs bg-white outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 font-medium"
             />
           </div>
           <div>
@@ -599,7 +599,7 @@ const handleConfirmDelete = async () => {
               step="any"
               min="0"
               placeholder="0"
-              class="w-full h-10 px-3.5 border border-[#c1c9b9]/70 rounded-xl text-xs bg-white outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20 font-medium"
+              class="w-full h-10 px-3.5 border border-[#c1c9b9]/70 rounded-xl text-xs bg-white outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 font-medium"
             />
           </div>
           <div>
@@ -610,20 +610,20 @@ const handleConfirmDelete = async () => {
               step="any"
               min="0"
               placeholder="0"
-              class="w-full h-10 px-3.5 border border-[#c1c9b9]/70 rounded-xl text-xs bg-white outline-none focus:border-[#8d6749] focus:ring-2 focus:ring-[#8d6749]/20 font-medium"
+              class="w-full h-10 px-3.5 border border-[#c1c9b9]/70 rounded-xl text-xs bg-white outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 font-medium"
             />
           </div>
         </div>
 
-        <div class="text-[11px] text-[#72796c] bg-[#faf5f4] p-2.5 rounded-lg border border-[#e9e0e0]">
+        <div class="text-[11px] text-[#72796c] bg-[#faf5f4] p-2.5 rounded-lg border border-[#E2D7CC]">
           💡 <strong>Đơn giá vốn:</strong> Giá cơ sở trên 1 ĐVT lưu kho (sẽ tự động tính lại khi nhập hàng mới).
         </div>
 
-        <div class="flex justify-end gap-2 mt-2 pt-3 border-t border-[#e9e0e0]">
+        <div class="flex justify-end gap-2 mt-2 pt-3 border-t border-[#E2D7CC]">
           <button
             @click="showEditModal = false"
             type="button"
-            class="h-10 px-4 bg-[#f5eceb] text-[#42493d] font-semibold text-xs rounded-xl hover:bg-[#efe6e6] transition cursor-pointer"
+            class="h-10 px-4 bg-[#F2ECE4] text-[#42493d] font-semibold text-xs rounded-xl hover:bg-[#E8DFD5] transition cursor-pointer"
           >
             Hủy
           </button>
@@ -631,7 +631,7 @@ const handleConfirmDelete = async () => {
             @click="handleSaveEdit"
             :disabled="isSavingEdit"
             type="button"
-            class="h-10 px-4 bg-[#8d6749] text-white font-semibold text-xs rounded-xl hover:bg-[#6e4e34] transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-sm"
+            class="h-10 px-4 bg-[#8E3E2F] text-white font-semibold text-xs rounded-xl hover:bg-[#6E281C] transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-sm"
           >
             <span v-if="isSavingEdit" class="material-symbols-outlined text-sm animate-spin">refresh</span>
             <span>{{ isSavingEdit ? 'Đang lưu...' : 'Lưu thay đổi' }}</span>
@@ -646,15 +646,15 @@ const handleConfirmDelete = async () => {
         <p class="text-xs font-medium text-[#42493d]">
           Bạn có chắc chắn muốn xóa nguyên liệu <strong class="text-[#1e1b1b]">{{ deleteTarget?.name }}</strong> (Mã: {{ deleteTarget?.id }})?
         </p>
-        <div class="p-3 bg-[#fff8f7] rounded-xl border border-[#e9e0e0] text-[11px] text-[#8d6749]">
+        <div class="p-3 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC] text-[11px] text-[#8E3E2F]">
           Lưu ý: Nguyên liệu này sẽ bị loại khỏi danh sách quản lý tồn kho và BOM món ăn liên quan.
         </div>
 
-        <div class="flex justify-end gap-2 mt-2 pt-3 border-t border-[#e9e0e0]">
+        <div class="flex justify-end gap-2 mt-2 pt-3 border-t border-[#E2D7CC]">
           <button
             @click="showDeleteModal = false"
             type="button"
-            class="h-10 px-4 bg-[#f5eceb] text-[#42493d] font-semibold text-xs rounded-xl hover:bg-[#efe6e6] transition cursor-pointer"
+            class="h-10 px-4 bg-[#F2ECE4] text-[#42493d] font-semibold text-xs rounded-xl hover:bg-[#E8DFD5] transition cursor-pointer"
           >
             Hủy bỏ
           </button>
