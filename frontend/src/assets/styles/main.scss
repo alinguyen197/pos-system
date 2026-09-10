@@ -510,7 +510,7 @@ select {
   }
 }
 
-/* Dialog Overrides */
+/* Dialog Overrides & Smooth Spring Animation */
 .p-dialog {
   border-radius: 16px !important;
   overflow: hidden !important;
@@ -541,7 +541,59 @@ select {
   }
 }
 
-/* Global PrimeVue Toast Override - Float strictly above all overlays & backdrop blurs */
+/* =========================================================
+   PRIMEVUE ANIMATION SYSTEM (Guide: primevue.dev/guides/animations)
+   ========================================================= */
+
+/* 1. PrimeVue Connected Overlay Animation (Select, Popover, Menu, AutoComplete) */
+.p-connected-overlay-enter-active {
+  transition: opacity 200ms cubic-bezier(0.16, 1, 0.3, 1), transform 200ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.p-connected-overlay-leave-active {
+  transition: opacity 150ms cubic-bezier(0.4, 0, 1, 1), transform 150ms cubic-bezier(0.4, 0, 1, 1) !important;
+}
+
+.p-connected-overlay-enter-from {
+  opacity: 0 !important;
+  transform: translateY(-8px) scale(0.97) !important;
+}
+
+.p-connected-overlay-leave-to {
+  opacity: 0 !important;
+  transform: translateY(-4px) scale(0.98) !important;
+}
+
+/* 2. PrimeVue Dialog & Modal Transitions */
+.p-dialog-mask-enter-active,
+.p-dialog-mask-leave-active {
+  transition: background-color 220ms ease, backdrop-filter 220ms ease !important;
+}
+
+.p-dialog-mask-enter-from,
+.p-dialog-mask-leave-to {
+  background-color: rgba(0, 0, 0, 0) !important;
+}
+
+.p-dialog-enter-active {
+  transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 220ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.p-dialog-leave-active {
+  transition: transform 180ms cubic-bezier(0.4, 0, 0.2, 1), opacity 180ms ease !important;
+}
+
+.p-dialog-enter-from {
+  opacity: 0 !important;
+  transform: scale(0.92) translateY(12px) !important;
+}
+
+.p-dialog-leave-to {
+  opacity: 0 !important;
+  transform: scale(0.95) translateY(6px) !important;
+}
+
+/* 3. PrimeVue Toast Transitions */
 .p-toast,
 .p-toast-container,
 div[class*="p-toast"] {
@@ -550,6 +602,155 @@ div[class*="p-toast"] {
 }
 
 .p-toast-message {
-  box-shadow: 0 12px 32px rgba(30, 27, 27, 0.25) !important;
+  box-shadow: 0 12px 32px rgba(30, 27, 27, 0.2) !important;
   border-radius: 14px !important;
+  backdrop-filter: blur(8px);
 }
+
+.p-toast-message-enter-active {
+  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 250ms ease !important;
+}
+
+.p-toast-message-leave-active {
+  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1), opacity 200ms ease, max-height 200ms ease, margin 200ms ease !important;
+}
+
+.p-toast-message-enter-from {
+  opacity: 0 !important;
+  transform: translateX(100%) scale(0.9) !important;
+}
+
+.p-toast-message-leave-to {
+  opacity: 0 !important;
+  transform: translateX(80%) scale(0.95) !important;
+  max-height: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* 4. PrimeVue Tooltip Animation */
+.p-tooltip {
+  transition: opacity 180ms cubic-bezier(0.16, 1, 0.3, 1), transform 180ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.p-tooltip-enter-from,
+.p-tooltip-leave-to {
+  opacity: 0 !important;
+  transform: scale(0.92) !important;
+}
+
+/* 5. PrimeVue Ripple Directives */
+.p-ink {
+  background: rgba(142, 62, 47, 0.22) !important;
+  border-radius: 100%;
+  position: absolute;
+  transform: scale(0);
+  pointer-events: none;
+  animation: p-ink-active 0.45s linear;
+}
+
+@keyframes p-ink-active {
+  100% {
+    opacity: 0;
+    transform: scale(2.5);
+  }
+}
+
+/* 6. Page Transitions for Vue Router */
+.page-fade-enter-active {
+  transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1), transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.page-fade-leave-active {
+  transition: opacity 160ms cubic-bezier(0.4, 0, 1, 1), transform 160ms cubic-bezier(0.4, 0, 1, 1);
+}
+
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* 7. Dynamic List Transitions (Cart Items, Tables, Orders) */
+.cart-item-enter-active,
+.list-fade-enter-active {
+  transition: all 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cart-item-leave-active,
+.list-fade-leave-active {
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  position: absolute;
+  width: 100%;
+}
+
+.cart-item-enter-from,
+.list-fade-enter-from {
+  opacity: 0;
+  transform: translateX(-12px);
+}
+
+.cart-item-leave-to,
+.list-fade-leave-to {
+  opacity: 0;
+  transform: translateX(16px);
+}
+
+.cart-item-move,
+.list-fade-move {
+  transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 8. Micro-Interactions: Cards, Buttons, and Hover States */
+.p-card,
+.stat-card {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1), border-color 200ms ease !important;
+
+  &:hover {
+    box-shadow: 0 8px 18px -4px rgba(0, 0, 0, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.04) !important;
+  }
+}
+
+.app-btn,
+.p-button {
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+
+  &:active:not(:disabled) {
+    transform: scale(0.96) !important;
+  }
+}
+
+/* 9. Keyframe Utilities */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.85;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+

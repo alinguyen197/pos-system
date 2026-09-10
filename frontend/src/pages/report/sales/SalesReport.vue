@@ -307,7 +307,7 @@ onMounted(() => {
           <span class="material-symbols-outlined text-[#ba1a1a] text-xl">inventory_2</span>
         </div>
         <div class="text-2xl font-bold font-display text-[#ba1a1a] mt-2">{{ summary.totalCost.toLocaleString('vi-VN') }} ₫</div>
-        <span class="text-[11px] text-[#72796c] font-medium mt-1">Ước tính theo công thức pha chế</span>
+        <span class="text-[11px] text-[#72796c] font-medium mt-1">Ước tính theo định lượng công thức (BOM)</span>
       </div>
 
       <!-- Card 4: Gross Profit & Margin -->
@@ -339,16 +339,16 @@ onMounted(() => {
             class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5"
             :class="activeTab === 'category' ? 'bg-[#8E3E2F] text-white shadow' : 'bg-white text-[#42493d] border border-[#E2D7CC] hover:bg-[#F2ECE4]'"
           >
-            <span class="material-symbols-outlined text-base">category</span>
-            <span>🏷️ Theo Danh mục</span>
+            <span class="material-symbols-outlined text-base">lunch_dining</span>
+            <span>🍱 Theo Danh mục</span>
           </button>
           <button
             @click="activeTab = 'product'"
             class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5"
             :class="activeTab === 'product' ? 'bg-[#8E3E2F] text-white shadow' : 'bg-white text-[#42493d] border border-[#E2D7CC] hover:bg-[#F2ECE4]'"
           >
-            <span class="material-symbols-outlined text-base">local_cafe</span>
-            <span>☕ Theo Sản phẩm</span>
+            <span class="material-symbols-outlined text-base">ramen_dining</span>
+            <span>🍜 Theo Món ăn</span>
           </button>
           <button
             @click="activeTab = 'payment'"

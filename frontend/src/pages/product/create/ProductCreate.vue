@@ -315,7 +315,7 @@ const saveProduct = async () => {
               v-model="productName"
               type="text"
               class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
-              placeholder="VD: Cà phê Sữa Đá"
+              placeholder="VD: Mì Trộn Sa Tế Đặc Biệt"
             />
           </div>
 
@@ -477,30 +477,30 @@ const saveProduct = async () => {
       </div>
 
       <!-- 3D Simulation Card -->
-      <div class="bg-gradient-to-b from-[#8E3E2F]/10 to-[#326824]/10 rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col justify-between">
+      <div class="bg-gradient-to-b from-[#8E3E2F]/10 to-[#C46D28]/10 rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col justify-between">
         <div class="flex items-center gap-2 mb-4">
-          <span class="material-symbols-outlined text-[#8E3E2F] text-xl animate-spin">sync</span>
-          <h3 class="text-base font-bold font-display text-[#1e1b1b]">Mô phỏng 3D Ly đồ uống</h3>
+          <span class="material-symbols-outlined text-[#8E3E2F] text-xl">ramen_dining</span>
+          <h3 class="text-base font-bold font-display text-[#1e1b1b]">Mô phỏng Đĩa Mì Trộn / Topping</h3>
         </div>
 
-        <!-- Simulated Cup Layer Stack -->
+        <!-- Simulated Noodle Plate Layer Stack -->
         <div class="flex-1 flex flex-col items-center justify-center my-6">
-          <div class="w-36 h-52 border-4 border-white/80 bg-white/40 backdrop-blur-md rounded-b-3xl shadow-xl p-2 flex flex-col justify-end overflow-hidden relative">
-            <div class="w-full h-10 bg-[#326824]/80 text-white text-[10px] font-bold flex items-center justify-center">Lớp Kem/Bọt</div>
-            <div class="w-full h-24 bg-[#8E3E2F] text-white text-[10px] font-bold flex items-center justify-center">Cà phê (Robusta)</div>
-            <div class="w-full h-12 bg-amber-100 text-[#8E3E2F] text-[10px] font-bold flex items-center justify-center border-t border-white/40">Sữa đặc</div>
+          <div class="w-48 h-44 border-4 border-white/80 bg-white/60 backdrop-blur-md rounded-2xl shadow-xl p-3 flex flex-col justify-end overflow-hidden relative border-b-8 border-b-[#8E3E2F]/40">
+            <div class="w-full h-10 bg-amber-100 text-[#8E3E2F] text-[10px] font-bold flex items-center justify-center rounded-t-lg border-b border-white/50">🍳 Trứng ốp la & Hành hoa</div>
+            <div class="w-full h-16 bg-[#8E3E2F] text-white text-[10px] font-bold flex items-center justify-center">🍜 Mì trộn sốt sa tế Cô Xi</div>
+            <div class="w-full h-10 bg-[#326824] text-white text-[10px] font-bold flex items-center justify-center rounded-b-lg border-t border-white/30">🥬 Rau cải & Topping thịt</div>
           </div>
         </div>
 
         <!-- Info Badges -->
         <div class="grid grid-cols-2 gap-3 text-center">
           <div class="p-3 bg-white rounded-xl border border-[#E2D7CC] shadow-sm">
-            <span class="text-[10px] text-[#72796c] uppercase font-bold block">Thể tích ly</span>
-            <span class="text-sm font-bold text-[#1e1b1b]">350 ml</span>
+            <span class="text-[10px] text-[#72796c] uppercase font-bold block">Khẩu phần</span>
+            <span class="text-sm font-bold text-[#1e1b1b]">1 Phần chuẩn</span>
           </div>
           <div class="p-3 bg-white rounded-xl border border-[#E2D7CC] shadow-sm">
-            <span class="text-[10px] text-[#72796c] uppercase font-bold block">Độ ngọt</span>
-            <span class="text-sm font-bold text-[#1e1b1b]">Tiêu chuẩn</span>
+            <span class="text-[10px] text-[#72796c] uppercase font-bold block">Độ cay</span>
+            <span class="text-sm font-bold text-[#1e1b1b]">Vừa / Tùy chọn</span>
           </div>
         </div>
       </div>

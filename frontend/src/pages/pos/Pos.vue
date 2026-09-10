@@ -573,16 +573,18 @@ onMounted(() => {
               <span class="material-symbols-outlined text-base">block</span>
             </div>
 
-            <div class="h-32 w-full bg-[#F2ECE4] relative overflow-hidden">
+            <div class="h-32 w-full bg-[#F2ECE4] relative overflow-hidden flex items-center justify-center">
               <img
-                :src="
-                  p.img ||
-                  'https://lh3.googleusercontent.com/aida-public/AB6AXuB5s3vZRGHW-l9un_Pku9yhvejdxLJD-OPfHm88Lc0T2AN7J6Os0hUMTGwyEIsYWrXV2BRsx0QeEy1vBfkKG4Mx8WSlQ00T_yhtFDukz-1LSmzY566Oum2kVS2Hl0b_ZQ_kOW0NbJx7c0MfdZkoGMZKdnW_Hsxp3GolG21jiq5uOA8-hVgLYaoRT3O1xtw1gEFUY3yB1jxBkPXnzvI-CFwBu3Ngx7OT8_SKrA4yzA_cYxiBBS5DM9aV'
-                "
+                v-if="p.img"
+                :src="p.img"
                 :alt="p.name"
                 class="w-full h-full object-cover transition duration-300"
                 :class="isProductSuspended(p) ? 'grayscale contrast-75' : 'group-hover:scale-105'"
               />
+              <div v-else class="w-full h-full flex flex-col items-center justify-center text-[#8E3E2F]/60 bg-[#F9F6F0]">
+                <span class="material-symbols-outlined text-4xl">ramen_dining</span>
+                <span class="text-[10px] text-[#72796c] font-medium mt-1">Chưa có ảnh</span>
+              </div>
               <div v-if="isProductSuspended(p)" class="absolute inset-0 bg-black/25 flex items-center justify-center z-10">
                 <span class="bg-red-600/95 text-white text-[11px] px-2.5 py-1 rounded-md font-bold shadow-md flex items-center gap-1">
                   <span class="material-symbols-outlined text-sm">block</span>
@@ -683,45 +685,47 @@ onMounted(() => {
           Chưa chọn sản phẩm nào vào đơn hàng
         </div>
 
-        <!-- Cart Items List -->
-        <div v-for="(item, idx) in activeTab.cart" :key="item.product.id" class="flex flex-col gap-1 pb-3 border-b border-dashed border-[#E2D7CC]">
-          <div class="flex items-start justify-between gap-2">
-            <div class="flex-1">
-              <h4 class="text-xs font-bold text-[#1e1b1b]">{{ item.product.name }}</h4>
-              <p class="text-[10px] text-[#72796c]">{{ formatCurrency(item.product.rawPrice) }}</p>
+        <!-- Cart Items List with Animation -->
+        <TransitionGroup name="cart-item" tag="div" class="space-y-3">
+          <div v-for="(item, idx) in activeTab.cart" :key="item.product.id" class="flex flex-col gap-1 pb-3 border-b border-dashed border-[#E2D7CC]">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex-1">
+                <h4 class="text-xs font-bold text-[#1e1b1b]">{{ item.product.name }}</h4>
+                <p class="text-[10px] text-[#72796c]">{{ formatCurrency(item.product.rawPrice) }}</p>
+              </div>
+
+              <div class="flex items-center gap-1 bg-[#F2ECE4] p-0.5 rounded-xl">
+                <button @click="updateQty(idx, -1)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-white text-[#1e1b1b] shadow-sm hover:bg-[#E8DFD5] cursor-pointer">
+                  <span class="material-symbols-outlined text-xs">remove</span>
+                </button>
+                <input
+                  type="number"
+                  :value="item.quantity"
+                  min="1"
+                  @change="setQty(idx, ($event.target as HTMLInputElement).value)"
+                  @keydown.enter="($event.target as HTMLInputElement).blur()"
+                  @focus="($event.target as HTMLInputElement).select()"
+                  class="w-16 h-6 text-center text-xs font-bold text-[#1e1b1b] bg-white rounded-lg border border-[#c1c9b9]/60 focus:outline-none focus:border-[#8E3E2F] focus:ring-1 focus:ring-[#8E3E2F]/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <button @click="updateQty(idx, 1)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-white text-[#1e1b1b] shadow-sm hover:bg-[#E8DFD5] cursor-pointer">
+                  <span class="material-symbols-outlined text-xs">add</span>
+                </button>
+              </div>
+
+              <div class="text-right min-w-[70px]">
+                <p class="text-xs font-bold text-[#1e1b1b]">{{ formatCurrency(item.product.rawPrice * item.quantity) }}</p>
+              </div>
             </div>
 
-            <div class="flex items-center gap-1 bg-[#F2ECE4] p-0.5 rounded-xl">
-              <button @click="updateQty(idx, -1)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-white text-[#1e1b1b] shadow-sm hover:bg-[#E8DFD5] cursor-pointer">
-                <span class="material-symbols-outlined text-xs">remove</span>
-              </button>
-              <input
-                type="number"
-                :value="item.quantity"
-                min="1"
-                @change="setQty(idx, ($event.target as HTMLInputElement).value)"
-                @keydown.enter="($event.target as HTMLInputElement).blur()"
-                @focus="($event.target as HTMLInputElement).select()"
-                class="w-16 h-6 text-center text-xs font-bold text-[#1e1b1b] bg-white rounded-lg border border-[#c1c9b9]/60 focus:outline-none focus:border-[#8E3E2F] focus:ring-1 focus:ring-[#8E3E2F]/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
-              <button @click="updateQty(idx, 1)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-white text-[#1e1b1b] shadow-sm hover:bg-[#E8DFD5] cursor-pointer">
-                <span class="material-symbols-outlined text-xs">add</span>
-              </button>
-            </div>
-
-            <div class="text-right min-w-[70px]">
-              <p class="text-xs font-bold text-[#1e1b1b]">{{ formatCurrency(item.product.rawPrice * item.quantity) }}</p>
-            </div>
+            <!-- Note Input for Cart Item -->
+            <input
+              v-model="item.note"
+              type="text"
+              placeholder="Ghi chú món (VD: ít cay, thêm nước tương...)"
+              class="w-full h-8 px-2.5 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-xs text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+            />
           </div>
-
-          <!-- Note Input for Cart Item -->
-          <input
-            v-model="item.note"
-            type="text"
-            placeholder="Ghi chú món (VD: ít đường, đá riêng...)"
-            class="w-full h-8 px-2.5 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-xs text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
-          />
-        </div>
+        </TransitionGroup>
       </div>
 
       <!-- Checkout & Payment Section Footer -->

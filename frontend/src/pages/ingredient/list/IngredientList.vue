@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from 'primevue/datatable'
@@ -56,23 +56,36 @@ const deleteTarget = ref<IngredientItem | null>(null)
 
 const units = ref(['kg', 'g', 'lít', 'ml', 'bình', 'bịch', 'chai', 'lon', 'hộp', 'gói', 'thùng', 'ly', 'cái', 'phần', 'cốc'])
 
+const formatNumber = (val: number | string | undefined | null) => {
+  if (val === undefined || val === null || val === '') return '0'
+  const num = Number(val)
+  if (isNaN(num)) return '0'
+  const rounded = Math.round(num * 100) / 100
+  return rounded.toLocaleString('vi-VN', { maximumFractionDigits: 2 })
+}
+
+const formatCurrency = (val: number | string | undefined | null) => {
+  return `${formatNumber(val)} ₫`
+}
+
 const totalIngredientCount = computed(() => {
   return summary.value?.total ?? (pagination.totalRecords || items.value.length)
 })
 
 const totalStockValue = computed(() => {
   if (summary.value && typeof summary.value.totalValue === 'number') {
-    return summary.value.totalValue
+    return Math.round(summary.value.totalValue * 100) / 100
   }
-  return items.value.reduce((sum, item) => {
+  const sum = items.value.reduce((acc, item) => {
     const cost = Number(item.rawCost) || 0
     const stock = Number(item.stock) || 0
-    return sum + (cost * stock)
+    return acc + (cost * stock)
   }, 0)
+  return Math.round(sum * 100) / 100
 })
 
 const formattedTotalStockValue = computed(() => {
-  return `${totalStockValue.value.toLocaleString('vi-VN')} ₫`
+  return formatCurrency(totalStockValue.value)
 })
 
 const safeStockCount = computed(() => {
@@ -180,9 +193,9 @@ const openEdit = (item: IngredientItem) => {
     name: item.name,
     category: item.category,
     unit: item.unit,
-    costPrice: item.rawCost || 0,
-    minStock: item.minStock || 0,
-    stock: item.stock || 0,
+    costPrice: Math.round((Number(item.rawCost) || 0) * 100) / 100,
+    minStock: Math.round((Number(item.minStock) || 0) * 100) / 100,
+    stock: Math.round((Number(item.stock) || 0) * 100) / 100,
   }
   editError.value = ''
   showEditModal.value = true
@@ -445,9 +458,9 @@ const handleConfirmDelete = async () => {
                       : 'text-[#326824]'
                   "
                 >
-                  {{ slotProps.data.stock }}
+                  {{ formatNumber(slotProps.data.stock) }}
                 </span>
-                <span class="text-[#72796c] text-[11px]">/ {{ slotProps.data.minStock }}</span>
+                <span class="text-[#72796c] text-[11px]">/ {{ formatNumber(slotProps.data.minStock) }}</span>
               </div>
               <div class="w-20 bg-[#E2D7CC] h-1.5 rounded-full overflow-hidden">
                 <div
@@ -459,7 +472,7 @@ const handleConfirmDelete = async () => {
                       ? 'bg-[#8c6b00]'
                       : 'bg-[#326824]'
                   "
-                  :style="{ width: `${Math.min(100, Math.max(slotProps.data.stock > 0 ? 8 : 0, (slotProps.data.stock / slotProps.data.minStock) * 100))}%` }"
+                  :style="{ width: `${Math.min(100, Math.max(slotProps.data.stock > 0 ? 8 : 0, (slotProps.data.stock / (slotProps.data.minStock || 1)) * 100))}%` }"
                 ></div>
               </div>
             </div>
@@ -474,7 +487,7 @@ const handleConfirmDelete = async () => {
 
         <Column field="unitPrice" header="Đơn giá vốn" bodyClass="text-right" headerClass="text-right">
           <template #body="slotProps">
-            <span v-if="slotProps.data.rawCost > 0" class="font-bold text-[#1e1b1b]">{{ slotProps.data.unitPrice }}</span>
+            <span v-if="slotProps.data.rawCost > 0" class="font-bold text-[#1e1b1b]">{{ formatCurrency(slotProps.data.rawCost) }}</span>
             <span v-else class="text-[11px] text-[#72796c] italic bg-[#faf5f4] px-2 py-0.5 rounded">Chưa nhập giá</span>
           </template>
         </Column>
@@ -482,7 +495,7 @@ const handleConfirmDelete = async () => {
         <Column header="Tổng giá trị tồn" bodyClass="text-right" headerClass="text-right">
           <template #body="slotProps">
             <span class="font-bold text-[#8E3E2F]">
-              {{ ((slotProps.data.stock || 0) * (slotProps.data.rawCost || 0)).toLocaleString('vi-VN') }} ₫
+              {{ formatCurrency((slotProps.data.stock || 0) * (slotProps.data.rawCost || 0)) }}
             </span>
           </template>
         </Column>

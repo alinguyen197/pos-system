@@ -28,10 +28,21 @@ const handleAppToast = (e: any) => {
 
 onMounted(() => {
   window.addEventListener('sky-app-toast', handleAppToast)
+  ;(window as any).__toggleLoading = (show: boolean) => {
+    if (show) {
+      useGlobalLoading().startLoading()
+    } else {
+      useGlobalLoading().resetLoading()
+    }
+  }
 })
 
 onUnmounted(() => {
   window.removeEventListener('sky-app-toast', handleAppToast)
+})
+
+const showLoadingOverlay = computed(() => {
+  return isGlobalLoading.value || route.query.previewLoading === 'true'
 })
 
 const isLoginPage = computed(() => {
@@ -41,7 +52,11 @@ const isLoginPage = computed(() => {
 
 <template>
   <div v-if="isLoginPage" class="login-layout">
-    <RouterView />
+    <RouterView v-slot="{ Component, route }">
+      <transition name="page-fade" mode="out-in">
+        <component :is="Component" :key="route.path" />
+      </transition>
+    </RouterView>
   </div>
 
   <div v-else class="app-layout">
@@ -49,14 +64,18 @@ const isLoginPage = computed(() => {
     <div class="app-body">
       <Navbar />
       <main class="app-main">
-        <RouterView />
+        <RouterView v-slot="{ Component, route }">
+          <transition name="page-fade" mode="out-in">
+            <component :is="Component" :key="route.path" />
+          </transition>
+        </RouterView>
       </main>
     </div>
     <Footer />
   </div>
 
-  <!-- Cute Coffee Pouring Loading Overlay with Screen Interaction Lock -->
-  <CoffeeLoadingOverlay v-if="isGlobalLoading" />
+  <!-- Cute Noodle Plate Loading Overlay with Screen Interaction Lock -->
+  <CoffeeLoadingOverlay v-if="showLoadingOverlay" />
 
   <!-- Global PrimeVue Toast - Positioned last so DOM order & z-index strictly float on top -->
   <Toast position="top-right" />

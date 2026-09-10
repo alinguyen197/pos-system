@@ -27,8 +27,14 @@
         justify-content: center;
         padding: 0.75rem;
 
-        span {
+        .nav-title {
           display: none;
+        }
+
+        .nav-emoji {
+          display: block;
+          font-size: 1.35rem;
+          margin: 0 auto;
         }
 
         i {
@@ -115,6 +121,18 @@
       font-weight: 500;
       white-space: nowrap;
       transition: all 0.15s ease;
+
+      .nav-emoji {
+        font-size: 1.15rem;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+
+      .nav-title {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
 
       i {
         font-size: 1.1rem;

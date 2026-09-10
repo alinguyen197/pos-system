@@ -9,13 +9,13 @@ const { isSidebarCollapsed } = useLayout()
 const { isAllowedRoute } = useAuth()
 
 const allMenuItems = [
-  { path: '/', title: 'Dashboard', icon: 'pi pi-th-large', matchPrefix: false },
-  { path: '/pos', title: 'Bán hàng (POS)', icon: 'pi pi-shopping-bag', matchPrefix: false },
-  { path: '/products', title: 'Sản phẩm', icon: 'pi pi-box', matchPrefix: true },
-  { path: '/ingredients', title: 'Kho nguyên liệu', icon: 'pi pi-database', matchPrefix: true },
-  { path: '/stock-imports/create', title: 'Nhập kho', icon: 'pi pi-file-import', matchPrefix: true },
-  { path: '/users', title: 'Người dùng', icon: 'pi pi-users', matchPrefix: true },
-  { path: '/reports/sales', title: 'Báo cáo doanh số', icon: 'pi pi-chart-bar', matchPrefix: true },
+  { path: '/', title: 'Tổng quan quán', emoji: '🏪', matchPrefix: false },
+  { path: '/pos', title: 'Bán hàng (POS)', emoji: '🥢', matchPrefix: false },
+  { path: '/products', title: 'Thực đơn món', emoji: '🍜', matchPrefix: true },
+  { path: '/ingredients', title: 'Kho nguyên liệu', emoji: '🥬', matchPrefix: true },
+  { path: '/stock-imports/create', title: 'Nhập hàng kho', emoji: '📦', matchPrefix: true },
+  { path: '/users', title: 'Quản lý nhân viên', emoji: '👨‍🍳', matchPrefix: true },
+  { path: '/reports/sales', title: 'Báo cáo doanh số', emoji: '📊', matchPrefix: true },
 ]
 
 const visibleMenuItems = computed(() => {
@@ -52,8 +52,8 @@ const isActiveRoute = (item: { path: string; matchPrefix: boolean }) => {
         :class="{ active: isActiveRoute(item) }"
         :title="item.title"
       >
-        <i :class="item.icon"></i>
-        <span>{{ item.title }}</span>
+        <span class="nav-emoji">{{ item.emoji }}</span>
+        <span class="nav-title">{{ item.title }}</span>
       </RouterLink>
     </div>
   </aside>

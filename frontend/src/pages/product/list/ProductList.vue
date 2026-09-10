@@ -435,7 +435,7 @@ const handleConfirmDelete = async () => {
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-xl bg-[#F2ECE4] overflow-hidden shrink-0 border border-[#E2D7CC] flex items-center justify-center">
                 <img v-if="slotProps.data.img" :src="slotProps.data.img" :alt="slotProps.data.name" class="w-full h-full object-cover" />
-                <span v-else class="material-symbols-outlined text-[#8E3E2F] text-xl">local_cafe</span>
+                <span v-else class="material-symbols-outlined text-[#8E3E2F] text-xl">ramen_dining</span>
               </div>
               <div class="flex flex-col">
                 <span class="font-bold text-[#1e1b1b]">{{ slotProps.data.name }}</span>

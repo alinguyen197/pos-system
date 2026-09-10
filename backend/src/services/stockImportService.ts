@@ -46,11 +46,13 @@ const createStockImport = async (payload: StockImportPayload) => {
 
       if (stockItem) {
         const addQty = Number(item.qty) || 0
-        const newQuantity = stockItem.quantity + addQty
+        const newQuantity =
+          Math.round((Number(stockItem.quantity || 0) + addQty) * 100) / 100
         const updateFields: any = { quantity: newQuantity }
 
         if (item.unitPrice && Number(item.unitPrice) > 0) {
-          updateFields.costPerUnit = Number(item.unitPrice)
+          updateFields.costPerUnit =
+            Math.round(Number(item.unitPrice) * 100) / 100
         }
 
         await stockItem.update(updateFields)
