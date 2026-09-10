@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sky Coffee - Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#326824',
+              'primary-container': '#4a813a',
+              'on-primary': '#ffffff',
+              secondary: '#48663a',
+              'secondary-container': '#c9edb5',
+              tertiary: '#006b30',
+              surface: '#fff8f7',
+              'surface-dim': '#e1d8d8',
+              'surface-bright': '#fff8f7',
+              'surface-container-lowest': '#ffffff',
+              'surface-container-low': '#fbf1f1',
+              'surface-container': '#f5eceb',
+              'surface-container-high': '#efe6e6',
+              'surface-container-highest': '#e9e0e0',
+              'on-surface': '#1e1b1b',
+              'on-surface-variant': '#42493d',
+              outline: '#72796c',
+              'outline-variant': '#c1c9b9',
+              error: '#ba1a1a',
+              'error-container': '#ffdad6',
+              'brand-coffee': '#8d6749',
+              'brand-coffee-dark': '#6e4e34'
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Manrope', 'sans-serif']
+            }
+          }
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

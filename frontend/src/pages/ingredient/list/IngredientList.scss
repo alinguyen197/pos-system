@@ -1,0 +1,25 @@
+.ingredient-list-page {
+  font-family: 'Inter', sans-serif;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  :deep(.p-datatable) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+
+    .p-datatable-wrapper {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+    }
+
+    .p-datatable-paginator-bottom {
+      flex-shrink: 0;
+    }
+  }
+}

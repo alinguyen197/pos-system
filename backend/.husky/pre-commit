@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running type check..."
+cd backend && npx tsc --noEmit
+
+echo "🎨 Running prettier and lint..."
+npx lint-staged

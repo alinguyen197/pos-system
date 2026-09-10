@@ -1,0 +1,28 @@
+.app-header-toolbar {
+  background-color: #8d6749 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  height: 60px;
+  padding: 0 1.25rem !important;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .breadcrumb-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #ffffff;
+    }
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+}
