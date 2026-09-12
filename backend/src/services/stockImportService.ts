@@ -29,90 +29,17 @@ export interface StockImportPayload {
   createdBy?: number
 }
 
-const initialStockImports = [
-  {
-    importCode: 'PNK-001',
-    supplier: 'Siêu thị Metro Bình Phú',
-    warehouse: 'Kho tổng',
-    importDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-    totalAmount: 1250000,
-    itemCount: 2,
-    note: 'Nhập tương ớt và dầu hào cho bếp',
-    itemsData: [
-      {
-        ingredientName: 'Tương ớt',
-        qty: 4.2,
-        unit: 'kg',
-        unitPrice: 50000,
-        totalAmount: 210000,
-        isPackMode: true,
-        packSize: 2.1,
-        packCount: 2,
-        packUnit: 'bình',
-        note: '2 bình loại 2.1kg',
-      },
-      {
-        ingredientName: 'Sữa tươi thanh trùng 1L',
-        qty: 24,
-        unit: 'lít',
-        unitPrice: 34000,
-        totalAmount: 816000,
-        isPackMode: true,
-        packSize: 1,
-        packCount: 24,
-        packUnit: 'hộp',
-        note: '2 thùng x 12 hộp',
-      },
-    ],
-  },
-  {
-    importCode: 'PNK-002',
-    supplier: 'Chợ đầu mối Nông sản Thủ Đức',
-    warehouse: 'Kho tổng',
-    importDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-    totalAmount: 580000,
-    itemCount: 1,
-    note: 'Nhập cải thìa và hành hoa tươi',
-    itemsData: [
-      {
-        ingredientName: 'Rau cải xanh',
-        qty: 15,
-        unit: 'kg',
-        unitPrice: 20000,
-        totalAmount: 300000,
-        note: 'Rau sạch loại 1',
-      },
-    ],
-  },
-]
-
-const ensureStockImportTableAndSeed = async () => {
+const ensureStockImportTable = async () => {
   try {
     await db.StockImport.sync()
-    const count = await db.StockImport.count()
-    if (count === 0) {
-      for (const item of initialStockImports) {
-        await db.StockImport.create({
-          importCode: item.importCode,
-          supplier: item.supplier,
-          warehouse: item.warehouse,
-          importDate: item.importDate,
-          totalAmount: item.totalAmount,
-          itemCount: item.itemCount,
-          note: item.note,
-          itemsData: item.itemsData,
-          isDeleted: false,
-        })
-      }
-    }
   } catch (err) {
-    console.warn('⚠️ Error ensuring stock_imports table / seed:', err)
+    console.warn('⚠️ Error ensuring stock_imports table:', err)
   }
 }
 
 const createStockImport = async (payload: StockImportPayload) => {
   try {
-    await ensureStockImportTableAndSeed()
+    await ensureStockImportTable()
 
     const { items } = payload
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -221,7 +148,7 @@ const createStockImport = async (payload: StockImportPayload) => {
 
 const getStockImports = async (queryParamsOrBody: any = {}) => {
   try {
-    await ensureStockImportTableAndSeed()
+    await ensureStockImportTable()
 
     const searchConditions = queryParamsOrBody.searchConditions || {
       keyword:
@@ -335,7 +262,7 @@ const getStockImports = async (queryParamsOrBody: any = {}) => {
 
 const getStockImportById = async (id: string | number) => {
   try {
-    await ensureStockImportTableAndSeed()
+    await ensureStockImportTable()
 
     let record = null
     if (typeof id === 'number' || (!isNaN(Number(id)) && Number(id) > 0)) {
