@@ -140,6 +140,16 @@ const formatCurrency = (val: number) => {
   return Math.round(val).toLocaleString('vi-VN') + ' ₫'
 }
 
+const editTotalCost = computed(() => {
+  return editRecipeItems.value.reduce((sum, item) => sum + getEditItemCost(item), 0)
+})
+
+const editProfitMargin = computed(() => {
+  if (!editForm.value.sellingPrice || editForm.value.sellingPrice <= 0) return '0%'
+  const profit = editForm.value.sellingPrice - editTotalCost.value
+  return ((profit / editForm.value.sellingPrice) * 100).toFixed(1) + '%'
+})
+
 const loadData = async () => {
   const [masterCodeData, filterCodeData, ingredientsData] = await Promise.all([
     fetchMasterCodes('PRODUCT_CATEGORY'),
@@ -250,9 +260,19 @@ const handleSaveEdit = async () => {
     editError.value = 'Vui lòng nhập tên sản phẩm'
     return
   }
-  if (editForm.value.sellingPrice <= 0) {
+  if (!editForm.value.sellingPrice || editForm.value.sellingPrice <= 0) {
     editError.value = 'Giá bán sản phẩm phải lớn hơn 0'
     return
+  }
+  if (!editRecipeItems.value || editRecipeItems.value.length === 0) {
+    editError.value = 'Vui lòng thêm ít nhất 1 nguyên liệu trong công thức BOM sản phẩm'
+    return
+  }
+  for (const item of editRecipeItems.value) {
+    if (!item.amount || item.amount <= 0) {
+      editError.value = `Định lượng nguyên liệu "${item.ingredientName}" phải lớn hơn 0`
+      return
+    }
   }
 
   try {
@@ -508,7 +528,7 @@ const handleConfirmDelete = async () => {
     </div>
 
     <!-- Edit Modal Dialog -->
-    <Dialog v-model:visible="showEditModal" header="Chỉnh sửa Sản phẩm & Công thức BOM" modal class="w-full max-w-xl p-0">
+    <Dialog v-model:visible="showEditModal" header="Chỉnh sửa Sản phẩm & Công thức BOM" modal class="w-full max-w-2xl p-0">
       <div class="p-5 flex flex-col gap-4">
         <div v-if="editError" class="p-3 bg-[#ffdad6] text-[#ba1a1a] rounded-lg text-xs font-semibold">
           {{ editError }}
@@ -554,11 +574,23 @@ const handleConfirmDelete = async () => {
           <input
             v-model="editForm.name"
             type="text"
-            class="w-full h-10 px-3.5 border border-[#c1c9b9]/70 rounded-xl text-xs bg-white outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 font-medium"
+            placeholder="VD: Mì Trộn Sa Tế Đặc Biệt"
+            class="w-full h-10 px-3.5 border border-[#c1c9b9]/70 rounded-xl text-xs bg-white outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 font-medium text-[#1e1b1b]"
           />
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1">Giá bán (VNĐ) *</label>
+            <input
+              v-model.number="editForm.sellingPrice"
+              type="number"
+              min="0"
+              step="1000"
+              placeholder="VD: 35000"
+              class="w-full h-10 px-3.5 border border-[#c1c9b9]/70 rounded-xl text-xs bg-white outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 font-medium text-[#1e1b1b]"
+            />
+          </div>
           <div>
             <label class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1">Danh mục *</label>
             <Select
@@ -566,6 +598,7 @@ const handleConfirmDelete = async () => {
               :options="categoryStringList"
               editable
               filter
+              placeholder="Chọn hoặc nhập danh mục"
               class="w-full h-10 text-xs font-medium"
             />
           </div>
@@ -576,6 +609,15 @@ const handleConfirmDelete = async () => {
               :options="units"
               editable
               filter
+              placeholder="Chọn hoặc nhập đơn vị"
+              class="w-full h-10 text-xs font-medium"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1">Trạng thái kinh doanh</label>
+            <Select
+              v-model="editForm.status"
+              :options="['Đang kinh doanh', 'Tạm ngừng']"
               class="w-full h-10 text-xs font-medium"
             />
           </div>
@@ -585,6 +627,7 @@ const handleConfirmDelete = async () => {
         <div class="border-t border-[#E2D7CC] pt-4">
           <div class="flex justify-between items-center mb-3">
             <h3 class="text-xs font-bold uppercase tracking-wider text-[#1e1b1b]">Định mức công thức (BOM)</h3>
+            <span class="text-[11px] font-semibold text-[#326824] bg-[#c9edb5]/40 px-2.5 py-0.5 rounded-md">Tính Cost tự động</span>
           </div>
 
           <!-- Add Ingredient Row -->
@@ -602,12 +645,12 @@ const handleConfirmDelete = async () => {
               v-model.number="addEditAmount"
               type="number"
               placeholder="Định lượng"
-              class="w-full sm:w-28 h-10 px-3.5 border border-[#c1c9b9]/70 rounded-xl text-xs font-medium bg-white outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+              class="w-full sm:w-28 h-10 px-3.5 border border-[#c1c9b9]/70 rounded-xl text-xs font-medium bg-white outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 text-[#1e1b1b]"
             />
             <button
               @click="addEditRecipeItem"
               type="button"
-              class="h-10 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white text-xs font-semibold rounded-xl transition cursor-pointer flex items-center justify-center gap-1 shrink-0"
+              class="h-10 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white text-xs font-semibold rounded-xl transition cursor-pointer flex items-center justify-center gap-1 shrink-0 shadow-sm"
             >
               <span class="material-symbols-outlined text-base">add</span>
               <span>Thêm</span>
@@ -639,7 +682,7 @@ const handleConfirmDelete = async () => {
                       type="number"
                       min="0"
                       step="any"
-                      class="w-16 px-2 py-0.5 border border-[#c1c9b9]/70 rounded text-center font-bold text-xs"
+                      class="w-16 px-2 py-0.5 border border-[#c1c9b9]/70 rounded text-center font-bold text-xs outline-none focus:border-[#8E3E2F]"
                     />
                   </td>
                   <td class="py-2 px-3 text-center">
@@ -666,6 +709,18 @@ const handleConfirmDelete = async () => {
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- Cost & Margin Summary inside Edit Modal -->
+          <div class="mt-3 p-3 bg-[#F2ECE4] rounded-xl flex justify-between items-center border border-[#E2D7CC]">
+            <div>
+              <span class="text-[10px] text-[#72796c] uppercase font-bold tracking-wider block">Tổng giá vốn (Cost NVL)</span>
+              <span class="text-base font-bold font-display text-[#326824]">{{ formatCurrency(editTotalCost) }}</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] text-[#72796c] uppercase font-bold tracking-wider block">Biên lợi nhuận gộp</span>
+              <span class="text-base font-bold font-display text-[#326824]">{{ editProfitMargin }}</span>
+            </div>
           </div>
         </div>
 
