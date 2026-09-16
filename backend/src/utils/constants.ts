@@ -143,7 +143,7 @@ export enum EHttpStatuses {
 }
 
 export const TOKEN_CONFIG = {
-  ACCESS_TOKEN_EXPIRATION: process.env.JWT_ACCESS_EXPIRATION || '60m',
+  ACCESS_TOKEN_EXPIRATION: process.env.JWT_ACCESS_EXPIRATION || '7d',
   REFRESH_TOKEN_EXPIRATION: process.env.JWT_REFRESH_EXPIRATION || '7d',
   MAX_ACTIVE_TOKENS: parseInt(process.env.MAX_ACTIVE_TOKENS || '5'),
 }
