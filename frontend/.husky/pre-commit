@@ -2,7 +2,7 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 echo "🔍 Running type check..."
-npx tsc --noEmit
+cd frontend && npx tsc --noEmit
 
 echo "🎨 Running prettier and lint..."
 npx lint-staged
