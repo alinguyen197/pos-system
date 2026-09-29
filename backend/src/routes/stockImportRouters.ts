@@ -28,5 +28,17 @@ router.get(
   authorize('admin', 'manager'),
   stockImportController.getStockImportById
 )
+router.put(
+  '/:id',
+  authenticateJWT,
+  authorize('admin', 'manager'),
+  stockImportController.updateStockImport
+)
+router.delete(
+  '/:id',
+  authenticateJWT,
+  authorize('admin', 'manager'),
+  stockImportController.deleteStockImport
+)
 
 export default router

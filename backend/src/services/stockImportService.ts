@@ -296,8 +296,182 @@ const getStockImportById = async (id: string | number) => {
   }
 }
 
+const updateStockImport = async (id: string | number, payload: StockImportPayload) => {
+  try {
+    await ensureStockImportTable()
+    let record = null
+    if (typeof id === 'number' || (!isNaN(Number(id)) && Number(id) > 0)) {
+      record = await db.StockImport.findOne({
+        where: { id: Number(id), isDeleted: false },
+      })
+    }
+    if (!record) {
+      record = await db.StockImport.findOne({
+        where: { importCode: String(id), isDeleted: false },
+      })
+    }
+    if (!record) {
+      throw new Error('Không tìm thấy phiếu nhập kho để cập nhật')
+    }
+
+    // Hoàn tác tồn kho cũ
+    for (const oldItem of record.itemsData || []) {
+      const oldIngId = oldItem.dbId || oldItem.ingredientId || oldItem.id
+      let numOldId = Number(oldIngId)
+      if (isNaN(numOldId)) numOldId = 0
+
+      let stockItem = await db.StockItem.findOne({ where: { id: numOldId, isDeleted: false } })
+      if (!stockItem && typeof oldIngId === 'string') {
+        stockItem = await db.StockItem.findOne({ where: { code: oldIngId, isDeleted: false } })
+      }
+
+      if (stockItem) {
+        stockItem.quantity = Math.round((Number(stockItem.quantity || 0) - Number(oldItem.qty || 0)) * 100) / 100
+        await stockItem.save()
+      }
+    }
+
+    const { items } = payload
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      throw new Error('Danh sách nguyên liệu nhập không được rỗng')
+    }
+
+    const updatedItems = []
+    const detailedItemsData: any[] = []
+    let totalImportAmount = 0
+
+    // Áp dụng tồn kho mới
+    for (const item of items) {
+      const targetId = item.dbId || item.ingredientId || item.id
+      let stockItem = null
+
+      if (targetId) {
+        stockItem = await db.StockItem.findOne({
+          where: { id: Number(targetId) || 0, isDeleted: false },
+        })
+        if (!stockItem && typeof targetId === 'string') {
+          stockItem = await db.StockItem.findOne({
+            where: { code: targetId, isDeleted: false },
+          })
+        }
+      }
+
+      const ingName =
+        item.ingredientName ||
+        item.name ||
+        (stockItem ? stockItem.name : 'Nguyên liệu')
+      const ingUnit = item.unit || (stockItem ? stockItem.unit : 'kg')
+      const addQty = Math.round((Number(item.qty) || 0) * 100) / 100
+      const unitPrice =
+        Math.round(
+          (Number(item.unitPrice) ||
+            (stockItem ? stockItem.costPerUnit : 0) ||
+            0) * 100
+        ) / 100
+      const lineTotal = item.totalAmount
+        ? Math.round(Number(item.totalAmount) * 100) / 100
+        : Math.round(addQty * unitPrice * 100) / 100
+      totalImportAmount += lineTotal
+
+      detailedItemsData.push({
+        ingredientId: stockItem ? stockItem.id : targetId,
+        ingredientCode: stockItem ? stockItem.code : undefined,
+        ingredientName: ingName,
+        category: stockItem ? stockItem.category : item.category,
+        qty: addQty,
+        unit: ingUnit,
+        unitPrice,
+        totalAmount: lineTotal,
+        note: item.note || '',
+        isPackMode: item.isPackMode || false,
+        packSize: item.packSize,
+        packCount: item.packCount,
+        packUnit: item.packUnit,
+      })
+
+      if (stockItem) {
+        const newQuantity = Math.round((Number(stockItem.quantity || 0) + addQty) * 100) / 100
+        const updateFields: any = { quantity: newQuantity }
+        if (unitPrice > 0) {
+          updateFields.costPerUnit = unitPrice
+        }
+        await stockItem.update(updateFields)
+        updatedItems.push(stockItem)
+      }
+    }
+
+    await record.update({
+      supplier: payload.supplier?.trim() || 'Nhà cung cấp lẻ',
+      warehouse: payload.warehouse?.trim() || 'Kho tổng',
+      importDate: payload.importDate ? new Date(payload.importDate) : record.importDate,
+      totalAmount: Math.round(totalImportAmount * 100) / 100,
+      itemCount: detailedItemsData.length,
+      note: payload.note || record.note,
+      itemsData: detailedItemsData,
+    })
+
+    return {
+      success: true,
+      importRecord: record,
+      updatedCount: updatedItems.length,
+      totalAmount: totalImportAmount,
+    }
+  } catch (error) {
+    throw parseError(error)
+  }
+}
+
+const deleteStockImport = async (id: string | number) => {
+  try {
+    await ensureStockImportTable()
+    let record = null
+    if (typeof id === 'number' || (!isNaN(Number(id)) && Number(id) > 0)) {
+      record = await db.StockImport.findOne({
+        where: { id: Number(id), isDeleted: false },
+      })
+    }
+    if (!record) {
+      record = await db.StockImport.findOne({
+        where: { importCode: String(id), isDeleted: false },
+      })
+    }
+    if (!record) {
+      throw new Error('Không tìm thấy phiếu nhập kho để xóa')
+    }
+
+    // Hoàn tác tồn kho cũ
+    for (const oldItem of record.itemsData || []) {
+      const oldIngId = oldItem.dbId || oldItem.ingredientId || oldItem.id
+      let numOldId = Number(oldIngId)
+      if (isNaN(numOldId)) numOldId = 0
+
+      let stockItem = await db.StockItem.findOne({ where: { id: numOldId, isDeleted: false } })
+      if (!stockItem && typeof oldIngId === 'string') {
+        stockItem = await db.StockItem.findOne({ where: { code: oldIngId, isDeleted: false } })
+      }
+
+      if (stockItem) {
+        stockItem.quantity = Math.round((Number(stockItem.quantity || 0) - Number(oldItem.qty || 0)) * 100) / 100
+        await stockItem.save()
+      }
+    }
+
+    await record.update({ isDeleted: true })
+
+    return {
+      success: true,
+      deletedId: record.id,
+      importCode: record.importCode,
+    }
+  } catch (error) {
+    throw parseError(error)
+  }
+}
+
 export default {
   createStockImport,
   getStockImports,
   getStockImportById,
+  updateStockImport,
+  deleteStockImport,
 }

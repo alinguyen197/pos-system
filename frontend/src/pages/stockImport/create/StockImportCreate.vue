@@ -1,13 +1,20 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import Select from 'primevue/select'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog'
+import UnsavedChangesDialog from '@/components/common/UnsavedChangesDialog.vue'
 import { fetchIngredients } from '@/api/ingredient.api'
 import { fetchMasterCodes } from '@/api/masterCode.api'
-import { createStockImport, fetchStockImports, StockImportRecord } from '@/api/stockImport.api'
+import {
+  createStockImport,
+  fetchStockImports,
+  StockImportRecord,
+  updateStockImport,
+  deleteStockImport,
+} from '@/api/stockImport.api'
 import { useAppToast } from '@/composables/useAppToast'
 import { useListQuery } from '@/composables/useListQuery'
 
@@ -22,6 +29,49 @@ const importDate = ref(new Date().toISOString().slice(0, 16))
 
 const isSubmitting = ref(false)
 const errorMessage = ref('')
+const editingId = ref<number | null>(null)
+
+const resetForm = () => {
+  editingId.value = null
+  importItems.value = []
+  supplier.value = ''
+  note.value = ''
+  warehouse.value = 'Kho tổng'
+  importDate.value = new Date().toISOString().slice(0, 16)
+}
+
+const showLeaveConfirmDialog = ref(false)
+let leaveNext: any = null
+
+onBeforeRouteLeave((to, from, next) => {
+  const isDirty =
+    importItems.value.length > 0 ||
+    !!editingId.value ||
+    supplier.value.trim() !== '' ||
+    note.value.trim() !== ''
+  if (isDirty) {
+    showLeaveConfirmDialog.value = true
+    leaveNext = next
+  } else {
+    next()
+  }
+})
+
+const confirmLeave = () => {
+  showLeaveConfirmDialog.value = false
+  if (leaveNext) {
+    leaveNext(true)
+    leaveNext = null
+  }
+}
+
+const cancelLeave = () => {
+  showLeaveConfirmDialog.value = false
+  if (leaveNext) {
+    leaveNext(false)
+    leaveNext = null
+  }
+}
 
 interface AvailableIngredient {
   id: string
@@ -33,7 +83,23 @@ interface AvailableIngredient {
 }
 
 const availableIngredients = ref<AvailableIngredient[]>([])
-const unitOptions = ref<string[]>(['kg', 'g', 'lít', 'ml', 'bình', 'chai', 'lon', 'hộp', 'gói', 'bịch', 'thùng', 'ly', 'cái', 'phần', 'cốc'])
+const unitOptions = ref<string[]>([
+  'kg',
+  'g',
+  'lít',
+  'ml',
+  'bình',
+  'chai',
+  'lon',
+  'hộp',
+  'gói',
+  'bịch',
+  'thùng',
+  'ly',
+  'cái',
+  'phần',
+  'cốc',
+])
 
 // Add Item Form State
 const selectedIngId = ref('')
@@ -48,7 +114,20 @@ const isPackMode = ref(false)
 const packSize = ref<number>(1)
 const packCount = ref<number>(1)
 const packUnit = ref('bình')
-const packUnitOptions = ['bình', 'hộp', 'lon', 'gói', 'thùng', 'chai', 'bịch', 'túi', 'bao', 'cái', 'kg', 'lít']
+const packUnitOptions = [
+  'bình',
+  'hộp',
+  'lon',
+  'gói',
+  'thùng',
+  'chai',
+  'bịch',
+  'túi',
+  'bao',
+  'cái',
+  'kg',
+  'lít',
+]
 
 const packTotalQty = computed(() => {
   const s = Number(packSize.value) || 0
@@ -61,7 +140,8 @@ watch([packSize, packCount], () => {
     addQty.value = packTotalQty.value
     if (priceInputMode.value === 'total') {
       if (addTotalPrice.value > 0 && addQty.value > 0) {
-        addUnitPrice.value = Math.round((addTotalPrice.value / addQty.value) * 100) / 100
+        addUnitPrice.value =
+          Math.round((addTotalPrice.value / addQty.value) * 100) / 100
       }
     } else {
       if (addUnitPrice.value > 0) {
@@ -115,7 +195,11 @@ const {
   handleSort: handleHistorySort,
   handlePageChange: handleHistoryPageChange,
   handlePageSizeChange: handleHistoryPageSizeChange,
-} = useListQuery<StockImportRecord>(fetchStockImports, { sortBy: 'id', sortOrder: 'desc' }, 10)
+} = useListQuery<StockImportRecord>(
+  fetchStockImports,
+  { sortBy: 'id', sortOrder: 'desc' },
+  10,
+)
 
 // Detail Modal State
 const showDetailModal = ref(false)
@@ -154,7 +238,10 @@ const loadData = async () => {
     ])
 
     if (unitCodes && unitCodes.length > 0) {
-      const setUnits = new Set([...unitOptions.value, ...unitCodes.map((u) => u.label)])
+      const setUnits = new Set([
+        ...unitOptions.value,
+        ...unitCodes.map((u) => u.label),
+      ])
       unitOptions.value = Array.from(setUnits)
     }
 
@@ -233,7 +320,7 @@ const onSelectIngredient = (ingId: string) => {
   addUnit.value = ing.unit || 'kg'
   if (ing.defaultCost > 0) {
     addUnitPrice.value = ing.defaultCost
-    const qty = isPackMode.value ? packTotalQty.value : (addQty.value || 1)
+    const qty = isPackMode.value ? packTotalQty.value : addQty.value || 1
     addTotalPrice.value = Math.round(qty * ing.defaultCost)
   } else {
     addUnitPrice.value = 0
@@ -263,14 +350,14 @@ const onQtyChange = () => {
 
 const onUnitPriceInput = () => {
   priceInputMode.value = 'unit'
-  const qty = isPackMode.value ? packTotalQty.value : (Number(addQty.value) || 1)
+  const qty = isPackMode.value ? packTotalQty.value : Number(addQty.value) || 1
   const price = Number(addUnitPrice.value) || 0
   addTotalPrice.value = Math.round(qty * price)
 }
 
 const onTotalPriceInput = () => {
   priceInputMode.value = 'total'
-  const qty = isPackMode.value ? packTotalQty.value : (Number(addQty.value) || 1)
+  const qty = isPackMode.value ? packTotalQty.value : Number(addQty.value) || 1
   const total = Number(addTotalPrice.value) || 0
   if (qty > 0) {
     addUnitPrice.value = Math.round((total / qty) * 100) / 100
@@ -278,7 +365,9 @@ const onTotalPriceInput = () => {
 }
 
 const addImportItem = () => {
-  const ing = availableIngredients.value.find((i) => i.id === selectedIngId.value)
+  const ing = availableIngredients.value.find(
+    (i) => i.id === selectedIngId.value,
+  )
   if (!ing) {
     showWarning('Vui lòng chọn nguyên liệu')
     return
@@ -298,7 +387,8 @@ const addImportItem = () => {
     return
   }
 
-  const finalUnitPrice = unitP > 0 ? unitP : Math.round((total / qty) * 100) / 100
+  const finalUnitPrice =
+    unitP > 0 ? unitP : Math.round((total / qty) * 100) / 100
   const finalTotalPrice = total > 0 ? total : Math.round(qty * finalUnitPrice)
 
   let packInfo: string | undefined = undefined
@@ -356,11 +446,14 @@ const removeItem = (idx: number) => {
 }
 
 const totalAmount = computed(() => {
-  return importItems.value.reduce((sum, item) => sum + (Number(item.totalPrice) || (item.qty * item.unitPrice)), 0)
+  return importItems.value.reduce(
+    (sum, item) => sum + (Number(item.totalPrice) || item.qty * item.unitPrice),
+    0,
+  )
 })
 
 const previewQty = computed(() => {
-  return isPackMode.value ? packTotalQty.value : (Number(addQty.value) || 0)
+  return isPackMode.value ? packTotalQty.value : Number(addQty.value) || 0
 })
 
 const handleSave = async () => {
@@ -375,58 +468,157 @@ const handleSave = async () => {
     isSubmitting.value = true
     errorMessage.value = ''
 
-    const res = await createStockImport({
-      supplier: supplier.value.trim() || 'Nhà cung cấp lẻ',
-      warehouse: warehouse.value.trim() || 'Kho tổng',
-      importDate: importDate.value,
-      note: note.value,
-      items: importItems.value.map((i) => ({
-        ingredientId: i.ingredient.id,
-        dbId: i.ingredient.dbId,
-        ingredientName: i.ingredient.name,
-        unit: i.unit,
-        qty: Number(i.qty) || 0,
-        unitPrice: Number(i.unitPrice) || 0,
-        totalAmount: Number(i.totalPrice) || 0,
-        isPackMode: i.isPackMode,
-        packSize: i.packSize,
-        packCount: i.packCount,
-        packUnit: i.packUnit,
-      })),
-    })
-
-    const code = res?.importCode || 'mới'
-    showSuccess(`Đã tạo phiếu nhập kho #${code} và cập nhật tồn kho thành công!`)
+    if (editingId.value) {
+      const res = await updateStockImport(editingId.value, {
+        supplier: supplier.value.trim() || 'Nhà cung cấp lẻ',
+        warehouse: warehouse.value.trim() || 'Kho tổng',
+        importDate: importDate.value,
+        note: note.value,
+        items: importItems.value.map((i) => ({
+          ingredientId: i.ingredient.id,
+          dbId: i.ingredient.dbId,
+          ingredientName: i.ingredient.name,
+          unit: i.unit,
+          qty: Number(i.qty) || 0,
+          unitPrice: Number(i.unitPrice) || 0,
+          totalAmount: Number(i.totalPrice) || 0,
+          isPackMode: i.isPackMode,
+          packSize: i.packSize,
+          packCount: i.packCount,
+          packUnit: i.packUnit,
+        })),
+      })
+      const code = res?.importRecord?.importCode || 'mới'
+      showSuccess(`Đã cập nhật phiếu nhập kho #${code} thành công!`)
+    } else {
+      const res = await createStockImport({
+        supplier: supplier.value.trim() || 'Nhà cung cấp lẻ',
+        warehouse: warehouse.value.trim() || 'Kho tổng',
+        importDate: importDate.value,
+        note: note.value,
+        items: importItems.value.map((i) => ({
+          ingredientId: i.ingredient.id,
+          dbId: i.ingredient.dbId,
+          ingredientName: i.ingredient.name,
+          unit: i.unit,
+          qty: Number(i.qty) || 0,
+          unitPrice: Number(i.unitPrice) || 0,
+          totalAmount: Number(i.totalPrice) || 0,
+          isPackMode: i.isPackMode,
+          packSize: i.packSize,
+          packCount: i.packCount,
+          packUnit: i.packUnit,
+        })),
+      })
+      const code = res?.importCode || 'mới'
+      showSuccess(
+        `Đã tạo phiếu nhập kho #${code} và cập nhật tồn kho thành công!`,
+      )
+    }
 
     // Reset Form
-    importItems.value = []
-    supplier.value = ''
-    note.value = ''
-    importDate.value = new Date().toISOString().slice(0, 16)
+    resetForm()
 
     // Reload History & Ingredients
-    await Promise.all([
-      loadHistory(true),
-      loadData(),
-    ])
+    await Promise.all([loadHistory(true), loadData()])
   } catch (error: any) {
     console.error('Error saving stock import:', error)
-    const msg = error?.response?.data?.message || error?.message || 'Lỗi khi lưu phiếu nhập kho'
+    const msg =
+      error?.response?.data?.message ||
+      error?.message ||
+      'Lỗi khi lưu phiếu nhập kho'
     errorMessage.value = msg
     showError(msg)
   } finally {
     isSubmitting.value = false
   }
 }
+const handleEdit = (item: StockImportRecord) => {
+  editingId.value = item.id
+  supplier.value = item.supplier
+  warehouse.value = item.warehouse
+  note.value = item.note || ''
+  importDate.value = new Date(item.importDate || Date.now())
+    .toISOString()
+    .slice(0, 16)
+
+  importItems.value = (item.items || []).map((i) => {
+    let ing = availableIngredients.value.find(
+      (ai) => ai.id === String(i.ingredientId) || ai.dbId === i.ingredientId,
+    )
+    if (!ing) {
+      ing = {
+        id: String(i.ingredientId),
+        dbId: typeof i.ingredientId === 'number' ? i.ingredientId : undefined,
+        name: i.ingredientName || 'Nguyên liệu',
+        category: i.category || 'Khác',
+        unit: i.unit || 'kg',
+        defaultCost: i.unitPrice || 0,
+      }
+    }
+
+    let packInfo: string | undefined = undefined
+    if (i.isPackMode) {
+      packInfo = `${i.packCount} ${i.packUnit} × ${i.packSize} ${i.unit}`
+    }
+
+    return {
+      ingredient: ing,
+      unit: i.unit || 'kg',
+      qty: i.qty,
+      unitPrice: i.unitPrice,
+      totalPrice: i.totalAmount || i.qty * i.unitPrice,
+      packInfo,
+      isPackMode: i.isPackMode,
+      packSize: i.packSize,
+      packCount: i.packCount,
+      packUnit: i.packUnit,
+    }
+  })
+
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const handleDelete = async (item: StockImportRecord) => {
+  if (
+    !confirm(
+      `Bạn có chắc chắn muốn xóa phiếu nhập kho #${item.importCode}? Việc này sẽ hoàn tác tồn kho.`,
+    )
+  )
+    return
+  try {
+    await deleteStockImport(item.id)
+    showSuccess(`Đã xóa phiếu nhập kho #${item.importCode} thành công!`)
+    loadHistory()
+    loadData() // Refresh stock items
+  } catch (error: any) {
+    console.error('Error deleting stock import:', error)
+    const msg =
+      error?.response?.data?.message ||
+      error?.message ||
+      'Lỗi khi xóa phiếu nhập kho'
+    showError(msg)
+  }
+}
 </script>
 
 <template>
-  <div class="stock-import-create-page w-full flex flex-col gap-6 max-w-7xl mx-auto pb-16">
+  <div
+    class="stock-import-create-page w-full flex flex-col gap-6 max-w-7xl mx-auto pb-16"
+  >
     <!-- Header Title & Action Bar -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2D7CC]">
+    <div
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2D7CC]"
+    >
       <div>
-        <h1 class="text-2xl font-bold font-display text-[#1e1b1b]">Quản lý & Nhập hàng kho</h1>
-        <p class="text-xs text-[#42493d] mt-1 font-medium">Lập phiếu nhập kho nguyên liệu, tính toán quy cách đóng gói và theo dõi lịch sử các lần nhập hàng</p>
+        <h1 class="text-2xl font-bold font-display text-[#1e1b1b]">
+          Quản lý & Nhập hàng kho
+        </h1>
+        <p class="text-xs text-[#42493d] mt-1 font-medium">
+          Lập phiếu nhập kho nguyên liệu, tính toán quy cách đóng gói và theo
+          dõi lịch sử các lần nhập hàng
+        </p>
       </div>
       <div class="flex items-center gap-3">
         <button
@@ -438,19 +630,43 @@ const handleSave = async () => {
           <span>Về kho nguyên liệu</span>
         </button>
         <button
+          v-if="editingId"
+          @click="resetForm"
+          type="button"
+          class="h-10 px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#ba1a1a] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition cursor-pointer flex items-center gap-1.5"
+        >
+          <span class="material-symbols-outlined text-base">close</span>
+          <span>Hủy sửa</span>
+        </button>
+        <button
           @click="handleSave"
           :disabled="isSubmitting"
           class="h-10 px-5 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
         >
-          <span v-if="!isSubmitting" class="material-symbols-outlined text-lg">check</span>
-          <span v-else class="material-symbols-outlined text-lg animate-spin">refresh</span>
-          <span>{{ isSubmitting ? 'Đang lưu...' : 'Lưu đơn nhập' }}</span>
+          <span
+            v-if="!isSubmitting"
+            class="material-symbols-outlined text-lg"
+            >{{ editingId ? 'save' : 'check' }}</span
+          >
+          <span v-else class="material-symbols-outlined text-lg animate-spin"
+            >refresh</span
+          >
+          <span>{{
+            isSubmitting
+              ? 'Đang lưu...'
+              : editingId
+                ? 'Cập nhật phiếu'
+                : 'Lưu đơn nhập'
+          }}</span>
         </button>
       </div>
     </div>
 
     <!-- Error Alert -->
-    <div v-if="errorMessage" class="p-4 bg-[#ffdad6] border border-[#ba1a1a]/30 rounded-xl text-xs font-semibold text-[#ba1a1a] flex items-center gap-2">
+    <div
+      v-if="errorMessage"
+      class="p-4 bg-[#ffdad6] border border-[#ba1a1a]/30 rounded-xl text-xs font-semibold text-[#ba1a1a] flex items-center gap-2"
+    >
       <span class="material-symbols-outlined text-lg">error</span>
       <span>{{ errorMessage }}</span>
     </div>
@@ -458,16 +674,27 @@ const handleSave = async () => {
     <!-- PHẦN 1: BENTO GRID TẠO ĐƠN NHẬP KHO MỚI -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- General Info Card -->
-      <div class="bg-white rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col gap-4">
-        <h2 class="text-base font-bold font-display text-[#1e1b1b] border-b border-[#E2D7CC] pb-3 flex items-center gap-2">
-          <span class="material-symbols-outlined text-[#8E3E2F]">post_add</span>
-          <span>Thông tin phiếu nhập</span>
+      <div
+        class="bg-white rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col gap-4"
+      >
+        <h2
+          class="text-base font-bold font-display text-[#1e1b1b] border-b border-[#E2D7CC] pb-3 flex items-center gap-2"
+        >
+          <span class="material-symbols-outlined text-[#8E3E2F]">{{
+            editingId ? 'edit_document' : 'post_add'
+          }}</span>
+          <span>{{
+            editingId ? 'Cập nhật phiếu nhập' : 'Thông tin phiếu nhập'
+          }}</span>
         </h2>
 
         <div class="space-y-4">
           <!-- Supplier (Text Input) -->
           <div>
-            <label class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5">Nhà cung cấp</label>
+            <label
+              class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5"
+              >Nhà cung cấp</label
+            >
             <input
               v-model="supplier"
               type="text"
@@ -478,7 +705,10 @@ const handleSave = async () => {
 
           <!-- Warehouse (Text Input) -->
           <div>
-            <label class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5">Kho nhập</label>
+            <label
+              class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5"
+              >Kho nhập</label
+            >
             <input
               v-model="warehouse"
               type="text"
@@ -488,7 +718,10 @@ const handleSave = async () => {
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5">Thời gian nhập *</label>
+            <label
+              class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5"
+              >Thời gian nhập *</label
+            >
             <input
               v-model="importDate"
               type="datetime-local"
@@ -497,7 +730,10 @@ const handleSave = async () => {
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5">Ghi chú phiếu nhập</label>
+            <label
+              class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5"
+              >Ghi chú phiếu nhập</label
+            >
             <textarea
               v-model="note"
               rows="3"
@@ -508,51 +744,87 @@ const handleSave = async () => {
         </div>
 
         <!-- Total Cost Summary Badge -->
-        <div class="mt-auto p-4 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC] flex justify-between items-center">
-          <span class="text-xs font-bold text-[#42493d]">Tổng tiền đơn nhập:</span>
-          <span class="text-xl font-bold font-display text-[#326824]">{{ formatCurrency(totalAmount) }}</span>
+        <div
+          class="mt-auto p-4 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC] flex justify-between items-center"
+        >
+          <span class="text-xs font-bold text-[#42493d]"
+            >Tổng tiền đơn nhập:</span
+          >
+          <span class="text-xl font-bold font-display text-[#326824]">{{
+            formatCurrency(totalAmount)
+          }}</span>
         </div>
       </div>
 
       <!-- Ingredient Items List Table Card -->
-      <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col gap-4">
-        <div class="flex justify-between items-center border-b border-[#E2D7CC] pb-3">
+      <div
+        class="lg:col-span-2 bg-white rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col gap-4"
+      >
+        <div
+          class="flex justify-between items-center border-b border-[#E2D7CC] pb-3"
+        >
           <div>
-            <h2 class="text-base font-bold font-display text-[#1e1b1b] flex items-center gap-2">
-              <span class="material-symbols-outlined text-[#8E3E2F]">add_shopping_cart</span>
+            <h2
+              class="text-base font-bold font-display text-[#1e1b1b] flex items-center gap-2"
+            >
+              <span class="material-symbols-outlined text-[#8E3E2F]"
+                >add_shopping_cart</span
+              >
               <span>Thêm nguyên liệu vào đơn</span>
             </h2>
-            <p class="text-[11px] text-[#72796c] mt-0.5">Nhập số lượng & tổng tiền mua để hệ thống tự động tính đơn giá vốn</p>
+            <p class="text-[11px] text-[#72796c] mt-0.5">
+              Nhập số lượng & tổng tiền mua để hệ thống tự động tính đơn giá vốn
+            </p>
           </div>
-          <span class="text-xs font-semibold text-[#8E3E2F] bg-[#F2ECE4] px-3 py-1 rounded-lg">Đã chọn: {{ importItems.length }} mục</span>
+          <span
+            class="text-xs font-semibold text-[#8E3E2F] bg-[#F2ECE4] px-3 py-1 rounded-lg"
+            >Đã chọn: {{ importItems.length }} mục</span
+          >
         </div>
 
         <!-- Add Item Selector & Calculator Box -->
-        <div class="p-4 bg-[#faf5f4] rounded-xl border border-[#E2D7CC] space-y-3">
-
+        <div
+          class="p-4 bg-[#faf5f4] rounded-xl border border-[#E2D7CC] space-y-3"
+        >
           <!-- Pack Mode Toggle Banner -->
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-sm text-[#8E3E2F]">inventory_2</span>
-              <span class="text-[11px] font-bold text-[#42493d] uppercase tracking-wide">Chế độ nhập</span>
+              <span class="material-symbols-outlined text-sm text-[#8E3E2F]"
+                >inventory_2</span
+              >
+              <span
+                class="text-[11px] font-bold text-[#42493d] uppercase tracking-wide"
+                >Chế độ nhập</span
+              >
             </div>
             <button
               type="button"
               @click="togglePackMode"
               class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-bold transition cursor-pointer"
-              :class="isPackMode
-                ? 'bg-[#8E3E2F] text-white shadow-sm'
-                : 'bg-white border border-[#c1c9b9]/70 text-[#42493d] hover:border-[#8E3E2F]/50'"
+              :class="
+                isPackMode
+                  ? 'bg-[#8E3E2F] text-white shadow-sm'
+                  : 'bg-white border border-[#c1c9b9]/70 text-[#42493d] hover:border-[#8E3E2F]/50'
+              "
             >
-              <span class="material-symbols-outlined text-sm">{{ isPackMode ? 'package_2' : 'straighten' }}</span>
-              <span>{{ isPackMode ? 'Nhập theo quy cách đóng gói' : 'Nhập trực tiếp số lượng' }}</span>
+              <span class="material-symbols-outlined text-sm">{{
+                isPackMode ? 'package_2' : 'straighten'
+              }}</span>
+              <span>{{
+                isPackMode
+                  ? 'Nhập theo quy cách đóng gói'
+                  : 'Nhập trực tiếp số lượng'
+              }}</span>
             </button>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
             <!-- Select Ingredient -->
             <div class="sm:col-span-6">
-              <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Nguyên liệu *</label>
+              <label
+                class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+                >Nguyên liệu *</label
+              >
               <Select
                 v-model="selectedIngId"
                 :options="availableIngredients"
@@ -566,7 +838,10 @@ const handleSave = async () => {
 
             <!-- Import Unit -->
             <div class="sm:col-span-3">
-              <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">ĐVT kho</label>
+              <label
+                class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+                >ĐVT kho</label
+              >
               <Select
                 v-model="addUnit"
                 :options="unitOptions"
@@ -579,7 +854,10 @@ const handleSave = async () => {
 
             <!-- Direct Qty (when NOT pack mode) -->
             <div v-if="!isPackMode" class="sm:col-span-3">
-              <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Số lượng *</label>
+              <label
+                class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+                >Số lượng *</label
+              >
               <input
                 v-model.number="addQty"
                 @input="onQtyChange"
@@ -593,16 +871,30 @@ const handleSave = async () => {
           </div>
 
           <!-- Pack Mode: quy cách đóng gói row -->
-          <div v-if="isPackMode" class="p-3 bg-[#fff8e1] rounded-xl border border-[#ffe082] space-y-2">
+          <div
+            v-if="isPackMode"
+            class="p-3 bg-[#fff8e1] rounded-xl border border-[#ffe082] space-y-2"
+          >
             <div class="flex items-center gap-1.5 mb-1">
-              <span class="material-symbols-outlined text-sm text-[#f57f17]">package_2</span>
-              <span class="text-[11px] font-bold text-[#f57f17] uppercase tracking-wide">Quy cách đóng gói</span>
-              <span class="text-[10px] text-[#a68a00] ml-1">— Nhập số đơn vị mua và dung tích/cân nặng mỗi đơn vị, hệ thống tự tính tổng vào kho</span>
+              <span class="material-symbols-outlined text-sm text-[#f57f17]"
+                >package_2</span
+              >
+              <span
+                class="text-[11px] font-bold text-[#f57f17] uppercase tracking-wide"
+                >Quy cách đóng gói</span
+              >
+              <span class="text-[10px] text-[#a68a00] ml-1"
+                >— Nhập số đơn vị mua và dung tích/cân nặng mỗi đơn vị, hệ thống
+                tự tính tổng vào kho</span
+              >
             </div>
             <div class="grid grid-cols-3 gap-3">
               <!-- Pack count: số lượng mua -->
               <div>
-                <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Số lượng mua *</label>
+                <label
+                  class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+                  >Số lượng mua *</label
+                >
                 <input
                   v-model.number="packCount"
                   type="number"
@@ -615,7 +907,10 @@ const handleSave = async () => {
 
               <!-- Pack unit: loại đóng gói -->
               <div>
-                <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Loại đóng gói</label>
+                <label
+                  class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+                  >Loại đóng gói</label
+                >
                 <Select
                   v-model="packUnit"
                   :options="packUnitOptions"
@@ -627,7 +922,10 @@ const handleSave = async () => {
 
               <!-- Pack size: dung tích/cân nặng mỗi đơn vị -->
               <div>
-                <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Quy cách ({{ addUnit }}/{{ packUnit }})</label>
+                <label
+                  class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+                  >Quy cách ({{ addUnit }}/{{ packUnit }})</label
+                >
                 <input
                   v-model.number="packSize"
                   type="number"
@@ -640,13 +938,24 @@ const handleSave = async () => {
             </div>
 
             <!-- Pack calculation result -->
-            <div class="flex items-center gap-2 mt-1 p-2 bg-white rounded-lg border border-[#ffe082]">
-              <span class="material-symbols-outlined text-sm text-[#f57f17]">calculate</span>
+            <div
+              class="flex items-center gap-2 mt-1 p-2 bg-white rounded-lg border border-[#ffe082]"
+            >
+              <span class="material-symbols-outlined text-sm text-[#f57f17]"
+                >calculate</span
+              >
               <span class="text-[11px] text-[#42493d]">
-                <strong class="text-[#1e1b1b]">{{ packCount }} {{ packUnit }}</strong>
-                × <strong class="text-[#1e1b1b]">{{ packSize }} {{ addUnit }}/{{ packUnit }}</strong>
+                <strong class="text-[#1e1b1b]"
+                  >{{ packCount }} {{ packUnit }}</strong
+                >
+                ×
+                <strong class="text-[#1e1b1b]"
+                  >{{ packSize }} {{ addUnit }}/{{ packUnit }}</strong
+                >
                 =
-                <strong class="text-[#326824] text-sm">{{ packTotalQty }} {{ addUnit }}</strong>
+                <strong class="text-[#326824] text-sm"
+                  >{{ packTotalQty }} {{ addUnit }}</strong
+                >
                 <span class="text-[#72796c] ml-1">(sẽ được nhập vào kho)</span>
               </span>
             </div>
@@ -655,8 +964,13 @@ const handleSave = async () => {
           <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
             <!-- Total Price / Thành tiền -->
             <div class="sm:col-span-5">
-              <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">
-                Tổng tiền mua (VNĐ) <span class="text-[#8E3E2F] font-normal lowercase">(ví dụ 57.000)</span>
+              <label
+                class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+              >
+                Tổng tiền mua (VNĐ)
+                <span class="text-[#8E3E2F] font-normal lowercase"
+                  >(ví dụ 57.000)</span
+                >
               </label>
               <input
                 v-model.number="addTotalPrice"
@@ -670,7 +984,9 @@ const handleSave = async () => {
 
             <!-- Unit Price / Đơn giá tính ra -->
             <div class="sm:col-span-4">
-              <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">
+              <label
+                class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+              >
                 Đơn giá tính ra (₫/{{ addUnit }})
               </label>
               <input
@@ -697,13 +1013,20 @@ const handleSave = async () => {
           </div>
 
           <!-- Formula Preview Chip -->
-          <div v-if="previewQty > 0 && (addTotalPrice > 0 || addUnitPrice > 0)" class="flex items-center gap-2 text-[11px] text-[#72796c] bg-white px-3 py-1.5 rounded-lg border border-[#E2D7CC]">
-            <span class="material-symbols-outlined text-sm text-[#8E3E2F]">calculate</span>
+          <div
+            v-if="previewQty > 0 && (addTotalPrice > 0 || addUnitPrice > 0)"
+            class="flex items-center gap-2 text-[11px] text-[#72796c] bg-white px-3 py-1.5 rounded-lg border border-[#E2D7CC]"
+          >
+            <span class="material-symbols-outlined text-sm text-[#8E3E2F]"
+              >calculate</span
+            >
             <span>
               Quy cách tính:
               <strong>{{ previewQty }} {{ addUnit }}</strong>
-              × <strong>{{ formatCurrency(addUnitPrice) }}</strong>
-              = <strong class="text-[#326824]">{{ formatCurrency(addTotalPrice) }}</strong>
+              × <strong>{{ formatCurrency(addUnitPrice) }}</strong> =
+              <strong class="text-[#326824]">{{
+                formatCurrency(addTotalPrice)
+              }}</strong>
             </span>
           </div>
         </div>
@@ -711,7 +1034,9 @@ const handleSave = async () => {
         <!-- Table of Import Items -->
         <div class="overflow-x-auto border border-[#E2D7CC] rounded-xl">
           <table class="w-full text-left text-xs text-[#1e1b1b]">
-            <thead class="bg-[#F5EFE8] text-[#42493d] font-semibold uppercase tracking-wider border-b border-[#E2D7CC]">
+            <thead
+              class="bg-[#F5EFE8] text-[#42493d] font-semibold uppercase tracking-wider border-b border-[#E2D7CC]"
+            >
               <tr>
                 <th class="py-3 px-3 w-10 text-center">STT</th>
                 <th class="py-3 px-3">Tên nguyên liệu</th>
@@ -722,14 +1047,32 @@ const handleSave = async () => {
                 <th class="py-3 px-2 w-12 text-center">Xóa</th>
               </tr>
             </thead>
-            <tbody v-if="importItems.length > 0" class="divide-y divide-[#F2ECE4]">
-              <tr v-for="(item, idx) in importItems" :key="idx" class="hover:bg-[#F5EFE8]/50 transition">
-                <td class="py-3 px-3 text-center font-bold text-[#72796c]">{{ idx + 1 }}</td>
+            <tbody
+              v-if="importItems.length > 0"
+              class="divide-y divide-[#F2ECE4]"
+            >
+              <tr
+                v-for="(item, idx) in importItems"
+                :key="idx"
+                class="hover:bg-[#F5EFE8]/50 transition"
+              >
+                <td class="py-3 px-3 text-center font-bold text-[#72796c]">
+                  {{ idx + 1 }}
+                </td>
                 <td class="py-3 px-3">
-                  <div class="font-bold text-[#1e1b1b]">{{ item.ingredient.name }}</div>
-                  <div class="text-[10px] text-[#72796c]">{{ item.ingredient.id }} • {{ item.ingredient.category }}</div>
-                  <div v-if="item.packInfo" class="mt-0.5 inline-flex items-center gap-1 text-[10px] text-[#a68a00] bg-[#fff8e1] px-1.5 py-0.5 rounded-md border border-[#ffe082]">
-                    <span class="material-symbols-outlined text-xs">package_2</span>
+                  <div class="font-bold text-[#1e1b1b]">
+                    {{ item.ingredient.name }}
+                  </div>
+                  <div class="text-[10px] text-[#72796c]">
+                    {{ item.ingredient.id }} • {{ item.ingredient.category }}
+                  </div>
+                  <div
+                    v-if="item.packInfo"
+                    class="mt-0.5 inline-flex items-center gap-1 text-[10px] text-[#a68a00] bg-[#fff8e1] px-1.5 py-0.5 rounded-md border border-[#ffe082]"
+                  >
+                    <span class="material-symbols-outlined text-xs"
+                      >package_2</span
+                    >
                     {{ item.packInfo }}
                   </div>
                 </td>
@@ -771,8 +1114,15 @@ const handleSave = async () => {
                   />
                 </td>
                 <td class="py-3 px-2 text-center">
-                  <button @click="removeItem(idx)" type="button" class="p-1 text-[#ba1a1a] hover:bg-[#ffdad6] rounded-md transition cursor-pointer" title="Xóa dòng này">
-                    <span class="material-symbols-outlined text-base">delete</span>
+                  <button
+                    @click="removeItem(idx)"
+                    type="button"
+                    class="p-1 text-[#ba1a1a] hover:bg-[#ffdad6] rounded-md transition cursor-pointer"
+                    title="Xóa dòng này"
+                  >
+                    <span class="material-symbols-outlined text-base"
+                      >delete</span
+                    >
                   </button>
                 </td>
               </tr>
@@ -780,9 +1130,17 @@ const handleSave = async () => {
             <tbody v-else>
               <tr>
                 <td colspan="7" class="py-8 text-center text-[#72796c]">
-                  <span class="material-symbols-outlined text-3xl text-[#c1c9b9] block mb-1">add_shopping_cart</span>
-                  <span class="text-xs font-semibold">Chưa có nguyên liệu nào trong đơn nhập</span>
-                  <p class="text-[11px] text-[#72796c] mt-0.5">Vui lòng chọn nguyên liệu và bấm "+ Thêm vào đơn" ở phía trên</p>
+                  <span
+                    class="material-symbols-outlined text-3xl text-[#c1c9b9] block mb-1"
+                    >add_shopping_cart</span
+                  >
+                  <span class="text-xs font-semibold"
+                    >Chưa có nguyên liệu nào trong đơn nhập</span
+                  >
+                  <p class="text-[11px] text-[#72796c] mt-0.5">
+                    Vui lòng chọn nguyên liệu và bấm "+ Thêm vào đơn" ở phía
+                    trên
+                  </p>
                 </td>
               </tr>
             </tbody>
@@ -794,37 +1152,72 @@ const handleSave = async () => {
     <!-- =========================================================
          PHẦN 2: BẢNG DỮ LIỆU CÁC LẦN NHẬP HÀNG (HISTORY & MANAGEMENT)
          ========================================================= -->
-    <div class="bg-white rounded-2xl border border-[#E2D7CC] shadow-sm overflow-hidden flex flex-col">
+    <div
+      class="bg-white rounded-2xl border border-[#E2D7CC] shadow-sm overflow-hidden flex flex-col"
+    >
       <!-- Section Header with Stats -->
-      <div class="p-5 border-b border-[#E2D7CC] bg-[#F9F6F0] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div
+        class="p-5 border-b border-[#E2D7CC] bg-[#F9F6F0] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
         <div>
-          <h2 class="text-lg font-bold font-display text-[#1e1b1b] flex items-center gap-2">
-            <span class="material-symbols-outlined text-[#8E3E2F]">history</span>
+          <h2
+            class="text-lg font-bold font-display text-[#1e1b1b] flex items-center gap-2"
+          >
+            <span class="material-symbols-outlined text-[#8E3E2F]"
+              >history</span
+            >
             <span>Lịch sử các lần nhập hàng</span>
           </h2>
-          <p class="text-xs text-[#42493d] mt-0.5 font-medium">Theo dõi danh sách các phiếu nhập kho, nhà cung cấp và tổng chi phí nhập hàng</p>
+          <p class="text-xs text-[#42493d] mt-0.5 font-medium">
+            Theo dõi danh sách các phiếu nhập kho, nhà cung cấp và tổng chi phí
+            nhập hàng
+          </p>
         </div>
 
         <div class="flex items-center gap-3">
-          <div class="px-3.5 py-2 bg-white rounded-xl border border-[#E2D7CC] flex items-center gap-2">
-            <span class="text-[11px] text-[#72796c] font-bold uppercase">Tổng phiếu:</span>
-            <span class="text-xs font-bold text-[#8E3E2F]">{{ historySummary?.totalImports ?? pagination.totalRecords }} phiếu</span>
+          <div
+            class="px-3.5 py-2 bg-white rounded-xl border border-[#E2D7CC] flex items-center gap-2"
+          >
+            <span class="text-[11px] text-[#72796c] font-bold uppercase"
+              >Tổng phiếu:</span
+            >
+            <span class="text-xs font-bold text-[#8E3E2F]"
+              >{{
+                historySummary?.totalImports ?? pagination.totalRecords
+              }}
+              phiếu</span
+            >
           </div>
-          <div class="px-3.5 py-2 bg-white rounded-xl border border-[#E2D7CC] flex items-center gap-2">
-            <span class="text-[11px] text-[#72796c] font-bold uppercase">Tổng chi phí:</span>
-            <span class="text-xs font-bold text-[#326824]">{{ formatCurrency(historySummary?.totalSpend || 0) }}</span>
+          <div
+            class="px-3.5 py-2 bg-white rounded-xl border border-[#E2D7CC] flex items-center gap-2"
+          >
+            <span class="text-[11px] text-[#72796c] font-bold uppercase"
+              >Tổng chi phí:</span
+            >
+            <span class="text-xs font-bold text-[#326824]">{{
+              formatCurrency(historySummary?.totalSpend || 0)
+            }}</span>
           </div>
         </div>
       </div>
 
       <!-- 1. Form Tìm kiếm & Bộ lọc (Search Form) -->
       <div class="p-4 border-b border-[#E2D7CC] bg-white">
-        <form @submit.prevent="onSearchHistory" class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+        <form
+          @submit.prevent="onSearchHistory"
+          class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end"
+        >
           <!-- Keyword Input -->
           <div class="sm:col-span-4">
-            <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Từ khóa tìm kiếm</label>
+            <label
+              class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+              >Từ khóa tìm kiếm</label
+            >
             <div class="relative">
-              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#72796c] text-lg">search</span>
+              <span
+                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#72796c] text-lg"
+                >search</span
+              >
               <input
                 v-model="searchKeyword"
                 type="text"
@@ -836,7 +1229,10 @@ const handleSave = async () => {
 
           <!-- Warehouse Select -->
           <div class="sm:col-span-3">
-            <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Kho nhập</label>
+            <label
+              class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+              >Kho nhập</label
+            >
             <Select
               v-model="searchWarehouse"
               :options="warehouseOptions"
@@ -848,7 +1244,10 @@ const handleSave = async () => {
 
           <!-- Date Range: From -->
           <div class="sm:col-span-2">
-            <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Từ ngày</label>
+            <label
+              class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+              >Từ ngày</label
+            >
             <input
               v-model="searchFromDate"
               type="date"
@@ -858,7 +1257,10 @@ const handleSave = async () => {
 
           <!-- Date Range: To -->
           <div class="sm:col-span-2">
-            <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Đến ngày</label>
+            <label
+              class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+              >Đến ngày</label
+            >
             <input
               v-model="searchToDate"
               type="date"
@@ -906,16 +1308,26 @@ const handleSave = async () => {
         currentPageReportTemplate="Hiển thị {first} đến {last} trong tổng số {totalRecords} phiếu nhập"
       >
         <template #empty>
-          <div class="py-10 text-center text-[#72796c] flex flex-col items-center justify-center gap-2">
-            <span class="material-symbols-outlined text-4xl text-[#c1c9b9]">inventory</span>
-            <span class="text-xs font-bold text-[#1e1b1b]">Chưa có lịch sử nhập hàng nào</span>
-            <span class="text-[11px] text-[#72796c]">Các phiếu nhập kho sau khi tạo sẽ hiển thị tại đây</span>
+          <div
+            class="py-10 text-center text-[#72796c] flex flex-col items-center justify-center gap-2"
+          >
+            <span class="material-symbols-outlined text-4xl text-[#c1c9b9]"
+              >inventory</span
+            >
+            <span class="text-xs font-bold text-[#1e1b1b]"
+              >Chưa có lịch sử nhập hàng nào</span
+            >
+            <span class="text-[11px] text-[#72796c]"
+              >Các phiếu nhập kho sau khi tạo sẽ hiển thị tại đây</span
+            >
           </div>
         </template>
 
         <Column field="importCode" header="Mã phiếu" sortable>
           <template #body="slotProps">
-            <span class="font-mono font-bold text-[#8E3E2F] bg-[#F9F6F0] px-2.5 py-1 rounded-lg border border-[#E2D7CC]">
+            <span
+              class="font-mono font-bold text-[#8E3E2F] bg-[#F9F6F0] px-2.5 py-1 rounded-lg border border-[#E2D7CC]"
+            >
               {{ slotProps.data.importCode }}
             </span>
           </template>
@@ -923,8 +1335,12 @@ const handleSave = async () => {
 
         <Column field="importDate" header="Thời gian nhập" sortable>
           <template #body="slotProps">
-            <div class="flex items-center gap-1.5 text-xs text-[#1e1b1b] font-medium">
-              <span class="material-symbols-outlined text-[#72796c] text-sm">schedule</span>
+            <div
+              class="flex items-center gap-1.5 text-xs text-[#1e1b1b] font-medium"
+            >
+              <span class="material-symbols-outlined text-[#72796c] text-sm"
+                >schedule</span
+              >
               <span>{{ formatDateTime(slotProps.data.importDate) }}</span>
             </div>
           </template>
@@ -933,27 +1349,46 @@ const handleSave = async () => {
         <Column field="supplier" header="Nhà cung cấp" sortable>
           <template #body="slotProps">
             <div class="flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[#8E3E2F] text-sm">storefront</span>
-              <span class="font-bold text-[#1e1b1b] text-xs">{{ slotProps.data.supplier || 'Nhà cung cấp lẻ' }}</span>
+              <span class="material-symbols-outlined text-[#8E3E2F] text-sm"
+                >storefront</span
+              >
+              <span class="font-bold text-[#1e1b1b] text-xs">{{
+                slotProps.data.supplier || 'Nhà cung cấp lẻ'
+              }}</span>
             </div>
           </template>
         </Column>
 
         <Column field="warehouse" header="Kho nhập">
           <template #body="slotProps">
-            <span class="px-2.5 py-1 rounded-md bg-[#F2ECE4] text-[#42493d] font-semibold text-[11px] inline-block">
+            <span
+              class="px-2.5 py-1 rounded-md bg-[#F2ECE4] text-[#42493d] font-semibold text-[11px] inline-block"
+            >
               {{ slotProps.data.warehouse || 'Kho tổng' }}
             </span>
           </template>
         </Column>
 
-        <Column field="itemCount" header="Số mặt hàng" bodyClass="text-center" headerClass="text-center">
+        <Column
+          field="itemCount"
+          header="Số mặt hàng"
+          bodyClass="text-center"
+          headerClass="text-center"
+        >
           <template #body="slotProps">
-            <span class="font-bold text-xs text-[#42493d]">{{ slotProps.data.itemCount }} loại</span>
+            <span class="font-bold text-xs text-[#42493d]"
+              >{{ slotProps.data.itemCount }} loại</span
+            >
           </template>
         </Column>
 
-        <Column field="totalAmount" header="Tổng tiền phiếu" sortable bodyClass="text-right" headerClass="text-right">
+        <Column
+          field="totalAmount"
+          header="Tổng tiền phiếu"
+          sortable
+          bodyClass="text-right"
+          headerClass="text-right"
+        >
           <template #body="slotProps">
             <span class="font-bold font-display text-sm text-[#326824]">
               {{ formatCurrency(slotProps.data.totalAmount) }}
@@ -963,22 +1398,49 @@ const handleSave = async () => {
 
         <Column field="note" header="Ghi chú">
           <template #body="slotProps">
-            <span class="text-xs text-[#72796c] line-clamp-1" :title="slotProps.data.note">
+            <span
+              class="text-xs text-[#72796c] line-clamp-1"
+              :title="slotProps.data.note"
+            >
               {{ slotProps.data.note || '—' }}
             </span>
           </template>
         </Column>
 
-        <Column header="Thao tác" bodyClass="text-center" headerClass="text-center">
+        <Column
+          header="Thao tác"
+          bodyClass="text-center"
+          headerClass="text-center"
+          :style="{ width: '150px' }"
+        >
           <template #body="slotProps">
-            <button
-              @click="openDetailModal(slotProps.data)"
-              class="h-8 px-3 bg-[#F2ECE4] hover:bg-[#8E3E2F] text-[#8E3E2F] hover:text-white rounded-lg font-bold text-xs transition flex items-center justify-center gap-1 cursor-pointer mx-auto"
-              title="Xem chi tiết phiếu nhập"
-            >
-              <span class="material-symbols-outlined text-sm">visibility</span>
-              <span>Chi tiết</span>
-            </button>
+            <div class="flex items-center justify-center gap-2">
+              <button
+                @click="openDetailModal(slotProps.data)"
+                class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#F2ECE4] hover:bg-[#8E3E2F] text-[#8E3E2F] hover:text-white transition cursor-pointer"
+                title="Xem chi tiết"
+              >
+                <span class="material-symbols-outlined text-[18px]"
+                  >visibility</span
+                >
+              </button>
+              <button
+                @click="handleEdit(slotProps.data)"
+                class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#e3f2fd] hover:bg-[#1976d2] text-[#1976d2] hover:text-white transition cursor-pointer"
+                title="Sửa phiếu nhập"
+              >
+                <span class="material-symbols-outlined text-[18px]">edit</span>
+              </button>
+              <button
+                @click="handleDelete(slotProps.data)"
+                class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#ffebee] hover:bg-[#d32f2f] text-[#d32f2f] hover:text-white transition cursor-pointer"
+                title="Xóa phiếu nhập"
+              >
+                <span class="material-symbols-outlined text-[18px]"
+                  >delete</span
+                >
+              </button>
+            </div>
           </template>
         </Column>
       </DataTable>
@@ -991,37 +1453,61 @@ const handleSave = async () => {
       v-model:visible="showDetailModal"
       :header="`Chi tiết Phiếu nhập kho #${selectedImport?.importCode || ''}`"
       modal
-      class="w-full max-w-2xl p-0"
+      class="w-full max-w-5xl p-0"
     >
       <div v-if="selectedImport" class="p-5 flex flex-col gap-4">
         <!-- Receipt Meta Info Cards -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div class="p-3 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC]">
-            <span class="text-[10px] font-bold text-[#72796c] uppercase block">Mã phiếu</span>
-            <span class="text-sm font-bold font-mono text-[#8E3E2F]">{{ selectedImport.importCode }}</span>
+            <span class="text-[10px] font-bold text-[#72796c] uppercase block"
+              >Mã phiếu</span
+            >
+            <span class="text-sm font-bold font-mono text-[#8E3E2F]">{{
+              selectedImport.importCode
+            }}</span>
           </div>
           <div class="p-3 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC]">
-            <span class="text-[10px] font-bold text-[#72796c] uppercase block">Ngày nhập</span>
-            <span class="text-xs font-bold text-[#1e1b1b]">{{ formatDateTime(selectedImport.importDate) }}</span>
+            <span class="text-[10px] font-bold text-[#72796c] uppercase block"
+              >Ngày nhập</span
+            >
+            <span class="text-xs font-bold text-[#1e1b1b]">{{
+              formatDateTime(selectedImport.importDate)
+            }}</span>
           </div>
           <div class="p-3 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC]">
-            <span class="text-[10px] font-bold text-[#72796c] uppercase block">Nhà cung cấp</span>
-            <span class="text-xs font-bold text-[#1e1b1b] truncate block" :title="selectedImport.supplier">{{ selectedImport.supplier }}</span>
+            <span class="text-[10px] font-bold text-[#72796c] uppercase block"
+              >Nhà cung cấp</span
+            >
+            <span
+              class="text-xs font-bold text-[#1e1b1b] truncate block"
+              :title="selectedImport.supplier"
+              >{{ selectedImport.supplier }}</span
+            >
           </div>
           <div class="p-3 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC]">
-            <span class="text-[10px] font-bold text-[#72796c] uppercase block">Kho nhập</span>
-            <span class="text-xs font-bold text-[#1e1b1b] truncate block">{{ selectedImport.warehouse }}</span>
+            <span class="text-[10px] font-bold text-[#72796c] uppercase block"
+              >Kho nhập</span
+            >
+            <span class="text-xs font-bold text-[#1e1b1b] truncate block">{{
+              selectedImport.warehouse
+            }}</span>
           </div>
         </div>
 
-        <div v-if="selectedImport.note" class="p-3 bg-[#faf5f4] rounded-xl border border-[#E2D7CC] text-xs text-[#42493d]">
-          <strong class="text-[#1e1b1b]">Ghi chú:</strong> {{ selectedImport.note }}
+        <div
+          v-if="selectedImport.note"
+          class="p-3 bg-[#faf5f4] rounded-xl border border-[#E2D7CC] text-xs text-[#42493d]"
+        >
+          <strong class="text-[#1e1b1b]">Ghi chú:</strong>
+          {{ selectedImport.note }}
         </div>
 
         <!-- Items Table inside Modal -->
         <div class="border border-[#E2D7CC] rounded-xl overflow-hidden">
           <table class="w-full text-left text-xs text-[#1e1b1b]">
-            <thead class="bg-[#F5EFE8] text-[#42493d] font-semibold uppercase tracking-wider border-b border-[#E2D7CC]">
+            <thead
+              class="bg-[#F5EFE8] text-[#42493d] font-semibold uppercase tracking-wider border-b border-[#E2D7CC]"
+            >
               <tr>
                 <th class="py-2.5 px-3 w-10 text-center">STT</th>
                 <th class="py-2.5 px-3">Tên nguyên liệu</th>
@@ -1031,15 +1517,34 @@ const handleSave = async () => {
               </tr>
             </thead>
             <tbody class="divide-y divide-[#F2ECE4]">
-              <tr v-for="(item, idx) in selectedImport.items || []" :key="idx" class="hover:bg-[#F9F6F0]">
-                <td class="py-2.5 px-3 text-center font-bold text-[#72796c]">{{ idx + 1 }}</td>
+              <tr
+                v-for="(item, idx) in selectedImport.items || []"
+                :key="idx"
+                class="hover:bg-[#F9F6F0]"
+              >
+                <td class="py-2.5 px-3 text-center font-bold text-[#72796c]">
+                  {{ idx + 1 }}
+                </td>
                 <td class="py-2.5 px-3">
-                  <div class="font-bold text-[#1e1b1b]">{{ item.ingredientName || item.name || 'Nguyên liệu' }}</div>
-                  <div v-if="item.isPackMode && item.packCount && item.packSize" class="mt-0.5 inline-flex items-center gap-1 text-[10px] text-[#a68a00] bg-[#fff8e1] px-1.5 py-0.5 rounded border border-[#ffe082]">
-                    <span class="material-symbols-outlined text-xs">package_2</span>
-                    {{ item.packCount }} {{ item.packUnit }} × {{ item.packSize }} {{ item.unit }}
+                  <div class="font-bold text-[#1e1b1b]">
+                    {{ item.ingredientName || item.name || 'Nguyên liệu' }}
                   </div>
-                  <div v-else-if="item.note" class="text-[10px] text-[#72796c] italic">{{ item.note }}</div>
+                  <div
+                    v-if="item.isPackMode && item.packCount && item.packSize"
+                    class="mt-0.5 inline-flex items-center gap-1 text-[10px] text-[#a68a00] bg-[#fff8e1] px-1.5 py-0.5 rounded border border-[#ffe082]"
+                  >
+                    <span class="material-symbols-outlined text-xs"
+                      >package_2</span
+                    >
+                    {{ item.packCount }} {{ item.packUnit }} ×
+                    {{ item.packSize }} {{ item.unit }}
+                  </div>
+                  <div
+                    v-else-if="item.note"
+                    class="text-[10px] text-[#72796c] italic"
+                  >
+                    {{ item.note }}
+                  </div>
                 </td>
                 <td class="py-2.5 px-3 text-center font-bold font-mono">
                   {{ formatNumber(item.qty) }} {{ item.unit }}
@@ -1056,9 +1561,15 @@ const handleSave = async () => {
         </div>
 
         <!-- Total Receipt Footer -->
-        <div class="p-3.5 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC] flex justify-between items-center">
-          <span class="text-xs font-bold text-[#42493d]">Tổng giá trị phiếu nhập kho:</span>
-          <span class="text-lg font-bold font-display text-[#326824]">{{ formatCurrency(selectedImport.totalAmount) }}</span>
+        <div
+          class="p-3.5 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC] flex justify-between items-center"
+        >
+          <span class="text-xs font-bold text-[#42493d]"
+            >Tổng giá trị phiếu nhập kho:</span
+          >
+          <span class="text-lg font-bold font-display text-[#326824]">{{
+            formatCurrency(selectedImport.totalAmount)
+          }}</span>
         </div>
       </div>
 
@@ -1074,6 +1585,12 @@ const handleSave = async () => {
         </div>
       </template>
     </Dialog>
+    <!-- Unsaved Changes Confirm Dialog -->
+    <UnsavedChangesDialog
+      :visible="showLeaveConfirmDialog"
+      @confirm="confirmLeave"
+      @cancel="cancelLeave"
+    />
   </div>
 </template>
 
