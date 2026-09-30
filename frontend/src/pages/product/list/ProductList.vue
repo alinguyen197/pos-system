@@ -5,7 +5,12 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
-import { fetchProducts, updateProduct, deleteProduct, ProductItem } from '@/api/product.api'
+import {
+  fetchProducts,
+  updateProduct,
+  deleteProduct,
+  ProductItem,
+} from '@/api/product.api'
 import { uploadImage } from '@/api/upload.api'
 import { fetchMasterCodes } from '@/api/masterCode.api'
 import { fetchIngredients } from '@/api/ingredient.api'
@@ -30,7 +35,9 @@ const {
   handlePageSizeChange,
 } = useListQuery(fetchProducts, { sortBy: 'id', sortOrder: 'asc' }, 10)
 
-const categoryOptions = ref<{ code: string; label: string }[]>(PRODUCT_CATEGORY_OPTIONS)
+const categoryOptions = ref<{ code: string; label: string }[]>(
+  PRODUCT_CATEGORY_OPTIONS,
+)
 
 // Edit Modal State
 const showEditModal = ref(false)
@@ -91,7 +98,9 @@ const isDeleting = ref(false)
 const deleteTarget = ref<ProductItem | null>(null)
 
 // BOM Recipe Editor inside Modal
-const availableIngredients = ref<{ id: string; dbId?: number; name: string; unitCost: number; unit: string }[]>([])
+const availableIngredients = ref<
+  { id: string; dbId?: number; name: string; unitCost: number; unit: string }[]
+>([])
 const editRecipeItems = ref<
   Array<{
     stockItemId: string | number
@@ -105,19 +114,37 @@ const editRecipeItems = ref<
 const selectedEditIngId = ref('')
 const addEditAmount = ref(1)
 
-const getEditItemUnitCost = (item: { stockUnit: string; recipeUnit: string; unitCost: number }) => {
-  const factor = getUnitConversionFactor(item.stockUnit, item.recipeUnit || item.stockUnit)
+const getEditItemUnitCost = (item: {
+  stockUnit: string
+  recipeUnit: string
+  unitCost: number
+}) => {
+  const factor = getUnitConversionFactor(
+    item.stockUnit,
+    item.recipeUnit || item.stockUnit,
+  )
   return (item.unitCost || 0) * factor
 }
 
-const getEditItemCost = (item: { stockUnit: string; recipeUnit: string; unitCost: number; amount: number }) => {
+const getEditItemCost = (item: {
+  stockUnit: string
+  recipeUnit: string
+  unitCost: number
+  amount: number
+}) => {
   return (item.amount || 0) * getEditItemUnitCost(item)
 }
 
 const addEditRecipeItem = () => {
-  const ing = availableIngredients.value.find((i) => String(i.id) === String(selectedEditIngId.value))
+  const ing = availableIngredients.value.find(
+    (i) => String(i.id) === String(selectedEditIngId.value),
+  )
   if (!ing) return
-  const existing = editRecipeItems.value.find((r) => String(r.stockItemId) === String(ing.id) || String(r.stockItemId) === String(ing.dbId))
+  const existing = editRecipeItems.value.find(
+    (r) =>
+      String(r.stockItemId) === String(ing.id) ||
+      String(r.stockItemId) === String(ing.dbId),
+  )
   if (existing) {
     existing.amount += addEditAmount.value
   } else {
@@ -137,15 +164,19 @@ const removeEditRecipeItem = (index: number) => {
 }
 
 const formatCurrency = (val: number) => {
-  return Math.round(val).toLocaleString('vi-VN') + ' ₫'
+  return Math.round(val || 0).toLocaleString('vi-VN') + ' ₫'
 }
 
 const editTotalCost = computed(() => {
-  return editRecipeItems.value.reduce((sum, item) => sum + getEditItemCost(item), 0)
+  return editRecipeItems.value.reduce(
+    (sum, item) => sum + getEditItemCost(item),
+    0,
+  )
 })
 
 const editProfitMargin = computed(() => {
-  if (!editForm.value.sellingPrice || editForm.value.sellingPrice <= 0) return '0%'
+  if (!editForm.value.sellingPrice || editForm.value.sellingPrice <= 0)
+    return '0%'
   const profit = editForm.value.sellingPrice - editTotalCost.value
   return ((profit / editForm.value.sellingPrice) * 100).toFixed(1) + '%'
 })
@@ -157,10 +188,16 @@ const loadData = async () => {
     fetchIngredients({ pageSize: 1000 }),
   ])
 
-  await fetchList({ category: selectedCategoryCode.value, keyword: searchKeyword.value })
+  await fetchList({
+    category: selectedCategoryCode.value,
+    keyword: searchKeyword.value,
+  })
 
   const catMap = new Map<string, string>()
-  const allFilter = filterCodeData.find((f) => f.code === 'all') || { code: 'all', label: 'Tất cả' }
+  const allFilter = filterCodeData.find((f) => f.code === 'all') || {
+    code: 'all',
+    label: 'Tất cả',
+  }
   catMap.set(allFilter.code, allFilter.label)
 
   if (masterCodeData.length > 0) {
@@ -195,7 +232,10 @@ onMounted(() => {
 
 const handleSearch = () => {
   pagination.page = 1
-  fetchList({ category: selectedCategoryCode.value, keyword: searchKeyword.value })
+  fetchList({
+    category: selectedCategoryCode.value,
+    keyword: searchKeyword.value,
+  })
 }
 
 const onResetSearch = () => {
@@ -207,15 +247,24 @@ const onPage = (event: any) => {
   const newPageSize = event.rows
   const newPage = event.page + 1
   if (newPageSize !== pagination.pageSize) {
-    handlePageSizeChange(newPageSize, { category: selectedCategoryCode.value, keyword: searchKeyword.value })
+    handlePageSizeChange(newPageSize, {
+      category: selectedCategoryCode.value,
+      keyword: searchKeyword.value,
+    })
   } else {
-    handlePageChange(newPage, { category: selectedCategoryCode.value, keyword: searchKeyword.value })
+    handlePageChange(newPage, {
+      category: selectedCategoryCode.value,
+      keyword: searchKeyword.value,
+    })
   }
 }
 
 const onSort = (event: any) => {
   if (event.sortField) {
-    handleSort(event.sortField, { category: selectedCategoryCode.value, keyword: searchKeyword.value })
+    handleSort(event.sortField, {
+      category: selectedCategoryCode.value,
+      keyword: searchKeyword.value,
+    })
   }
 }
 
@@ -237,21 +286,32 @@ const openEdit = (item: ProductItem) => {
 
   // Load existing BOM recipe items
   editRecipeItems.value = (item.recipeItems || []).map((r) => {
-    const stockIng = availableIngredients.value.find((ing) => String(ing.id) === String(r.stockItemId) || String(ing.dbId) === String(r.stockItemId))
+    const stockIng = availableIngredients.value.find(
+      (ing) =>
+        String(ing.id) === String(r.stockItemId) ||
+        String(ing.dbId) === String(r.stockItemId),
+    )
     // Ưu tiên dùng stockUnit từ BE response, fallback sang ingredient lookup
-    const stockUnit = (r as any).stockUnit || (stockIng ? stockIng.unit : (r.unit || 'g'))
-    const unitCost = stockIng ? stockIng.unitCost : (r.unitCost || 0)
+    const stockUnit =
+      (r as any).stockUnit || (stockIng ? stockIng.unit : r.unit || 'g')
+    const unitCost = stockIng ? stockIng.unitCost : r.unitCost || 0
     return {
       stockItemId: r.stockItemId,
       ingredientName: r.ingredientName || (stockIng ? stockIng.name : ''),
       amount: r.amount,
       stockUnit,
-      recipeUnit: r.unit || stockUnit,  // r.unit = recipeUnit (đơn vị người dùng nhập, ví dụ 'g')
+      recipeUnit: r.unit || stockUnit, // r.unit = recipeUnit (đơn vị người dùng nhập, ví dụ 'g')
       unitCost,
     }
   })
 
   showEditModal.value = true
+}
+
+// Clone Product
+const openClone = (item: ProductItem) => {
+  sessionStorage.setItem('cloneProduct', JSON.stringify(item))
+  router.push('/products/create')
 }
 
 // Submit Edit
@@ -265,7 +325,8 @@ const handleSaveEdit = async () => {
     return
   }
   if (!editRecipeItems.value || editRecipeItems.value.length === 0) {
-    editError.value = 'Vui lòng thêm ít nhất 1 nguyên liệu trong công thức BOM sản phẩm'
+    editError.value =
+      'Vui lòng thêm ít nhất 1 nguyên liệu trong công thức BOM sản phẩm'
     return
   }
   for (const item of editRecipeItems.value) {
@@ -305,12 +366,20 @@ const handleSaveEdit = async () => {
       imageUrl: finalImageUrl || undefined,
       recipeItems: formattedRecipeItems,
     })
-    showSuccess(`Đã cập nhật công thức & giá vốn sản phẩm "${editForm.value.name}" thành công!`)
+    showSuccess(
+      `Đã cập nhật công thức & giá vốn sản phẩm "${editForm.value.name}" thành công!`,
+    )
     showEditModal.value = false
-    await fetchList({ category: selectedCategoryCode.value, keyword: searchKeyword.value }, true)
+    await fetchList(
+      { category: selectedCategoryCode.value, keyword: searchKeyword.value },
+      true,
+    )
   } catch (error: any) {
     console.error('Error updating product:', error)
-    const msg = error?.response?.data?.message || error?.message || 'Lỗi khi cập nhật sản phẩm'
+    const msg =
+      error?.response?.data?.message ||
+      error?.message ||
+      'Lỗi khi cập nhật sản phẩm'
     editError.value = msg
     showError(msg)
   } finally {
@@ -335,7 +404,10 @@ const handleConfirmDelete = async () => {
     showSuccess(`Đã xóa sản phẩm "${deletedName}" thành công!`)
     showDeleteModal.value = false
     deleteTarget.value = null
-    await fetchList({ category: selectedCategoryCode.value, keyword: searchKeyword.value }, true)
+    await fetchList(
+      { category: selectedCategoryCode.value, keyword: searchKeyword.value },
+      true,
+    )
   } catch (error: any) {
     console.error('Error deleting product:', error)
     showError(error?.message || 'Lỗi khi xóa sản phẩm')
@@ -348,10 +420,16 @@ const handleConfirmDelete = async () => {
 <template>
   <div class="product-list-page h-full flex flex-col gap-4 overflow-hidden">
     <!-- Header Title & Action -->
-    <div class="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2D7CC]">
+    <div
+      class="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2D7CC]"
+    >
       <div>
-        <h1 class="text-2xl font-bold font-display text-[#1e1b1b]">Quản lý Sản phẩm</h1>
-        <p class="text-xs text-[#42493d] mt-1 font-medium">Danh sách thực đơn, định mức nguyên liệu BOM và trừ kho POS</p>
+        <h1 class="text-2xl font-bold font-display text-[#1e1b1b]">
+          Quản lý Sản phẩm
+        </h1>
+        <p class="text-xs text-[#42493d] mt-1 font-medium">
+          Danh sách thực đơn, định mức nguyên liệu BOM và trừ kho POS
+        </p>
       </div>
       <button
         @click="router.push('/products/create')"
@@ -363,15 +441,26 @@ const handleConfirmDelete = async () => {
     </div>
 
     <!-- Main Card -->
-    <div class="flex-1 min-h-0 bg-white rounded-2xl border border-[#E2D7CC] shadow-sm overflow-hidden flex flex-col">
+    <div
+      class="flex-1 min-h-0 bg-white rounded-2xl border border-[#E2D7CC] shadow-sm overflow-hidden flex flex-col"
+    >
       <!-- Search & Filters -->
       <div class="shrink-0 p-4 border-b border-[#E2D7CC] bg-[#F9F6F0]">
         <!-- Form Search with Category Select Dropdown, Search and Reset buttons -->
-        <form @submit.prevent="handleSearch" class="flex flex-col sm:flex-row items-end gap-3 w-full">
+        <form
+          @submit.prevent="handleSearch"
+          class="flex flex-col sm:flex-row items-end gap-3 w-full"
+        >
           <div class="w-full sm:w-64">
-            <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Từ khóa tìm kiếm</label>
+            <label
+              class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+              >Từ khóa tìm kiếm</label
+            >
             <div class="relative">
-              <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#72796c] text-xl">search</span>
+              <span
+                class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#72796c] text-xl"
+                >search</span
+              >
               <input
                 v-model="searchKeyword"
                 type="text"
@@ -383,7 +472,10 @@ const handleConfirmDelete = async () => {
 
           <!-- Filterable Category Select Dropdown -->
           <div class="w-full sm:w-56">
-            <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Danh mục sản phẩm</label>
+            <label
+              class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+              >Danh mục sản phẩm</label
+            >
             <Select
               v-model="selectedCategoryCode"
               :options="categoryOptions"
@@ -437,74 +529,140 @@ const handleConfirmDelete = async () => {
         currentPageReportTemplate="Hiển thị {first} đến {last} trong tổng số {totalRecords} sản phẩm"
       >
         <template #empty>
-          <div class="py-12 text-center text-[#72796c] flex flex-col items-center justify-center gap-2">
-            <span class="material-symbols-outlined text-4xl text-[#c1c9b9]">search_off</span>
-            <span class="text-xs font-bold text-[#1e1b1b]">Không tìm thấy sản phẩm phù hợp</span>
-            <span class="text-[11px] text-[#72796c]">Vui lòng thử từ khóa tìm kiếm hoặc chọn bộ lọc danh mục khác</span>
+          <div
+            class="py-12 text-center text-[#72796c] flex flex-col items-center justify-center gap-2"
+          >
+            <span class="material-symbols-outlined text-4xl text-[#c1c9b9]"
+              >search_off</span
+            >
+            <span class="text-xs font-bold text-[#1e1b1b]"
+              >Không tìm thấy sản phẩm phù hợp</span
+            >
+            <span class="text-[11px] text-[#72796c]"
+              >Vui lòng thử từ khóa tìm kiếm hoặc chọn bộ lọc danh mục
+              khác</span
+            >
           </div>
         </template>
 
         <Column field="id" header="Mã SP" sortable>
           <template #body="slotProps">
-            <span class="font-mono font-bold text-[#72796c]">{{ slotProps.data.id }}</span>
+            <span class="font-mono font-bold text-[#72796c]">{{
+              slotProps.data.id
+            }}</span>
           </template>
         </Column>
 
         <Column field="name" header="Sản phẩm" sortable>
           <template #body="slotProps">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-[#F2ECE4] overflow-hidden shrink-0 border border-[#E2D7CC] flex items-center justify-center">
-                <img v-if="slotProps.data.img" :src="slotProps.data.img" :alt="slotProps.data.name" class="w-full h-full object-cover" />
-                <span v-else class="material-symbols-outlined text-[#8E3E2F] text-xl">ramen_dining</span>
+              <div
+                class="w-10 h-10 rounded-xl bg-[#F2ECE4] overflow-hidden shrink-0 border border-[#E2D7CC] flex items-center justify-center"
+              >
+                <img
+                  v-if="slotProps.data.img"
+                  :src="slotProps.data.img"
+                  :alt="slotProps.data.name"
+                  class="w-full h-full object-cover"
+                />
+                <span
+                  v-else
+                  class="material-symbols-outlined text-[#8E3E2F] text-xl"
+                  >ramen_dining</span
+                >
               </div>
               <div class="flex flex-col">
-                <span class="font-bold text-[#1e1b1b]">{{ slotProps.data.name }}</span>
-                <span class="text-[11px] text-[#72796c] font-medium">{{ slotProps.data.category }}</span>
+                <span class="font-bold text-[#1e1b1b]">{{
+                  slotProps.data.name
+                }}</span>
+                <span class="text-[11px] text-[#72796c] font-medium">{{
+                  slotProps.data.category
+                }}</span>
               </div>
             </div>
           </template>
         </Column>
 
-        <Column field="price" header="Giá bán" sortable bodyClass="text-right" headerClass="text-right">
+        <Column
+          field="price"
+          header="Giá bán"
+          sortable
+          bodyClass="text-right"
+          headerClass="text-right"
+        >
           <template #body="slotProps">
-            <span class="font-bold text-[#1e1b1b]">{{ slotProps.data.price }}</span>
+            <span class="font-bold text-[#1e1b1b]">{{
+              slotProps.data.price
+            }}</span>
           </template>
         </Column>
 
-        <Column field="cost" header="Giá vốn (Cost)" bodyClass="text-right" headerClass="text-right">
+        <Column
+          field="cost"
+          header="Giá vốn (Cost)"
+          bodyClass="text-right"
+          headerClass="text-right"
+        >
           <template #body="slotProps">
-            <span class="font-bold text-[#326824]">{{ slotProps.data.cost }}</span>
+            <span class="font-bold text-[#326824]">{{
+              slotProps.data.cost
+            }}</span>
           </template>
         </Column>
 
-        <Column field="margin" header="Lợi nhuận gộp" bodyClass="text-center" headerClass="text-center">
+        <Column
+          field="margin"
+          header="Lợi nhuận gộp"
+          bodyClass="text-center"
+          headerClass="text-center"
+        >
           <template #body="slotProps">
-            <span class="px-2.5 py-1 rounded-md bg-[#c9edb5]/60 text-[#326824] font-bold text-[11px] inline-block">
+            <span
+              class="px-2.5 py-1 rounded-md bg-[#c9edb5]/60 text-[#326824] font-bold text-[11px] inline-block"
+            >
               {{ slotProps.data.margin }}
             </span>
           </template>
         </Column>
 
-        <Column header="Công thức BOM" bodyClass="text-center" headerClass="text-center">
+        <Column
+          header="Công thức BOM"
+          bodyClass="text-center"
+          headerClass="text-center"
+        >
           <template #body="slotProps">
-            <span class="px-2 py-0.5 rounded bg-[#F2ECE4] text-[#8E3E2F] font-mono text-[11px] font-semibold">
+            <span
+              class="px-2 py-0.5 rounded bg-[#F2ECE4] text-[#8E3E2F] font-mono text-[11px] font-semibold"
+            >
               {{ (slotProps.data.recipeItems || []).length }} nguyên liệu
             </span>
           </template>
         </Column>
 
-        <Column header="Trạng thái" bodyClass="text-center" headerClass="text-center">
+        <Column
+          header="Trạng thái"
+          bodyClass="text-center"
+          headerClass="text-center"
+        >
           <template #body="slotProps">
             <span
               class="px-2.5 py-1 rounded-md font-bold text-[11px] inline-block"
-              :class="slotProps.data.status === 'Đang kinh doanh' ? 'bg-[#c9edb5]/60 text-[#326824]' : 'bg-[#ffdad6] text-[#ba1a1a]'"
+              :class="
+                slotProps.data.status === 'Đang kinh doanh'
+                  ? 'bg-[#c9edb5]/60 text-[#326824]'
+                  : 'bg-[#ffdad6] text-[#ba1a1a]'
+              "
             >
               {{ slotProps.data.status }}
             </span>
           </template>
         </Column>
 
-        <Column header="Thao tác" bodyClass="text-center" headerClass="text-center">
+        <Column
+          header="Thao tác"
+          bodyClass="text-center"
+          headerClass="text-center"
+        >
           <template #body="slotProps">
             <div class="flex items-center justify-center gap-1">
               <button
@@ -513,6 +671,15 @@ const handleConfirmDelete = async () => {
                 title="Sửa sản phẩm"
               >
                 <span class="material-symbols-outlined text-lg">edit</span>
+              </button>
+              <button
+                @click="openClone(slotProps.data)"
+                class="p-1.5 text-[#326824] hover:bg-[#c9edb5]/60 rounded-lg transition"
+                title="Nhân bản sản phẩm"
+              >
+                <span class="material-symbols-outlined text-lg"
+                  >content_copy</span
+                >
               </button>
               <button
                 @click="openDelete(slotProps.data)"
@@ -528,15 +695,26 @@ const handleConfirmDelete = async () => {
     </div>
 
     <!-- Edit Modal Dialog -->
-    <Dialog v-model:visible="showEditModal" header="Chỉnh sửa Sản phẩm & Công thức BOM" modal class="w-full max-w-2xl p-0">
+    <Dialog
+      v-model:visible="showEditModal"
+      header="Chỉnh sửa Sản phẩm & Công thức BOM"
+      modal
+      class="w-full max-w-7xl p-0"
+    >
       <div class="p-5 flex flex-col gap-4">
-        <div v-if="editError" class="p-3 bg-[#ffdad6] text-[#ba1a1a] rounded-lg text-xs font-semibold">
+        <div
+          v-if="editError"
+          class="p-3 bg-[#ffdad6] text-[#ba1a1a] rounded-lg text-xs font-semibold"
+        >
           {{ editError }}
         </div>
 
         <!-- Image Uploader in Edit Modal -->
         <div>
-          <label class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1.5">Hình ảnh sản phẩm</label>
+          <label
+            class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1.5"
+            >Hình ảnh sản phẩm</label
+          >
           <input
             ref="editFileInputRef"
             type="file"
@@ -545,9 +723,19 @@ const handleConfirmDelete = async () => {
             class="hidden"
           />
           <div class="flex items-center gap-3">
-            <div class="w-16 h-16 rounded-xl border border-[#E2D7CC] bg-[#F2ECE4] overflow-hidden shrink-0 flex items-center justify-center">
-              <img v-if="editPreviewImage" :src="editPreviewImage" class="w-full h-full object-cover" />
-              <span v-else class="material-symbols-outlined text-2xl text-[#8E3E2F]">add_a_photo</span>
+            <div
+              class="w-16 h-16 rounded-xl border border-[#E2D7CC] bg-[#F2ECE4] overflow-hidden shrink-0 flex items-center justify-center"
+            >
+              <img
+                v-if="editPreviewImage"
+                :src="editPreviewImage"
+                class="w-full h-full object-cover"
+              />
+              <span
+                v-else
+                class="material-symbols-outlined text-2xl text-[#8E3E2F]"
+                >add_a_photo</span
+              >
             </div>
             <div class="flex flex-col gap-1.5">
               <button
@@ -570,7 +758,10 @@ const handleConfirmDelete = async () => {
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1">Tên sản phẩm *</label>
+          <label
+            class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1"
+            >Tên sản phẩm *</label
+          >
           <input
             v-model="editForm.name"
             type="text"
@@ -581,7 +772,10 @@ const handleConfirmDelete = async () => {
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1">Giá bán (VNĐ) *</label>
+            <label
+              class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1"
+              >Giá bán (VNĐ) *</label
+            >
             <input
               v-model.number="editForm.sellingPrice"
               type="number"
@@ -592,7 +786,10 @@ const handleConfirmDelete = async () => {
             />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1">Danh mục *</label>
+            <label
+              class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1"
+              >Danh mục *</label
+            >
             <Select
               v-model="editForm.category"
               :options="categoryStringList"
@@ -603,7 +800,10 @@ const handleConfirmDelete = async () => {
             />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1">Đơn vị bán *</label>
+            <label
+              class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1"
+              >Đơn vị bán *</label
+            >
             <Select
               v-model="editForm.unit"
               :options="units"
@@ -614,7 +814,10 @@ const handleConfirmDelete = async () => {
             />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1">Trạng thái kinh doanh</label>
+            <label
+              class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1"
+              >Trạng thái kinh doanh</label
+            >
             <Select
               v-model="editForm.status"
               :options="['Đang kinh doanh', 'Tạm ngừng']"
@@ -626,8 +829,15 @@ const handleConfirmDelete = async () => {
         <!-- BOM Section -->
         <div class="border-t border-[#E2D7CC] pt-4">
           <div class="flex justify-between items-center mb-3">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-[#1e1b1b]">Định mức công thức (BOM)</h3>
-            <span class="text-[11px] font-semibold text-[#326824] bg-[#c9edb5]/40 px-2.5 py-0.5 rounded-md">Tính Cost tự động</span>
+            <h3
+              class="text-xs font-bold uppercase tracking-wider text-[#1e1b1b]"
+            >
+              Định mức công thức (BOM)
+            </h3>
+            <span
+              class="text-[11px] font-semibold text-[#326824] bg-[#c9edb5]/40 px-2.5 py-0.5 rounded-md"
+              >Tính Cost tự động</span
+            >
           </div>
 
           <!-- Add Ingredient Row -->
@@ -660,7 +870,9 @@ const handleConfirmDelete = async () => {
           <!-- BOM Ingredients Table -->
           <div class="overflow-x-auto border border-[#E2D7CC] rounded-xl">
             <table class="w-full text-left text-xs text-[#1e1b1b]">
-              <thead class="bg-[#F5EFE8] text-[#42493d] font-semibold uppercase tracking-wider border-b border-[#E2D7CC]">
+              <thead
+                class="bg-[#F5EFE8] text-[#42493d] font-semibold uppercase tracking-wider border-b border-[#E2D7CC]"
+              >
                 <tr>
                   <th class="py-2.5 px-3">Tên nguyên liệu</th>
                   <th class="py-2.5 px-3 text-center">Định lượng</th>
@@ -671,10 +883,17 @@ const handleConfirmDelete = async () => {
                 </tr>
               </thead>
               <tbody class="divide-y divide-[#F2ECE4]">
-                <tr v-for="(item, idx) in editRecipeItems" :key="idx" class="hover:bg-[#F5EFE8]/50 transition">
+                <tr
+                  v-for="(item, idx) in editRecipeItems"
+                  :key="idx"
+                  class="hover:bg-[#F5EFE8]/50 transition"
+                >
                   <td class="py-2 px-3 font-semibold text-[#1e1b1b]">
                     <div>{{ item.ingredientName }}</div>
-                    <div class="text-[10px] text-[#72796c] font-medium">Kho: {{ formatCurrency(item.unitCost) }} / {{ item.stockUnit }}</div>
+                    <div class="text-[10px] text-[#72796c] font-medium">
+                      Kho: {{ formatCurrency(item.unitCost) }} /
+                      {{ item.stockUnit }}
+                    </div>
                   </td>
                   <td class="py-2 px-3 text-center">
                     <input
@@ -694,32 +913,60 @@ const handleConfirmDelete = async () => {
                       class="w-20 text-xs font-semibold"
                     />
                   </td>
-                  <td class="py-2 px-3 text-center font-mono text-[11px] text-[#72796c]">
-                    {{ formatCurrency(getEditItemUnitCost(item)) }} / {{ item.recipeUnit }}
+                  <td
+                    class="py-2 px-3 text-center font-mono text-[11px] text-[#72796c]"
+                  >
+                    {{ formatCurrency(getEditItemUnitCost(item)) }} /
+                    {{ item.recipeUnit }}
                   </td>
-                  <td class="py-2 px-3 text-right font-bold text-[#1e1b1b]">{{ formatCurrency(getEditItemCost(item)) }}</td>
+                  <td class="py-2 px-3 text-right font-bold text-[#1e1b1b]">
+                    {{ formatCurrency(getEditItemCost(item)) }}
+                  </td>
                   <td class="py-2 px-3 text-center">
-                    <button @click="removeEditRecipeItem(idx)" type="button" class="p-1 text-[#ba1a1a] hover:bg-[#ffdad6] rounded transition">
-                      <span class="material-symbols-outlined text-sm">delete</span>
+                    <button
+                      @click="removeEditRecipeItem(idx)"
+                      type="button"
+                      class="p-1 text-[#ba1a1a] hover:bg-[#ffdad6] rounded transition"
+                    >
+                      <span class="material-symbols-outlined text-sm"
+                        >delete</span
+                      >
                     </button>
                   </td>
                 </tr>
                 <tr v-if="editRecipeItems.length === 0">
-                  <td colspan="6" class="py-3 text-center text-[#72796c] italic">Chưa có nguyên liệu nào trong định mức công thức</td>
+                  <td
+                    colspan="6"
+                    class="py-3 text-center text-[#72796c] italic"
+                  >
+                    Chưa có nguyên liệu nào trong định mức công thức
+                  </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
           <!-- Cost & Margin Summary inside Edit Modal -->
-          <div class="mt-3 p-3 bg-[#F2ECE4] rounded-xl flex justify-between items-center border border-[#E2D7CC]">
+          <div
+            class="mt-3 p-3 bg-[#F2ECE4] rounded-xl flex justify-between items-center border border-[#E2D7CC]"
+          >
             <div>
-              <span class="text-[10px] text-[#72796c] uppercase font-bold tracking-wider block">Tổng giá vốn (Cost NVL)</span>
-              <span class="text-base font-bold font-display text-[#326824]">{{ formatCurrency(editTotalCost) }}</span>
+              <span
+                class="text-[10px] text-[#72796c] uppercase font-bold tracking-wider block"
+                >Tổng giá vốn (Cost NVL)</span
+              >
+              <span class="text-base font-bold font-display text-[#326824]">{{
+                formatCurrency(editTotalCost)
+              }}</span>
             </div>
             <div class="text-right">
-              <span class="text-[10px] text-[#72796c] uppercase font-bold tracking-wider block">Biên lợi nhuận gộp</span>
-              <span class="text-base font-bold font-display text-[#326824]">{{ editProfitMargin }}</span>
+              <span
+                class="text-[10px] text-[#72796c] uppercase font-bold tracking-wider block"
+                >Biên lợi nhuận gộp</span
+              >
+              <span class="text-base font-bold font-display text-[#326824]">{{
+                editProfitMargin
+              }}</span>
             </div>
           </div>
         </div>
@@ -738,7 +985,11 @@ const handleConfirmDelete = async () => {
             type="button"
             class="h-10 px-4 bg-[#8E3E2F] text-white font-semibold text-xs rounded-xl hover:bg-[#6E281C] transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-sm"
           >
-            <span v-if="isSavingEdit" class="material-symbols-outlined text-sm animate-spin">refresh</span>
+            <span
+              v-if="isSavingEdit"
+              class="material-symbols-outlined text-sm animate-spin"
+              >refresh</span
+            >
             <span>{{ isSavingEdit ? 'Đang lưu...' : 'Lưu thay đổi' }}</span>
           </button>
         </div>
@@ -746,10 +997,17 @@ const handleConfirmDelete = async () => {
     </Dialog>
 
     <!-- Delete Product Confirmation Modal Dialog -->
-    <Dialog v-model:visible="showDeleteModal" header="Xác nhận Xóa Sản phẩm" modal class="w-full max-w-md p-0">
+    <Dialog
+      v-model:visible="showDeleteModal"
+      header="Xác nhận Xóa Sản phẩm"
+      modal
+      class="w-full max-w-md p-0"
+    >
       <div class="p-5 flex flex-col gap-4">
         <p class="text-xs font-medium text-[#42493d]">
-          Bạn có chắc chắn muốn xóa sản phẩm <strong class="text-[#1e1b1b]">{{ deleteTarget?.name }}</strong> (Mã: {{ deleteTarget?.id }})?
+          Bạn có chắc chắn muốn xóa sản phẩm
+          <strong class="text-[#1e1b1b]">{{ deleteTarget?.name }}</strong> (Mã:
+          {{ deleteTarget?.id }})?
         </p>
 
         <div class="flex justify-end gap-2 mt-2 pt-3 border-t border-[#E2D7CC]">
@@ -766,7 +1024,11 @@ const handleConfirmDelete = async () => {
             type="button"
             class="h-10 px-4 bg-[#ba1a1a] text-white font-semibold text-xs rounded-xl hover:bg-[#93000a] transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-sm"
           >
-            <span v-if="isDeleting" class="material-symbols-outlined text-sm animate-spin">refresh</span>
+            <span
+              v-if="isDeleting"
+              class="material-symbols-outlined text-sm animate-spin"
+              >refresh</span
+            >
             <span>{{ isDeleting ? 'Đang xóa...' : 'Đồng ý Xóa' }}</span>
           </button>
         </div>
