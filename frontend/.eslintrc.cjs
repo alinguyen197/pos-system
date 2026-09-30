@@ -1,5 +1,5 @@
 module.exports = {
-  env: { node: true },
+  env: { node: true, browser: true, es2021: true },
   extends: [
     'eslint:recommended', // this maybe causes errors in defineEmits<{}>() ???
     'plugin:@typescript-eslint/recommended',
@@ -21,4 +21,7 @@ module.exports = {
   //   'no-unused-vars': 'off',
   //   '@typescript-eslint/no-unused-vars': ['error'],
   // },
+  rules: {
+    '@typescript-eslint/no-explicit-any': 'off',
+  },
 }
