@@ -326,8 +326,9 @@ const processSubmitOrder = async () => {
     if (res && res.success) {
       const orderData = res.data
       showSuccess(`Tạo đơn hàng #${orderData.orderNumber} thành công!`)
-      // Refresh shift summary
+      // Refresh shift summary and product stock
       loadShiftSummary()
+      loadProducts()
       // Print Bill option or reset cart
       printReceipt(orderData)
       clearCart()
