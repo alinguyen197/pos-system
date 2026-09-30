@@ -26,7 +26,7 @@ const formError = ref('')
 const showLeaveConfirmDialog = ref(false)
 let leaveNext: any = null
 
-onBeforeRouteLeave((to, from, next) => {
+onBeforeRouteLeave((_to, _from, next) => {
   const isDirty =
     productName.value.trim() !== '' || productCode.value.trim() !== ''
   if (isDirty) {
@@ -214,18 +214,19 @@ const removeRecipeItem = (index: number) => {
 }
 
 const getItemUnitCost = (item: {
-  ingredient: { unitCost: number; unit: string }
+  ingredient: { name?: string; unitCost: number; unit: string }
   recipeUnit: string
 }) => {
   const factor = getUnitConversionFactor(
     item.ingredient.unit,
     item.recipeUnit || item.ingredient.unit,
+    item.ingredient.name
   )
   return (item.ingredient.unitCost || 0) * factor
 }
 
 const getItemCost = (item: {
-  ingredient: { unitCost: number; unit: string }
+  ingredient: { name?: string; unitCost: number; unit: string }
   amount: number
   recipeUnit: string
 }) => {

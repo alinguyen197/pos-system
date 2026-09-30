@@ -4,56 +4,9 @@ import {
   MASTER_CODES,
   buildListQuery,
   buildPaginationResponse,
+  calculateRecipeCostFactor,
 } from '../utils'
 
-/**
- * Quy đổi đơn vị recipe về đơn vị kho để tính chi phí
- * Ví dụ: amount=20, recipeUnit='g', stockUnit='kg' → costFactor = 20/1000 = 0.02
- */
-const getRecipeCostFactor = (
-  amount: number,
-  recipeUnit: string,
-  stockUnit: string
-): number => {
-  const amt = Number(amount) || 0
-  if (amt <= 0) return 0
-
-  const rUnit = (recipeUnit || '').toString().toLowerCase().trim()
-  const sUnit = (stockUnit || '').toString().toLowerCase().trim()
-
-  if (rUnit === sUnit) return amt
-
-  // g -> kg
-  if (
-    (rUnit === 'g' || rUnit === 'gram' || rUnit === 'gr') &&
-    (sUnit === 'kg' || sUnit === 'kilogram')
-  ) {
-    return amt / 1000
-  }
-  // ml -> lít
-  if (
-    (rUnit === 'ml' || rUnit === 'milliliter') &&
-    (sUnit === 'lít' || sUnit === 'lit' || sUnit === 'l')
-  ) {
-    return amt / 1000
-  }
-  // kg -> g
-  if (
-    (rUnit === 'kg' || rUnit === 'kilogram') &&
-    (sUnit === 'g' || sUnit === 'gram' || sUnit === 'gr')
-  ) {
-    return amt * 1000
-  }
-  // lít -> ml
-  if (
-    (rUnit === 'lít' || rUnit === 'lit' || rUnit === 'l') &&
-    (sUnit === 'ml' || sUnit === 'milliliter')
-  ) {
-    return amt * 1000
-  }
-
-  return amt
-}
 
 const initialCategories = [
   {
@@ -464,11 +417,12 @@ const createProduct = async (data: any) => {
           })
         }
         if (stockItem) {
-          // Áp dụng unit conversion: 20g cà phê với kho đơn vị kg → costFactor = 0.02 kg
-          const costFactor = getRecipeCostFactor(
+          // Áp dụng unit conversion chuẩn: 20g cà phê với kho đơn vị kg → costFactor = 0.02 kg
+          const costFactor = calculateRecipeCostFactor(
             Number(r.amount) || 0,
             r.unit || stockItem.unit,
-            stockItem.unit
+            stockItem.unit,
+            stockItem.name
           )
           sumCost += costFactor * (stockItem.costPerUnit || 0)
         }
@@ -607,8 +561,13 @@ const updateProduct = async (id: string | number, data: any) => {
         if (stockItem) {
           const amt = Number(r.amount) || 1
           const itemUnit = r.unit || stockItem.unit || 'g'
-          // Áp dụng unit conversion: 20g cà phê với kho đơn vị kg → costFactor = 0.02 kg
-          const costFactor = getRecipeCostFactor(amt, itemUnit, stockItem.unit)
+          // Áp dụng unit conversion chuẩn: 20g cà phê với kho đơn vị kg → costFactor = 0.02 kg
+          const costFactor = calculateRecipeCostFactor(
+            amt,
+            itemUnit,
+            stockItem.unit,
+            stockItem.name
+          )
           sumCost += costFactor * (stockItem.costPerUnit || 0)
           await db.ProductRecipe.create({
             productId: product.id,

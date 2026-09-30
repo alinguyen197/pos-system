@@ -24,8 +24,9 @@ const fieldErrors = ref<Record<string, string>>({})
 const showLeaveConfirmDialog = ref(false)
 let leaveNext: any = null
 
-onBeforeRouteLeave((to, from, next) => {
+onBeforeRouteLeave((_to, _from, next) => {
   const isDirty = name.value.trim() !== ''
+
   if (isDirty) {
     showLeaveConfirmDialog.value = true
     leaveNext = next

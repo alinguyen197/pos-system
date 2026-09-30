@@ -115,6 +115,7 @@ const selectedEditIngId = ref('')
 const addEditAmount = ref(1)
 
 const getEditItemUnitCost = (item: {
+  ingredientName?: string
   stockUnit: string
   recipeUnit: string
   unitCost: number
@@ -122,6 +123,7 @@ const getEditItemUnitCost = (item: {
   const factor = getUnitConversionFactor(
     item.stockUnit,
     item.recipeUnit || item.stockUnit,
+    item.ingredientName
   )
   return (item.unitCost || 0) * factor
 }

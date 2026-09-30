@@ -1,5 +1,10 @@
 import db from '../models'
-import { parseError, buildPaginationResponse, MASTER_CODES } from '../utils'
+import {
+  parseError,
+  buildPaginationResponse,
+  MASTER_CODES,
+  calculateRecipeDeduction,
+} from '../utils'
 
 export interface CreateOrderItemPayload {
   productId?: number | string
@@ -28,48 +33,13 @@ const syncSequences = async () => {
   }
 }
 
-/**
- * Helper quy đổi đơn vị định lượng BOM sản phẩm về đơn vị quản lý kho (kg, lít, cái...)
- * Trả về số lượng cần trừ tính theo đơn vị kho
- */
-const calculateRecipeDeduction = (recipeAmount: number, recipeUnit: string, stockUnit: string): number => {
-  const amt = Number(recipeAmount) || 0
-  if (amt <= 0) return 0
-
-  const rUnit = (recipeUnit || '').toString().toLowerCase().trim()
-  const sUnit = (stockUnit || '').toString().toLowerCase().trim()
-
-  // Cùng đơn vị → trừ trực tiếp
-  if (rUnit === sUnit) return amt
-
-  // Quy đổi gram -> kg
-  if ((rUnit === 'g' || rUnit === 'gram' || rUnit === 'gr') && (sUnit === 'kg' || sUnit === 'kilogram')) {
-    return amt / 1000
-  }
-  // Quy đổi kg -> gram
-  if ((rUnit === 'kg' || rUnit === 'kilogram') && (sUnit === 'g' || sUnit === 'gram' || sUnit === 'gr')) {
-    return amt * 1000
-  }
-  // Quy đổi ml -> lít
-  if ((rUnit === 'ml' || rUnit === 'milliliter' || rUnit === 'cc') && (sUnit === 'lít' || sUnit === 'lit' || sUnit === 'l')) {
-    return amt / 1000
-  }
-  // Quy đổi lít -> ml
-  if ((rUnit === 'lít' || rUnit === 'lit' || rUnit === 'l') && (sUnit === 'ml' || sUnit === 'milliliter' || sUnit === 'cc')) {
-    return amt * 1000
-  }
-
-  // Không tìm thấy rule quy đổi → dùng nguyên giá trị (cùng đơn vị khác nhau tên: lon, hộp,...)
-  return amt
-}
-
-
 const createOrder = async (payload: CreateOrderPayload) => {
   const transaction = await db.sequelize.transaction()
   try {
     await syncSequences()
 
     const { items, paymentMethod = 'cash', discountAmount = 0, note, createdBy } = payload
+
     if (!items || !Array.isArray(items) || items.length === 0) {
       throw new Error('Danh sách món trong đơn hàng không được rỗng')
     }
@@ -154,7 +124,9 @@ const createOrder = async (payload: CreateOrderPayload) => {
       { transaction }
     )
 
-    // Create Order Items & Deduct Stock Items via BOM Recipes
+    // Aggregate total stock deduction for each stockItem across the entire order
+    const totalStockDeductions: Record<number, number> = {}
+
     for (const pItem of processedItems) {
       await db.OrderItem.create(
         {
@@ -176,11 +148,35 @@ const createOrder = async (payload: CreateOrderPayload) => {
       for (const recipe of recipes) {
         const stockItem = await db.StockItem.findByPk(recipe.stockItemId)
         if (stockItem) {
-          const perCupDeduction = calculateRecipeDeduction(recipe.amount, recipe.unit, stockItem.unit)
-          const totalDeduction = perCupDeduction * pItem.quantity
-          const newQty = Math.max(0, Number(stockItem.quantity) - totalDeduction)
-          await stockItem.update({ quantity: newQty }, { transaction })
+          const perCupDeduction = calculateRecipeDeduction(
+            recipe.amount,
+            recipe.unit,
+            stockItem.unit,
+            stockItem.name
+          )
+          const itemDeduction = perCupDeduction * pItem.quantity
+          totalStockDeductions[stockItem.id] =
+            (totalStockDeductions[stockItem.id] || 0) + itemDeduction
         }
+      }
+    }
+
+    // Deduct aggregated quantities from inventory
+    for (const [stockIdStr, totalDeduct] of Object.entries(totalStockDeductions)) {
+      const stockId = Number(stockIdStr)
+      if (totalDeduct <= 0) continue
+
+      const stockItem = await db.StockItem.findByPk(stockId, {
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      })
+      if (stockItem) {
+        const currentQty = Number(stockItem.quantity) || 0
+        const newQty = Math.max(
+          0,
+          Math.round((currentQty - totalDeduct) * 10000) / 10000
+        )
+        await stockItem.update({ quantity: newQty }, { transaction })
       }
     }
 
@@ -454,6 +450,16 @@ const getOrderQr = async (id: string | number) => {
   }
 }
 
+export {
+  createOrder,
+  getOrders,
+  getOrderById,
+  updateOrderStatus,
+  deleteOrder,
+  getShiftSummary,
+  getOrderQr,
+}
+
 export default {
   createOrder,
   getOrders,
@@ -463,3 +469,4 @@ export default {
   getShiftSummary,
   getOrderQr,
 }
+

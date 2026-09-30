@@ -43,8 +43,9 @@ const resetForm = () => {
 const showLeaveConfirmDialog = ref(false)
 let leaveNext: any = null
 
-onBeforeRouteLeave((to, from, next) => {
+onBeforeRouteLeave((_to, _from, next) => {
   const isDirty =
+
     importItems.value.length > 0 ||
     !!editingId.value ||
     supplier.value.trim() !== '' ||

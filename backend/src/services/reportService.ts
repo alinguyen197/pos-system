@@ -1,5 +1,5 @@
 import db from '../models'
-import { parseError } from '../utils'
+import { parseError, calculateRecipeCostFactor } from '../utils'
 
 /**
  * Format ngày Date thành chuỗi YYYY-MM-DD theo giờ local không bị lệch múi giờ UTC
@@ -61,36 +61,19 @@ const getDateRange = (
 }
 
 /**
- * Tính chi phí 1 thành phần công thức BOM có tự động quy đổi đơn vị (g->kg, ml->lít)
+ * Tính chi phí 1 thành phần công thức BOM có tự động quy đổi đơn vị (g->kg, ml->lít, container, trứng, mì gói...)
  */
 const calculateRecipeItemCost = (recipe: any) => {
   const amt = Number(recipe.amount || 0)
   const cpu = Number(recipe.ingredient?.costPerUnit || 0)
-  const rUnit = (recipe.unit || '').toString().toLowerCase().trim()
-  const sUnit = (recipe.ingredient?.unit || '').toString().toLowerCase().trim()
+  const rUnit = recipe.unit || recipe.ingredient?.unit || ''
+  const sUnit = recipe.ingredient?.unit || ''
+  const sName = recipe.ingredient?.name || ''
 
   if (amt <= 0 || cpu <= 0) return 0
 
-  // Quy đổi gram -> kg
-  if ((rUnit === 'g' || rUnit === 'gram' || rUnit === 'gr') && sUnit === 'kg') {
-    return (amt / 1000) * cpu
-  }
-  // Quy đổi ml -> lít
-  if (
-    (rUnit === 'ml' || rUnit === 'milit') &&
-    (sUnit === 'lít' || sUnit === 'lit' || sUnit === 'l')
-  ) {
-    return (amt / 1000) * cpu
-  }
-  // Nếu định lượng nguyên liệu cho 1 ly > 1 (ví dụ 15g nhưng để unit kg)
-  if (sUnit === 'kg' && amt > 1) {
-    return (amt / 1000) * cpu
-  }
-  if ((sUnit === 'lít' || sUnit === 'lit' || sUnit === 'l') && amt > 1) {
-    return (amt / 1000) * cpu
-  }
-
-  return amt * cpu
+  const factor = calculateRecipeCostFactor(amt, rUnit, sUnit, sName)
+  return factor * cpu
 }
 
 /**
@@ -107,7 +90,7 @@ const getProductCostMap = async () => {
           {
             model: db.StockItem,
             as: 'ingredient',
-            attributes: ['unit', 'costPerUnit'],
+            attributes: ['name', 'unit', 'costPerUnit'],
           },
         ],
       },

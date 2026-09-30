@@ -70,17 +70,34 @@
 | `staff` | `STAFF` | Nhân viên thu ngân / Pha chế |
 | `viewer` | `VIEWER` | Người xem |
 
-### 2.7. Đơn vị tính (Units of Measurement - `UNIT`)
-| Master Code | Key | Display Label |
-| :--- | :--- | :--- |
-| `kg` | `KG` | kg |
-| `g` | `GRAM` | g |
-| `lit` | `LITER` | lít |
-| `ml` | `ML` | ml |
-| `hop` | `BOX` | hộp |
-| `lon` | `CAN` | lon |
-| `chai` | `BOTTLE` | chai |
-| `goi` | `PACKET` | gói |
-| `ly` | `CUP` | ly |
-| `phan` | `PORTION` | phần |
-| `cai` | `PIECE` | cái |
+### 2.7. Đơn vị tính (Units of Measurement - `UNIT`) & Quy đổi tự động
+| Master Code | Key | Display Label | Nhóm đơn vị | Quy đổi chuẩn |
+| :--- | :--- | :--- | :--- | :--- |
+| `kg` | `KG` | kg | Khối lượng | Base = 1000g |
+| `g` | `GRAM` | g | Khối lượng | Base = 1g |
+| `mg` | `MILLIGRAM` | mg | Khối lượng | Base = 0.001g |
+| `lang` | `LANG` | lạng | Khối lượng | Base = 100g (0.1kg) |
+| `lit` | `LITER` | lít | Thể tích | Base = 1000ml |
+| `ml` | `ML` | ml | Thể tích | Base = 1ml |
+| `cl` | `CL` | cl | Thể tích | Base = 10ml |
+| `oz` | `OZ` | oz | Thể tích | Base = 30ml |
+| `shot` | `SHOT` | shot | Thể tích | Base = 30ml |
+| `cai` | `PIECE` | cái | Đếm/Cái | 1:1 tương đương |
+| `qua` | `EGG_PIECE` | quả | Đếm/Cái | 1:1 tương đương `cái`, `trái`, `hột` |
+| `trai` | `FRUIT_PIECE`| trái | Đếm/Cái | 1:1 tương đương `cái`, `quả` |
+| `hot` | `SEED_PIECE` | hột | Đếm/Cái | 1:1 tương đương `cái`, `quả` |
+| `vien` | `BALL_PIECE` | viên | Đếm/Cái | 1:1 tương đương `cái` (Gà popcorn ~20g) |
+| `lat` | `SLICE` | lát | Đếm/Cái | 1:1 tương đương `cái` (Phô mai lát ~20g) |
+| `goi` | `PACKET` | gói | Đếm/Đóng gói | Mì gói = 60g |
+| `hop` | `BOX` | hộp | Đóng gói/Đếm | Hộp kraft = 1 cái; Hộp trứng = 10 quả |
+| `lon` | `CAN` | lon | Đóng gói/Đếm | Sữa đặc = 380g / 380ml |
+| `chai` | `BOTTLE` | chai | Đóng gói/Đếm | Trích xuất dung tích từ tên (VD 700ml, 1L) |
+| `ly` | `CUP` | ly | Đồ uống | 1 cái |
+| `coc` | `GLASS` | cốc | Đồ uống | 1 cái |
+| `phan` | `PORTION` | phần | Suất ăn | 1 cái |
+| `vi` | `BLISTER` | vỉ | Multi-pack | 10 quả/cái |
+| `khay` | `TRAY` | khay | Multi-pack | 30 quả/cái |
+| `chuc` | `TEN_PACK` | chục | Multi-pack | 10 quả/cái |
+| `ta` | `DOZEN` | tá | Multi-pack | 12 quả/cái |
+| `thung` | `CARTON` | thùng | Multi-pack | 24 - 30 cái |
+
