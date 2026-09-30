@@ -6,6 +6,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Dialog from 'primevue/dialog'
 import UnsavedChangesDialog from '@/components/common/UnsavedChangesDialog.vue'
+import ActionConfirmDialog from '@/components/common/ActionConfirmDialog.vue'
 import { fetchIngredients } from '@/api/ingredient.api'
 import { fetchMasterCodes } from '@/api/masterCode.api'
 import {
@@ -41,11 +42,14 @@ const resetForm = () => {
 }
 
 const showLeaveConfirmDialog = ref(false)
+const showEditConfirmDialog = ref(false)
+const pendingEditItem = ref<StockImportRecord | null>(null)
+const showDeleteConfirmDialog = ref(false)
+const pendingDeleteItem = ref<StockImportRecord | null>(null)
 let leaveNext: any = null
 
 onBeforeRouteLeave((_to, _from, next) => {
   const isDirty =
-
     importItems.value.length > 0 ||
     !!editingId.value ||
     supplier.value.trim() !== '' ||
@@ -535,6 +539,15 @@ const handleSave = async () => {
   }
 }
 const handleEdit = (item: StockImportRecord) => {
+  pendingEditItem.value = item
+  showEditConfirmDialog.value = true
+}
+
+const confirmEdit = () => {
+  const item = pendingEditItem.value
+  if (!item) return
+  showEditConfirmDialog.value = false
+
   editingId.value = item.id
   supplier.value = item.supplier
   warehouse.value = item.warehouse
@@ -578,16 +591,26 @@ const handleEdit = (item: StockImportRecord) => {
   })
 
   // Scroll to top
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  setTimeout(() => {
+    const mainEl = document.querySelector('.app-main')
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, 50)
 }
 
 const handleDelete = async (item: StockImportRecord) => {
-  if (
-    !confirm(
-      `Bạn có chắc chắn muốn xóa phiếu nhập kho #${item.importCode}? Việc này sẽ hoàn tác tồn kho.`,
-    )
-  )
-    return
+  pendingDeleteItem.value = item
+  showDeleteConfirmDialog.value = true
+}
+
+const confirmDelete = async () => {
+  const item = pendingDeleteItem.value
+  if (!item) return
+  showDeleteConfirmDialog.value = false
+
   try {
     await deleteStockImport(item.id)
     showSuccess(`Đã xóa phiếu nhập kho #${item.importCode} thành công!`)
@@ -606,17 +629,17 @@ const handleDelete = async (item: StockImportRecord) => {
 
 <template>
   <div
-    class="stock-import-create-page w-full flex flex-col gap-6 max-w-7xl mx-auto pb-16"
+    class="stock-import-create-page mx-auto flex w-full max-w-7xl flex-col gap-6 pb-16"
   >
     <!-- Header Title & Action Bar -->
     <div
-      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2D7CC]"
+      class="flex flex-col justify-between gap-4 border-b border-[#E2D7CC] pb-2 sm:flex-row sm:items-center"
     >
       <div>
-        <h1 class="text-2xl font-bold font-display text-[#1e1b1b]">
+        <h1 class="font-display text-2xl font-bold text-[#1e1b1b]">
           Quản lý & Nhập hàng kho
         </h1>
-        <p class="text-xs text-[#42493d] mt-1 font-medium">
+        <p class="mt-1 text-xs font-medium text-[#42493d]">
           Lập phiếu nhập kho nguyên liệu, tính toán quy cách đóng gói và theo
           dõi lịch sử các lần nhập hàng
         </p>
@@ -625,7 +648,7 @@ const handleDelete = async (item: StockImportRecord) => {
         <button
           @click="router.push('/ingredients')"
           type="button"
-          class="h-10 px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#42493d] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition cursor-pointer flex items-center gap-1.5"
+          class="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] px-4 text-xs font-semibold text-[#42493d] transition hover:bg-[#E8DFD5]"
         >
           <span class="material-symbols-outlined text-base">arrow_back</span>
           <span>Về kho nguyên liệu</span>
@@ -634,7 +657,7 @@ const handleDelete = async (item: StockImportRecord) => {
           v-if="editingId"
           @click="resetForm"
           type="button"
-          class="h-10 px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#ba1a1a] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition cursor-pointer flex items-center gap-1.5"
+          class="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] px-4 text-xs font-semibold text-[#ba1a1a] transition hover:bg-[#E8DFD5]"
         >
           <span class="material-symbols-outlined text-base">close</span>
           <span>Hủy sửa</span>
@@ -642,14 +665,14 @@ const handleDelete = async (item: StockImportRecord) => {
         <button
           @click="handleSave"
           :disabled="isSubmitting"
-          class="h-10 px-5 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+          class="flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-[#8E3E2F] px-5 text-xs font-semibold text-white shadow transition hover:bg-[#6E281C] disabled:opacity-50"
         >
           <span
             v-if="!isSubmitting"
             class="material-symbols-outlined text-lg"
             >{{ editingId ? 'save' : 'check' }}</span
           >
-          <span v-else class="material-symbols-outlined text-lg animate-spin"
+          <span v-else class="material-symbols-outlined animate-spin text-lg"
             >refresh</span
           >
           <span>{{
@@ -666,20 +689,25 @@ const handleDelete = async (item: StockImportRecord) => {
     <!-- Error Alert -->
     <div
       v-if="errorMessage"
-      class="p-4 bg-[#ffdad6] border border-[#ba1a1a]/30 rounded-xl text-xs font-semibold text-[#ba1a1a] flex items-center gap-2"
+      class="flex items-center gap-2 rounded-xl border border-[#ba1a1a]/30 bg-[#ffdad6] p-4 text-xs font-semibold text-[#ba1a1a]"
     >
       <span class="material-symbols-outlined text-lg">error</span>
       <span>{{ errorMessage }}</span>
     </div>
 
     <!-- PHẦN 1: BENTO GRID TẠO ĐƠN NHẬP KHO MỚI -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <!-- General Info Card -->
       <div
-        class="bg-white rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col gap-4"
+        :class="[
+          'flex flex-col gap-4 rounded-2xl border bg-white p-6 shadow-sm transition-all duration-500',
+          editingId
+            ? 'border-[#8E3E2F] shadow-md ring-2 ring-[#8E3E2F]/30'
+            : 'border-[#E2D7CC]',
+        ]"
       >
         <h2
-          class="text-base font-bold font-display text-[#1e1b1b] border-b border-[#E2D7CC] pb-3 flex items-center gap-2"
+          class="font-display flex items-center gap-2 border-b border-[#E2D7CC] pb-3 text-base font-bold text-[#1e1b1b]"
         >
           <span class="material-symbols-outlined text-[#8E3E2F]">{{
             editingId ? 'edit_document' : 'post_add'
@@ -693,65 +721,65 @@ const handleDelete = async (item: StockImportRecord) => {
           <!-- Supplier (Text Input) -->
           <div>
             <label
-              class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5"
+              class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1e1b1b]"
               >Nhà cung cấp</label
             >
             <input
               v-model="supplier"
               type="text"
               placeholder="Ví dụ: NCC Cholimex, Vinamilk, Siêu thị Metro..."
-              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 transition"
+              class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white px-3.5 text-xs font-medium text-[#1e1b1b] outline-none transition focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             />
           </div>
 
           <!-- Warehouse (Text Input) -->
           <div>
             <label
-              class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5"
+              class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1e1b1b]"
               >Kho nhập</label
             >
             <input
               v-model="warehouse"
               type="text"
               placeholder="Ví dụ: Kho tổng, Kho Phụ - Q3, Bếp chính..."
-              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 transition"
+              class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white px-3.5 text-xs font-medium text-[#1e1b1b] outline-none transition focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             />
           </div>
 
           <div>
             <label
-              class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5"
+              class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1e1b1b]"
               >Thời gian nhập *</label
             >
             <input
               v-model="importDate"
               type="datetime-local"
-              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+              class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white px-3.5 text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             />
           </div>
 
           <div>
             <label
-              class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5"
+              class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1e1b1b]"
               >Ghi chú phiếu nhập</label
             >
             <textarea
               v-model="note"
               rows="3"
               placeholder="Nhập ghi chú thêm (ví dụ: Số hoá đơn VAT, ghi chú giao hàng...)"
-              class="w-full px-3.5 py-2.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+              class="w-full rounded-xl border border-[#c1c9b9]/70 bg-white px-3.5 py-2.5 text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             ></textarea>
           </div>
         </div>
 
         <!-- Total Cost Summary Badge -->
         <div
-          class="mt-auto p-4 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC] flex justify-between items-center"
+          class="mt-auto flex items-center justify-between rounded-xl border border-[#E2D7CC] bg-[#F9F6F0] p-4"
         >
           <span class="text-xs font-bold text-[#42493d]"
             >Tổng tiền đơn nhập:</span
           >
-          <span class="text-xl font-bold font-display text-[#326824]">{{
+          <span class="font-display text-xl font-bold text-[#326824]">{{
             formatCurrency(totalAmount)
           }}</span>
         </div>
@@ -759,33 +787,38 @@ const handleDelete = async (item: StockImportRecord) => {
 
       <!-- Ingredient Items List Table Card -->
       <div
-        class="lg:col-span-2 bg-white rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col gap-4"
+        :class="[
+          'flex flex-col gap-4 rounded-2xl border bg-white p-6 shadow-sm transition-all duration-500 lg:col-span-2',
+          editingId
+            ? 'border-[#8E3E2F] shadow-md ring-2 ring-[#8E3E2F]/30'
+            : 'border-[#E2D7CC]',
+        ]"
       >
         <div
-          class="flex justify-between items-center border-b border-[#E2D7CC] pb-3"
+          class="flex items-center justify-between border-b border-[#E2D7CC] pb-3"
         >
           <div>
             <h2
-              class="text-base font-bold font-display text-[#1e1b1b] flex items-center gap-2"
+              class="font-display flex items-center gap-2 text-base font-bold text-[#1e1b1b]"
             >
               <span class="material-symbols-outlined text-[#8E3E2F]"
                 >add_shopping_cart</span
               >
               <span>Thêm nguyên liệu vào đơn</span>
             </h2>
-            <p class="text-[11px] text-[#72796c] mt-0.5">
+            <p class="mt-0.5 text-[11px] text-[#72796c]">
               Nhập số lượng & tổng tiền mua để hệ thống tự động tính đơn giá vốn
             </p>
           </div>
           <span
-            class="text-xs font-semibold text-[#8E3E2F] bg-[#F2ECE4] px-3 py-1 rounded-lg"
+            class="rounded-lg bg-[#F2ECE4] px-3 py-1 text-xs font-semibold text-[#8E3E2F]"
             >Đã chọn: {{ importItems.length }} mục</span
           >
         </div>
 
         <!-- Add Item Selector & Calculator Box -->
         <div
-          class="p-4 bg-[#faf5f4] rounded-xl border border-[#E2D7CC] space-y-3"
+          class="space-y-3 rounded-xl border border-[#E2D7CC] bg-[#faf5f4] p-4"
         >
           <!-- Pack Mode Toggle Banner -->
           <div class="flex items-center justify-between">
@@ -794,18 +827,18 @@ const handleDelete = async (item: StockImportRecord) => {
                 >inventory_2</span
               >
               <span
-                class="text-[11px] font-bold text-[#42493d] uppercase tracking-wide"
+                class="text-[11px] font-bold uppercase tracking-wide text-[#42493d]"
                 >Chế độ nhập</span
               >
             </div>
             <button
               type="button"
               @click="togglePackMode"
-              class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-bold transition cursor-pointer"
+              class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-bold transition"
               :class="
                 isPackMode
                   ? 'bg-[#8E3E2F] text-white shadow-sm'
-                  : 'bg-white border border-[#c1c9b9]/70 text-[#42493d] hover:border-[#8E3E2F]/50'
+                  : 'border border-[#c1c9b9]/70 bg-white text-[#42493d] hover:border-[#8E3E2F]/50'
               "
             >
               <span class="material-symbols-outlined text-sm">{{
@@ -819,11 +852,11 @@ const handleDelete = async (item: StockImportRecord) => {
             </button>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-12">
             <!-- Select Ingredient -->
             <div class="sm:col-span-6">
               <label
-                class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+                class="mb-1 block text-[11px] font-bold uppercase text-[#42493d]"
                 >Nguyên liệu *</label
               >
               <Select
@@ -833,14 +866,14 @@ const handleDelete = async (item: StockImportRecord) => {
                 optionValue="id"
                 filter
                 placeholder="Tìm & chọn nguyên liệu..."
-                class="w-full h-10 text-xs font-medium"
+                class="h-10 w-full text-xs font-medium"
               />
             </div>
 
             <!-- Import Unit -->
             <div class="sm:col-span-3">
               <label
-                class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+                class="mb-1 block text-[11px] font-bold uppercase text-[#42493d]"
                 >ĐVT kho</label
               >
               <Select
@@ -849,14 +882,14 @@ const handleDelete = async (item: StockImportRecord) => {
                 editable
                 filter
                 placeholder="ĐVT"
-                class="w-full h-10 text-xs font-medium"
+                class="h-10 w-full text-xs font-medium"
               />
             </div>
 
             <!-- Direct Qty (when NOT pack mode) -->
             <div v-if="!isPackMode" class="sm:col-span-3">
               <label
-                class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+                class="mb-1 block text-[11px] font-bold uppercase text-[#42493d]"
                 >Số lượng *</label
               >
               <input
@@ -866,7 +899,7 @@ const handleDelete = async (item: StockImportRecord) => {
                 step="any"
                 min="0.001"
                 placeholder="Ví dụ: 4.2"
-                class="w-full h-10 px-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-bold text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+                class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white px-3 text-xs font-bold text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
               />
             </div>
           </div>
@@ -874,17 +907,17 @@ const handleDelete = async (item: StockImportRecord) => {
           <!-- Pack Mode: quy cách đóng gói row -->
           <div
             v-if="isPackMode"
-            class="p-3 bg-[#fff8e1] rounded-xl border border-[#ffe082] space-y-2"
+            class="space-y-2 rounded-xl border border-[#ffe082] bg-[#fff8e1] p-3"
           >
-            <div class="flex items-center gap-1.5 mb-1">
+            <div class="mb-1 flex items-center gap-1.5">
               <span class="material-symbols-outlined text-sm text-[#f57f17]"
                 >package_2</span
               >
               <span
-                class="text-[11px] font-bold text-[#f57f17] uppercase tracking-wide"
+                class="text-[11px] font-bold uppercase tracking-wide text-[#f57f17]"
                 >Quy cách đóng gói</span
               >
-              <span class="text-[10px] text-[#a68a00] ml-1"
+              <span class="ml-1 text-[10px] text-[#a68a00]"
                 >— Nhập số đơn vị mua và dung tích/cân nặng mỗi đơn vị, hệ thống
                 tự tính tổng vào kho</span
               >
@@ -893,7 +926,7 @@ const handleDelete = async (item: StockImportRecord) => {
               <!-- Pack count: số lượng mua -->
               <div>
                 <label
-                  class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+                  class="mb-1 block text-[11px] font-bold uppercase text-[#42493d]"
                   >Số lượng mua *</label
                 >
                 <input
@@ -902,14 +935,14 @@ const handleDelete = async (item: StockImportRecord) => {
                   step="1"
                   min="1"
                   placeholder="Ví dụ: 2"
-                  class="w-full h-10 px-3 bg-white border border-[#ffe082] rounded-xl text-xs font-bold text-[#1e1b1b] outline-none focus:border-[#f57f17] focus:ring-2 focus:ring-[#f57f17]/20"
+                  class="h-10 w-full rounded-xl border border-[#ffe082] bg-white px-3 text-xs font-bold text-[#1e1b1b] outline-none focus:border-[#f57f17] focus:ring-2 focus:ring-[#f57f17]/20"
                 />
               </div>
 
               <!-- Pack unit: loại đóng gói -->
               <div>
                 <label
-                  class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+                  class="mb-1 block text-[11px] font-bold uppercase text-[#42493d]"
                   >Loại đóng gói</label
                 >
                 <Select
@@ -917,14 +950,14 @@ const handleDelete = async (item: StockImportRecord) => {
                   :options="packUnitOptions"
                   editable
                   placeholder="bình, hộp, lon..."
-                  class="w-full h-10 text-xs font-medium"
+                  class="h-10 w-full text-xs font-medium"
                 />
               </div>
 
               <!-- Pack size: dung tích/cân nặng mỗi đơn vị -->
               <div>
                 <label
-                  class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+                  class="mb-1 block text-[11px] font-bold uppercase text-[#42493d]"
                   >Quy cách ({{ addUnit }}/{{ packUnit }})</label
                 >
                 <input
@@ -933,14 +966,14 @@ const handleDelete = async (item: StockImportRecord) => {
                   step="any"
                   min="0.001"
                   :placeholder="`Ví dụ: 2.1`"
-                  class="w-full h-10 px-3 bg-white border border-[#ffe082] rounded-xl text-xs font-bold text-[#1e1b1b] outline-none focus:border-[#f57f17] focus:ring-2 focus:ring-[#f57f17]/20"
+                  class="h-10 w-full rounded-xl border border-[#ffe082] bg-white px-3 text-xs font-bold text-[#1e1b1b] outline-none focus:border-[#f57f17] focus:ring-2 focus:ring-[#f57f17]/20"
                 />
               </div>
             </div>
 
             <!-- Pack calculation result -->
             <div
-              class="flex items-center gap-2 mt-1 p-2 bg-white rounded-lg border border-[#ffe082]"
+              class="mt-1 flex items-center gap-2 rounded-lg border border-[#ffe082] bg-white p-2"
             >
               <span class="material-symbols-outlined text-sm text-[#f57f17]"
                 >calculate</span
@@ -954,22 +987,22 @@ const handleDelete = async (item: StockImportRecord) => {
                   >{{ packSize }} {{ addUnit }}/{{ packUnit }}</strong
                 >
                 =
-                <strong class="text-[#326824] text-sm"
+                <strong class="text-sm text-[#326824]"
                   >{{ packTotalQty }} {{ addUnit }}</strong
                 >
-                <span class="text-[#72796c] ml-1">(sẽ được nhập vào kho)</span>
+                <span class="ml-1 text-[#72796c]">(sẽ được nhập vào kho)</span>
               </span>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+          <div class="grid grid-cols-1 items-end gap-3 sm:grid-cols-12">
             <!-- Total Price / Thành tiền -->
             <div class="sm:col-span-5">
               <label
-                class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+                class="mb-1 block text-[11px] font-bold uppercase text-[#42493d]"
               >
                 Tổng tiền mua (VNĐ)
-                <span class="text-[#8E3E2F] font-normal lowercase"
+                <span class="font-normal lowercase text-[#8E3E2F]"
                   >(ví dụ 57.000)</span
                 >
               </label>
@@ -979,14 +1012,14 @@ const handleDelete = async (item: StockImportRecord) => {
                 type="number"
                 min="0"
                 placeholder="57,000"
-                class="w-full h-10 px-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-bold text-[#326824] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+                class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white px-3 text-xs font-bold text-[#326824] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
               />
             </div>
 
             <!-- Unit Price / Đơn giá tính ra -->
             <div class="sm:col-span-4">
               <label
-                class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+                class="mb-1 block text-[11px] font-bold uppercase text-[#42493d]"
               >
                 Đơn giá tính ra (₫/{{ addUnit }})
               </label>
@@ -996,7 +1029,7 @@ const handleDelete = async (item: StockImportRecord) => {
                 type="number"
                 min="0"
                 placeholder="27,143"
-                class="w-full h-10 px-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-semibold text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+                class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white px-3 text-xs font-semibold text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
               />
             </div>
 
@@ -1005,7 +1038,7 @@ const handleDelete = async (item: StockImportRecord) => {
               <button
                 @click="addImportItem"
                 type="button"
-                class="w-full h-10 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1 cursor-pointer shadow-sm"
+                class="flex h-10 w-full cursor-pointer items-center justify-center gap-1 rounded-xl bg-[#8E3E2F] px-4 text-xs font-bold text-white shadow-sm transition hover:bg-[#6E281C]"
               >
                 <span class="material-symbols-outlined text-base">add</span>
                 <span>Thêm vào đơn</span>
@@ -1016,7 +1049,7 @@ const handleDelete = async (item: StockImportRecord) => {
           <!-- Formula Preview Chip -->
           <div
             v-if="previewQty > 0 && (addTotalPrice > 0 || addUnitPrice > 0)"
-            class="flex items-center gap-2 text-[11px] text-[#72796c] bg-white px-3 py-1.5 rounded-lg border border-[#E2D7CC]"
+            class="flex items-center gap-2 rounded-lg border border-[#E2D7CC] bg-white px-3 py-1.5 text-[11px] text-[#72796c]"
           >
             <span class="material-symbols-outlined text-sm text-[#8E3E2F]"
               >calculate</span
@@ -1033,19 +1066,19 @@ const handleDelete = async (item: StockImportRecord) => {
         </div>
 
         <!-- Table of Import Items -->
-        <div class="overflow-x-auto border border-[#E2D7CC] rounded-xl">
+        <div class="overflow-x-auto rounded-xl border border-[#E2D7CC]">
           <table class="w-full text-left text-xs text-[#1e1b1b]">
             <thead
-              class="bg-[#F5EFE8] text-[#42493d] font-semibold uppercase tracking-wider border-b border-[#E2D7CC]"
+              class="border-b border-[#E2D7CC] bg-[#F5EFE8] font-semibold uppercase tracking-wider text-[#42493d]"
             >
               <tr>
-                <th class="py-3 px-3 w-10 text-center">STT</th>
-                <th class="py-3 px-3">Tên nguyên liệu</th>
-                <th class="py-3 px-3 w-28 text-center">ĐVT kho</th>
-                <th class="py-3 px-3 w-28 text-center">Số lượng</th>
-                <th class="py-3 px-3 w-32 text-right">Đơn giá vốn (₫)</th>
-                <th class="py-3 px-3 w-36 text-right">Thành tiền (₫)</th>
-                <th class="py-3 px-2 w-12 text-center">Xóa</th>
+                <th class="w-10 px-3 py-3 text-center">STT</th>
+                <th class="px-3 py-3">Tên nguyên liệu</th>
+                <th class="w-28 px-3 py-3 text-center">ĐVT kho</th>
+                <th class="w-28 px-3 py-3 text-center">Số lượng</th>
+                <th class="w-32 px-3 py-3 text-right">Đơn giá vốn (₫)</th>
+                <th class="w-36 px-3 py-3 text-right">Thành tiền (₫)</th>
+                <th class="w-12 px-2 py-3 text-center">Xóa</th>
               </tr>
             </thead>
             <tbody
@@ -1055,12 +1088,12 @@ const handleDelete = async (item: StockImportRecord) => {
               <tr
                 v-for="(item, idx) in importItems"
                 :key="idx"
-                class="hover:bg-[#F5EFE8]/50 transition"
+                class="transition hover:bg-[#F5EFE8]/50"
               >
-                <td class="py-3 px-3 text-center font-bold text-[#72796c]">
+                <td class="px-3 py-3 text-center font-bold text-[#72796c]">
                   {{ idx + 1 }}
                 </td>
-                <td class="py-3 px-3">
+                <td class="px-3 py-3">
                   <div class="font-bold text-[#1e1b1b]">
                     {{ item.ingredient.name }}
                   </div>
@@ -1069,7 +1102,7 @@ const handleDelete = async (item: StockImportRecord) => {
                   </div>
                   <div
                     v-if="item.packInfo"
-                    class="mt-0.5 inline-flex items-center gap-1 text-[10px] text-[#a68a00] bg-[#fff8e1] px-1.5 py-0.5 rounded-md border border-[#ffe082]"
+                    class="mt-0.5 inline-flex items-center gap-1 rounded-md border border-[#ffe082] bg-[#fff8e1] px-1.5 py-0.5 text-[10px] text-[#a68a00]"
                   >
                     <span class="material-symbols-outlined text-xs"
                       >package_2</span
@@ -1077,48 +1110,48 @@ const handleDelete = async (item: StockImportRecord) => {
                     {{ item.packInfo }}
                   </div>
                 </td>
-                <td class="py-3 px-3 text-center">
+                <td class="px-3 py-3 text-center">
                   <input
                     v-model="item.unit"
                     type="text"
-                    class="w-20 px-2 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-center font-semibold text-xs outline-none focus:border-[#8E3E2F]"
+                    class="w-20 rounded-lg border border-[#c1c9b9]/70 bg-white px-2 py-1 text-center text-xs font-semibold outline-none focus:border-[#8E3E2F]"
                   />
                 </td>
-                <td class="py-3 px-3 text-center">
+                <td class="px-3 py-3 text-center">
                   <input
                     v-model.number="item.qty"
                     @input="updateRowQty(item)"
                     type="number"
                     step="any"
                     min="0.001"
-                    class="w-20 px-2 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-center font-bold text-xs outline-none focus:border-[#8E3E2F]"
+                    class="w-20 rounded-lg border border-[#c1c9b9]/70 bg-white px-2 py-1 text-center text-xs font-bold outline-none focus:border-[#8E3E2F]"
                   />
                 </td>
-                <td class="py-3 px-3 text-right">
+                <td class="px-3 py-3 text-right">
                   <input
                     v-model.number="item.unitPrice"
                     @input="updateRowUnitPrice(item)"
                     type="number"
                     step="any"
                     min="0"
-                    class="w-24 px-2 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-right font-medium text-xs outline-none focus:border-[#8E3E2F]"
+                    class="w-24 rounded-lg border border-[#c1c9b9]/70 bg-white px-2 py-1 text-right text-xs font-medium outline-none focus:border-[#8E3E2F]"
                   />
                 </td>
-                <td class="py-3 px-3 text-right">
+                <td class="px-3 py-3 text-right">
                   <input
                     v-model.number="item.totalPrice"
                     @input="updateRowTotalPrice(item)"
                     type="number"
                     step="any"
                     min="0"
-                    class="w-28 px-2 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-right font-bold text-xs text-[#326824] outline-none focus:border-[#8E3E2F]"
+                    class="w-28 rounded-lg border border-[#c1c9b9]/70 bg-white px-2 py-1 text-right text-xs font-bold text-[#326824] outline-none focus:border-[#8E3E2F]"
                   />
                 </td>
-                <td class="py-3 px-2 text-center">
+                <td class="px-2 py-3 text-center">
                   <button
                     @click="removeItem(idx)"
                     type="button"
-                    class="p-1 text-[#ba1a1a] hover:bg-[#ffdad6] rounded-md transition cursor-pointer"
+                    class="cursor-pointer rounded-md p-1 text-[#ba1a1a] transition hover:bg-[#ffdad6]"
                     title="Xóa dòng này"
                   >
                     <span class="material-symbols-outlined text-base"
@@ -1132,13 +1165,13 @@ const handleDelete = async (item: StockImportRecord) => {
               <tr>
                 <td colspan="7" class="py-8 text-center text-[#72796c]">
                   <span
-                    class="material-symbols-outlined text-3xl text-[#c1c9b9] block mb-1"
+                    class="material-symbols-outlined mb-1 block text-3xl text-[#c1c9b9]"
                     >add_shopping_cart</span
                   >
                   <span class="text-xs font-semibold"
                     >Chưa có nguyên liệu nào trong đơn nhập</span
                   >
-                  <p class="text-[11px] text-[#72796c] mt-0.5">
+                  <p class="mt-0.5 text-[11px] text-[#72796c]">
                     Vui lòng chọn nguyên liệu và bấm "+ Thêm vào đơn" ở phía
                     trên
                   </p>
@@ -1154,22 +1187,22 @@ const handleDelete = async (item: StockImportRecord) => {
          PHẦN 2: BẢNG DỮ LIỆU CÁC LẦN NHẬP HÀNG (HISTORY & MANAGEMENT)
          ========================================================= -->
     <div
-      class="bg-white rounded-2xl border border-[#E2D7CC] shadow-sm overflow-hidden flex flex-col"
+      class="flex flex-col overflow-hidden rounded-2xl border border-[#E2D7CC] bg-white shadow-sm"
     >
       <!-- Section Header with Stats -->
       <div
-        class="p-5 border-b border-[#E2D7CC] bg-[#F9F6F0] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+        class="flex flex-col justify-between gap-4 border-b border-[#E2D7CC] bg-[#F9F6F0] p-5 sm:flex-row sm:items-center"
       >
         <div>
           <h2
-            class="text-lg font-bold font-display text-[#1e1b1b] flex items-center gap-2"
+            class="font-display flex items-center gap-2 text-lg font-bold text-[#1e1b1b]"
           >
             <span class="material-symbols-outlined text-[#8E3E2F]"
               >history</span
             >
             <span>Lịch sử các lần nhập hàng</span>
           </h2>
-          <p class="text-xs text-[#42493d] mt-0.5 font-medium">
+          <p class="mt-0.5 text-xs font-medium text-[#42493d]">
             Theo dõi danh sách các phiếu nhập kho, nhà cung cấp và tổng chi phí
             nhập hàng
           </p>
@@ -1177,9 +1210,9 @@ const handleDelete = async (item: StockImportRecord) => {
 
         <div class="flex items-center gap-3">
           <div
-            class="px-3.5 py-2 bg-white rounded-xl border border-[#E2D7CC] flex items-center gap-2"
+            class="flex items-center gap-2 rounded-xl border border-[#E2D7CC] bg-white px-3.5 py-2"
           >
-            <span class="text-[11px] text-[#72796c] font-bold uppercase"
+            <span class="text-[11px] font-bold uppercase text-[#72796c]"
               >Tổng phiếu:</span
             >
             <span class="text-xs font-bold text-[#8E3E2F]"
@@ -1190,9 +1223,9 @@ const handleDelete = async (item: StockImportRecord) => {
             >
           </div>
           <div
-            class="px-3.5 py-2 bg-white rounded-xl border border-[#E2D7CC] flex items-center gap-2"
+            class="flex items-center gap-2 rounded-xl border border-[#E2D7CC] bg-white px-3.5 py-2"
           >
-            <span class="text-[11px] text-[#72796c] font-bold uppercase"
+            <span class="text-[11px] font-bold uppercase text-[#72796c]"
               >Tổng chi phí:</span
             >
             <span class="text-xs font-bold text-[#326824]">{{
@@ -1203,27 +1236,27 @@ const handleDelete = async (item: StockImportRecord) => {
       </div>
 
       <!-- 1. Form Tìm kiếm & Bộ lọc (Search Form) -->
-      <div class="p-4 border-b border-[#E2D7CC] bg-white">
+      <div class="border-b border-[#E2D7CC] bg-white p-4">
         <form
           @submit.prevent="onSearchHistory"
-          class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end"
+          class="grid grid-cols-1 items-end gap-3 sm:grid-cols-12"
         >
           <!-- Keyword Input -->
           <div class="sm:col-span-4">
             <label
-              class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+              class="mb-1 block text-[11px] font-bold uppercase text-[#42493d]"
               >Từ khóa tìm kiếm</label
             >
             <div class="relative">
               <span
-                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#72796c] text-lg"
+                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg text-[#72796c]"
                 >search</span
               >
               <input
                 v-model="searchKeyword"
                 type="text"
                 placeholder="Mã phiếu (PNK-...), NCC, ghi chú..."
-                class="w-full h-10 pl-9 pr-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+                class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white pl-9 pr-3 text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
               />
             </div>
           </div>
@@ -1231,7 +1264,7 @@ const handleDelete = async (item: StockImportRecord) => {
           <!-- Warehouse Select -->
           <div class="sm:col-span-3">
             <label
-              class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+              class="mb-1 block text-[11px] font-bold uppercase text-[#42493d]"
               >Kho nhập</label
             >
             <Select
@@ -1239,41 +1272,41 @@ const handleDelete = async (item: StockImportRecord) => {
               :options="warehouseOptions"
               optionLabel="label"
               optionValue="value"
-              class="w-full h-10 text-xs font-medium"
+              class="h-10 w-full text-xs font-medium"
             />
           </div>
 
           <!-- Date Range: From -->
           <div class="sm:col-span-2">
             <label
-              class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+              class="mb-1 block text-[11px] font-bold uppercase text-[#42493d]"
               >Từ ngày</label
             >
             <input
               v-model="searchFromDate"
               type="date"
-              class="w-full h-10 px-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+              class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white px-3 text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             />
           </div>
 
           <!-- Date Range: To -->
           <div class="sm:col-span-2">
             <label
-              class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+              class="mb-1 block text-[11px] font-bold uppercase text-[#42493d]"
               >Đến ngày</label
             >
             <input
               v-model="searchToDate"
               type="date"
-              class="w-full h-10 px-3 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+              class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white px-3 text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             />
           </div>
 
           <!-- Search Actions -->
-          <div class="sm:col-span-1 flex items-center gap-1.5">
+          <div class="flex items-center gap-1.5 sm:col-span-1">
             <button
               type="submit"
-              class="w-full h-10 bg-[#8E3E2F] hover:bg-[#6E281C] text-white rounded-xl flex items-center justify-center transition cursor-pointer shadow-sm"
+              class="flex h-10 w-full cursor-pointer items-center justify-center rounded-xl bg-[#8E3E2F] text-white shadow-sm transition hover:bg-[#6E281C]"
               title="Tìm kiếm phiếu nhập"
             >
               <span class="material-symbols-outlined text-lg">search</span>
@@ -1281,7 +1314,7 @@ const handleDelete = async (item: StockImportRecord) => {
             <button
               type="button"
               @click="onResetSearchHistory"
-              class="w-full h-10 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#42493d] rounded-xl flex items-center justify-center border border-[#c1c9b9]/60 transition cursor-pointer"
+              class="flex h-10 w-full cursor-pointer items-center justify-center rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] text-[#42493d] transition hover:bg-[#E8DFD5]"
               title="Đặt lại bộ lọc"
             >
               <span class="material-symbols-outlined text-lg">refresh</span>
@@ -1310,7 +1343,7 @@ const handleDelete = async (item: StockImportRecord) => {
       >
         <template #empty>
           <div
-            class="py-10 text-center text-[#72796c] flex flex-col items-center justify-center gap-2"
+            class="flex flex-col items-center justify-center gap-2 py-10 text-center text-[#72796c]"
           >
             <span class="material-symbols-outlined text-4xl text-[#c1c9b9]"
               >inventory</span
@@ -1327,7 +1360,7 @@ const handleDelete = async (item: StockImportRecord) => {
         <Column field="importCode" header="Mã phiếu" sortable>
           <template #body="slotProps">
             <span
-              class="font-mono font-bold text-[#8E3E2F] bg-[#F9F6F0] px-2.5 py-1 rounded-lg border border-[#E2D7CC]"
+              class="rounded-lg border border-[#E2D7CC] bg-[#F9F6F0] px-2.5 py-1 font-mono font-bold text-[#8E3E2F]"
             >
               {{ slotProps.data.importCode }}
             </span>
@@ -1337,9 +1370,9 @@ const handleDelete = async (item: StockImportRecord) => {
         <Column field="importDate" header="Thời gian nhập" sortable>
           <template #body="slotProps">
             <div
-              class="flex items-center gap-1.5 text-xs text-[#1e1b1b] font-medium"
+              class="flex items-center gap-1.5 text-xs font-medium text-[#1e1b1b]"
             >
-              <span class="material-symbols-outlined text-[#72796c] text-sm"
+              <span class="material-symbols-outlined text-sm text-[#72796c]"
                 >schedule</span
               >
               <span>{{ formatDateTime(slotProps.data.importDate) }}</span>
@@ -1350,10 +1383,10 @@ const handleDelete = async (item: StockImportRecord) => {
         <Column field="supplier" header="Nhà cung cấp" sortable>
           <template #body="slotProps">
             <div class="flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[#8E3E2F] text-sm"
+              <span class="material-symbols-outlined text-sm text-[#8E3E2F]"
                 >storefront</span
               >
-              <span class="font-bold text-[#1e1b1b] text-xs">{{
+              <span class="text-xs font-bold text-[#1e1b1b]">{{
                 slotProps.data.supplier || 'Nhà cung cấp lẻ'
               }}</span>
             </div>
@@ -1363,7 +1396,7 @@ const handleDelete = async (item: StockImportRecord) => {
         <Column field="warehouse" header="Kho nhập">
           <template #body="slotProps">
             <span
-              class="px-2.5 py-1 rounded-md bg-[#F2ECE4] text-[#42493d] font-semibold text-[11px] inline-block"
+              class="inline-block rounded-md bg-[#F2ECE4] px-2.5 py-1 text-[11px] font-semibold text-[#42493d]"
             >
               {{ slotProps.data.warehouse || 'Kho tổng' }}
             </span>
@@ -1377,7 +1410,7 @@ const handleDelete = async (item: StockImportRecord) => {
           headerClass="text-center"
         >
           <template #body="slotProps">
-            <span class="font-bold text-xs text-[#42493d]"
+            <span class="text-xs font-bold text-[#42493d]"
               >{{ slotProps.data.itemCount }} loại</span
             >
           </template>
@@ -1391,7 +1424,7 @@ const handleDelete = async (item: StockImportRecord) => {
           headerClass="text-right"
         >
           <template #body="slotProps">
-            <span class="font-bold font-display text-sm text-[#326824]">
+            <span class="font-display text-sm font-bold text-[#326824]">
               {{ formatCurrency(slotProps.data.totalAmount) }}
             </span>
           </template>
@@ -1400,7 +1433,7 @@ const handleDelete = async (item: StockImportRecord) => {
         <Column field="note" header="Ghi chú">
           <template #body="slotProps">
             <span
-              class="text-xs text-[#72796c] line-clamp-1"
+              class="line-clamp-1 text-xs text-[#72796c]"
               :title="slotProps.data.note"
             >
               {{ slotProps.data.note || '—' }}
@@ -1418,7 +1451,7 @@ const handleDelete = async (item: StockImportRecord) => {
             <div class="flex items-center justify-center gap-2">
               <button
                 @click="openDetailModal(slotProps.data)"
-                class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#F2ECE4] hover:bg-[#8E3E2F] text-[#8E3E2F] hover:text-white transition cursor-pointer"
+                class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-[#F2ECE4] text-[#8E3E2F] transition hover:bg-[#8E3E2F] hover:text-white"
                 title="Xem chi tiết"
               >
                 <span class="material-symbols-outlined text-[18px]"
@@ -1427,14 +1460,14 @@ const handleDelete = async (item: StockImportRecord) => {
               </button>
               <button
                 @click="handleEdit(slotProps.data)"
-                class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#e3f2fd] hover:bg-[#1976d2] text-[#1976d2] hover:text-white transition cursor-pointer"
+                class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-[#e3f2fd] text-[#1976d2] transition hover:bg-[#1976d2] hover:text-white"
                 title="Sửa phiếu nhập"
               >
                 <span class="material-symbols-outlined text-[18px]">edit</span>
               </button>
               <button
                 @click="handleDelete(slotProps.data)"
-                class="w-8 h-8 flex items-center justify-center rounded-lg bg-[#ffebee] hover:bg-[#d32f2f] text-[#d32f2f] hover:text-white transition cursor-pointer"
+                class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-[#ffebee] text-[#d32f2f] transition hover:bg-[#d32f2f] hover:text-white"
                 title="Xóa phiếu nhập"
               >
                 <span class="material-symbols-outlined text-[18px]"
@@ -1456,40 +1489,40 @@ const handleDelete = async (item: StockImportRecord) => {
       modal
       class="w-full max-w-5xl p-0"
     >
-      <div v-if="selectedImport" class="p-5 flex flex-col gap-4">
+      <div v-if="selectedImport" class="flex flex-col gap-4 p-5">
         <!-- Receipt Meta Info Cards -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div class="p-3 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC]">
-            <span class="text-[10px] font-bold text-[#72796c] uppercase block"
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div class="rounded-xl border border-[#E2D7CC] bg-[#F9F6F0] p-3">
+            <span class="block text-[10px] font-bold uppercase text-[#72796c]"
               >Mã phiếu</span
             >
-            <span class="text-sm font-bold font-mono text-[#8E3E2F]">{{
+            <span class="font-mono text-sm font-bold text-[#8E3E2F]">{{
               selectedImport.importCode
             }}</span>
           </div>
-          <div class="p-3 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC]">
-            <span class="text-[10px] font-bold text-[#72796c] uppercase block"
+          <div class="rounded-xl border border-[#E2D7CC] bg-[#F9F6F0] p-3">
+            <span class="block text-[10px] font-bold uppercase text-[#72796c]"
               >Ngày nhập</span
             >
             <span class="text-xs font-bold text-[#1e1b1b]">{{
               formatDateTime(selectedImport.importDate)
             }}</span>
           </div>
-          <div class="p-3 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC]">
-            <span class="text-[10px] font-bold text-[#72796c] uppercase block"
+          <div class="rounded-xl border border-[#E2D7CC] bg-[#F9F6F0] p-3">
+            <span class="block text-[10px] font-bold uppercase text-[#72796c]"
               >Nhà cung cấp</span
             >
             <span
-              class="text-xs font-bold text-[#1e1b1b] truncate block"
+              class="block truncate text-xs font-bold text-[#1e1b1b]"
               :title="selectedImport.supplier"
               >{{ selectedImport.supplier }}</span
             >
           </div>
-          <div class="p-3 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC]">
-            <span class="text-[10px] font-bold text-[#72796c] uppercase block"
+          <div class="rounded-xl border border-[#E2D7CC] bg-[#F9F6F0] p-3">
+            <span class="block text-[10px] font-bold uppercase text-[#72796c]"
               >Kho nhập</span
             >
-            <span class="text-xs font-bold text-[#1e1b1b] truncate block">{{
+            <span class="block truncate text-xs font-bold text-[#1e1b1b]">{{
               selectedImport.warehouse
             }}</span>
           </div>
@@ -1497,24 +1530,24 @@ const handleDelete = async (item: StockImportRecord) => {
 
         <div
           v-if="selectedImport.note"
-          class="p-3 bg-[#faf5f4] rounded-xl border border-[#E2D7CC] text-xs text-[#42493d]"
+          class="rounded-xl border border-[#E2D7CC] bg-[#faf5f4] p-3 text-xs text-[#42493d]"
         >
           <strong class="text-[#1e1b1b]">Ghi chú:</strong>
           {{ selectedImport.note }}
         </div>
 
         <!-- Items Table inside Modal -->
-        <div class="border border-[#E2D7CC] rounded-xl overflow-hidden">
+        <div class="overflow-hidden rounded-xl border border-[#E2D7CC]">
           <table class="w-full text-left text-xs text-[#1e1b1b]">
             <thead
-              class="bg-[#F5EFE8] text-[#42493d] font-semibold uppercase tracking-wider border-b border-[#E2D7CC]"
+              class="border-b border-[#E2D7CC] bg-[#F5EFE8] font-semibold uppercase tracking-wider text-[#42493d]"
             >
               <tr>
-                <th class="py-2.5 px-3 w-10 text-center">STT</th>
-                <th class="py-2.5 px-3">Tên nguyên liệu</th>
-                <th class="py-2.5 px-3 text-center">Số lượng nhập</th>
-                <th class="py-2.5 px-3 text-right">Đơn giá vốn</th>
-                <th class="py-2.5 px-3 text-right">Thành tiền</th>
+                <th class="w-10 px-3 py-2.5 text-center">STT</th>
+                <th class="px-3 py-2.5">Tên nguyên liệu</th>
+                <th class="px-3 py-2.5 text-center">Số lượng nhập</th>
+                <th class="px-3 py-2.5 text-right">Đơn giá vốn</th>
+                <th class="px-3 py-2.5 text-right">Thành tiền</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-[#F2ECE4]">
@@ -1523,16 +1556,16 @@ const handleDelete = async (item: StockImportRecord) => {
                 :key="idx"
                 class="hover:bg-[#F9F6F0]"
               >
-                <td class="py-2.5 px-3 text-center font-bold text-[#72796c]">
+                <td class="px-3 py-2.5 text-center font-bold text-[#72796c]">
                   {{ idx + 1 }}
                 </td>
-                <td class="py-2.5 px-3">
+                <td class="px-3 py-2.5">
                   <div class="font-bold text-[#1e1b1b]">
                     {{ item.ingredientName || item.name || 'Nguyên liệu' }}
                   </div>
                   <div
                     v-if="item.isPackMode && item.packCount && item.packSize"
-                    class="mt-0.5 inline-flex items-center gap-1 text-[10px] text-[#a68a00] bg-[#fff8e1] px-1.5 py-0.5 rounded border border-[#ffe082]"
+                    class="mt-0.5 inline-flex items-center gap-1 rounded border border-[#ffe082] bg-[#fff8e1] px-1.5 py-0.5 text-[10px] text-[#a68a00]"
                   >
                     <span class="material-symbols-outlined text-xs"
                       >package_2</span
@@ -1542,18 +1575,18 @@ const handleDelete = async (item: StockImportRecord) => {
                   </div>
                   <div
                     v-else-if="item.note"
-                    class="text-[10px] text-[#72796c] italic"
+                    class="text-[10px] italic text-[#72796c]"
                   >
                     {{ item.note }}
                   </div>
                 </td>
-                <td class="py-2.5 px-3 text-center font-bold font-mono">
+                <td class="px-3 py-2.5 text-center font-mono font-bold">
                   {{ formatNumber(item.qty) }} {{ item.unit }}
                 </td>
-                <td class="py-2.5 px-3 text-right font-medium">
+                <td class="px-3 py-2.5 text-right font-medium">
                   {{ formatCurrency(item.unitPrice) }}
                 </td>
-                <td class="py-2.5 px-3 text-right font-bold text-[#326824]">
+                <td class="px-3 py-2.5 text-right font-bold text-[#326824]">
                   {{ formatCurrency(item.totalAmount) }}
                 </td>
               </tr>
@@ -1563,12 +1596,12 @@ const handleDelete = async (item: StockImportRecord) => {
 
         <!-- Total Receipt Footer -->
         <div
-          class="p-3.5 bg-[#F9F6F0] rounded-xl border border-[#E2D7CC] flex justify-between items-center"
+          class="flex items-center justify-between rounded-xl border border-[#E2D7CC] bg-[#F9F6F0] p-3.5"
         >
           <span class="text-xs font-bold text-[#42493d]"
             >Tổng giá trị phiếu nhập kho:</span
           >
-          <span class="text-lg font-bold font-display text-[#326824]">{{
+          <span class="font-display text-lg font-bold text-[#326824]">{{
             formatCurrency(selectedImport.totalAmount)
           }}</span>
         </div>
@@ -1579,7 +1612,7 @@ const handleDelete = async (item: StockImportRecord) => {
           <button
             type="button"
             @click="showDetailModal = false"
-            class="h-9 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl transition cursor-pointer"
+            class="h-9 cursor-pointer rounded-xl bg-[#8E3E2F] px-4 text-xs font-semibold text-white transition hover:bg-[#6E281C]"
           >
             Đóng
           </button>
@@ -1591,6 +1624,25 @@ const handleDelete = async (item: StockImportRecord) => {
       :visible="showLeaveConfirmDialog"
       @confirm="confirmLeave"
       @cancel="cancelLeave"
+    />
+
+    <ActionConfirmDialog
+      v-model:visible="showEditConfirmDialog"
+      header="Chỉnh sửa phiếu nhập"
+      message="Bạn có chắc chắn muốn thay đổi phiếu nhập này?"
+      confirmText="Chỉnh sửa"
+      @confirm="confirmEdit"
+      @cancel="showEditConfirmDialog = false"
+    />
+
+    <ActionConfirmDialog
+      v-model:visible="showDeleteConfirmDialog"
+      header="Xóa phiếu nhập"
+      :message="`Bạn có chắc chắn muốn xóa phiếu nhập kho #${pendingDeleteItem?.importCode}? Việc này sẽ hoàn tác tồn kho.`"
+      confirmText="Xóa"
+      danger
+      @confirm="confirmDelete"
+      @cancel="showDeleteConfirmDialog = false"
     />
   </div>
 </template>
