@@ -239,6 +239,11 @@ const finalPrice = computed(() => {
   return Math.max(0, subtotalPrice.value - activeTab.value.discountAmount)
 })
 
+const applySuggestedPromoCode = (code: string) => {
+  activeTab.value.promoCode = code
+  applyPromoCode()
+}
+
 const applyPromoCode = () => {
   const code = activeTab.value.promoCode.trim().toUpperCase()
   if (!code) {
@@ -855,19 +860,13 @@ onMounted(() => {
           <div class="flex items-center gap-1.5">
             <span class="text-[10px] font-semibold text-[#72796c]">Gợi ý:</span>
             <button
-              @click="
-                activeTab.promoCode = 'GIAM10K'
-                applyPromoCode()
-              "
+              @click="applySuggestedPromoCode('GIAM10K')"
               class="flex h-6 cursor-pointer items-center rounded-lg border border-[#c1c9b9]/60 bg-[#F2ECE4] px-2.5 text-[10px] font-bold text-[#8E3E2F] transition hover:bg-[#E8DFD5]"
             >
               GIAM10K
             </button>
             <button
-              @click="
-                activeTab.promoCode = 'FREESHIP'
-                applyPromoCode()
-              "
+              @click="applySuggestedPromoCode('FREESHIP')"
               class="flex h-6 cursor-pointer items-center rounded-lg border border-[#c1c9b9]/60 bg-[#F2ECE4] px-2.5 text-[10px] font-bold text-[#8E3E2F] transition hover:bg-[#E8DFD5]"
             >
               FREESHIP
