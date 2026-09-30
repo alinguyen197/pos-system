@@ -7,6 +7,8 @@ export interface RecipeItem {
   amount: number
   unitCost?: number
   unit?: string
+  stockUnit?: string
+  currentStock?: number
 }
 
 export interface ProductItem {
@@ -24,6 +26,8 @@ export interface ProductItem {
   statusCode?: string
   img?: string
   unit?: string
+  isOutOfStock?: boolean
+  outOfStockIngredients?: string[]
   recipeItems?: RecipeItem[]
 }
 
@@ -37,7 +41,9 @@ export interface FetchProductsResponse {
   }
 }
 
-export const fetchProducts = async (params?: any): Promise<FetchProductsResponse> => {
+export const fetchProducts = async (
+  params?: any,
+): Promise<FetchProductsResponse> => {
   try {
     const isSilent = params?.silent || false
     const response = await http.post('/api/products/search', params || {}, {
@@ -48,18 +54,34 @@ export const fetchProducts = async (params?: any): Promise<FetchProductsResponse
       if (Array.isArray(data)) {
         return {
           items: data,
-          pagination: { page: 1, pageSize: data.length, totalRecords: data.length, totalPages: 1 },
+          pagination: {
+            page: 1,
+            pageSize: data.length,
+            totalRecords: data.length,
+            totalPages: 1,
+          },
         }
       }
       return {
         items: data.items || [],
-        pagination: data.pagination || { page: 1, pageSize: 10, totalRecords: (data.items || []).length, totalPages: 1 },
+        pagination: data.pagination || {
+          page: 1,
+          pageSize: 10,
+          totalRecords: (data.items || []).length,
+          totalPages: 1,
+        },
       }
     }
-    return { items: [], pagination: { page: 1, pageSize: 10, totalRecords: 0, totalPages: 1 } }
+    return {
+      items: [],
+      pagination: { page: 1, pageSize: 10, totalRecords: 0, totalPages: 1 },
+    }
   } catch (error) {
     console.error('Failed to fetch products from API:', error)
-    return { items: [], pagination: { page: 1, pageSize: 10, totalRecords: 0, totalPages: 1 } }
+    return {
+      items: [],
+      pagination: { page: 1, pageSize: 10, totalRecords: 0, totalPages: 1 },
+    }
   }
 }
 
@@ -89,7 +111,7 @@ export const updateProduct = async (
     status?: string
     imageUrl?: string
     recipeItems?: RecipeItem[]
-  }
+  },
 ): Promise<any> => {
   const response = await http.put(`/api/products/${id}`, payload)
   return response.data

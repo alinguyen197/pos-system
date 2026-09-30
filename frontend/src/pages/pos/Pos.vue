@@ -8,7 +8,13 @@ import Column from 'primevue/column'
 import Tag from 'primevue/tag'
 import DatePicker from 'primevue/datepicker'
 import { fetchProducts, ProductItem } from '@/api/product.api'
-import { createOrder, fetchOrders, fetchShiftSummary, Order, ShiftSummary } from '@/api/order.api'
+import {
+  createOrder,
+  fetchOrders,
+  fetchShiftSummary,
+  Order,
+  ShiftSummary,
+} from '@/api/order.api'
 import { useAppToast } from '@/composables/useAppToast'
 
 interface CartItem {
@@ -33,7 +39,10 @@ const { showSuccess, showError, showWarning } = useAppToast()
 
 // Logged in Staff Name
 const currentStaffName = ref(
-  localStorage.getItem('fullName') || localStorage.getItem('userName') || localStorage.getItem('email') || 'Nguyễn Văn A (Thu ngân)'
+  localStorage.getItem('fullName') ||
+    localStorage.getItem('userName') ||
+    localStorage.getItem('email') ||
+    'Nguyễn Văn A (Thu ngân)',
 )
 
 // Data States
@@ -41,6 +50,20 @@ const products = ref<ProductItem[]>([])
 const loadingProducts = ref(false)
 const searchQuery = ref('')
 const selectedCategory = ref('Tất cả')
+
+// Missing Ingredients Modal State
+const showMissingIngredientsModal = ref(false)
+const selectedMissingProduct = ref<ProductItem | null>(null)
+
+const handleProductClick = (product: ProductItem) => {
+  if (isProductSuspended(product)) return
+  if (product.isOutOfStock) {
+    selectedMissingProduct.value = product
+    showMissingIngredientsModal.value = true
+    return
+  }
+  addToCart(product)
+}
 
 // Shift Summary State
 const shiftSummary = ref<ShiftSummary>({
@@ -102,7 +125,9 @@ const filteredProducts = computed(() => {
   const rawQ = searchQuery.value.trim()
 
   return products.value.filter((p) => {
-    const matchCat = selectedCategory.value === 'Tất cả' || p.category === selectedCategory.value
+    const matchCat =
+      selectedCategory.value === 'Tất cả' ||
+      p.category === selectedCategory.value
     if (!rawQ) return matchCat
 
     const qLower = rawQ.toLowerCase()
@@ -164,7 +189,7 @@ const isProductSuspended = (product: ProductItem) => {
 
 // Cart Operations
 const addToCart = (product: ProductItem) => {
-  if (isProductSuspended(product)) return
+  if (isProductSuspended(product) || product.isOutOfStock) return
   const currentCart = activeTab.value.cart
   const existing = currentCart.find((item) => item.product.id === product.id)
   if (existing) {
@@ -204,7 +229,10 @@ const setQty = (index: number, value: string | number) => {
 
 // Discount & Calculation
 const subtotalPrice = computed(() => {
-  return activeTab.value.cart.reduce((sum, item) => sum + item.product.rawPrice * item.quantity, 0)
+  return activeTab.value.cart.reduce(
+    (sum, item) => sum + item.product.rawPrice * item.quantity,
+    0,
+  )
 })
 
 const finalPrice = computed(() => {
@@ -223,7 +251,10 @@ const applyPromoCode = () => {
   } else if (code === 'FREESHIP') {
     activeTab.value.discountAmount = 15000
     showSuccess('Áp dụng mã FREESHIP: Giảm 15,000 ₫')
-  } else if (code.startsWith('GIAM') && !isNaN(Number(code.replace('GIAM', '')))) {
+  } else if (
+    code.startsWith('GIAM') &&
+    !isNaN(Number(code.replace('GIAM', '')))
+  ) {
     const amount = Number(code.replace('GIAM', ''))
     activeTab.value.discountAmount = amount
     showSuccess(`Áp dụng mã giảm ${amount.toLocaleString('vi-VN')} ₫`)
@@ -311,7 +342,12 @@ const showHistoryModal = ref(false)
 const orderHistory = ref<Order[]>([])
 const loadingHistory = ref(false)
 const historyDateRange = ref<Date[] | null>(null)
-const historyPagination = ref({ page: 1, pageSize: 20, totalRecords: 0, totalPages: 1 })
+const historyPagination = ref({
+  page: 1,
+  pageSize: 20,
+  totalRecords: 0,
+  totalPages: 1,
+})
 
 const formatYmd = (d: Date) => {
   const year = d.getFullYear()
@@ -352,7 +388,11 @@ const openOrderHistory = async (page = 1) => {
   loadingHistory.value = true
   try {
     const params: any = { limit: 20, page }
-    if (historyDateRange.value && Array.isArray(historyDateRange.value) && historyDateRange.value.length > 0) {
+    if (
+      historyDateRange.value &&
+      Array.isArray(historyDateRange.value) &&
+      historyDateRange.value.length > 0
+    ) {
       if (historyDateRange.value[0]) {
         params.fromDate = formatYmd(historyDateRange.value[0])
       }
@@ -364,8 +404,14 @@ const openOrderHistory = async (page = 1) => {
     }
     const res = await fetchOrders(params)
     orderHistory.value = res.items || []
-    historyPagination.value = res.pagination || { page: 1, pageSize: 20, totalRecords: (res.items || []).length, totalPages: 1 }
-  } catch (err) {
+    historyPagination.value = res.pagination || {
+      page: 1,
+      pageSize: 20,
+      totalRecords: (res.items || []).length,
+      totalPages: 1,
+    }
+  } catch (err: any) {
+    console.error('Fetch orders error:', err)
     showError('Không thể tải lịch sử đơn hàng')
   } finally {
     loadingHistory.value = false
@@ -407,7 +453,8 @@ const loadProducts = async () => {
   try {
     const res = await fetchProducts({ pageSize: 1000 })
     products.value = res.items || []
-  } catch (err) {
+  } catch (err: any) {
+    console.error('Fetch products error:', err)
     showError('Lỗi tải danh sách sản phẩm')
   } finally {
     loadingProducts.value = false
@@ -417,7 +464,10 @@ const loadProducts = async () => {
 const loadShiftSummary = async () => {
   try {
     initShiftSession()
-    const shiftStartedAt = localStorage.getItem('shiftStartedAt') || localStorage.getItem('lastShiftEndedAt') || undefined
+    const shiftStartedAt =
+      localStorage.getItem('shiftStartedAt') ||
+      localStorage.getItem('lastShiftEndedAt') ||
+      undefined
     const res = await fetchShiftSummary(true, shiftStartedAt)
     shiftSummary.value = res
   } catch (err) {
@@ -430,10 +480,21 @@ const formatCurrency = (val: number | undefined) => {
   return rounded.toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' ₫'
 }
 
+const formatQuantity = (val: number | undefined) => {
+  if (val === undefined || isNaN(val)) return '0'
+  return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 }).format(
+    val,
+  )
+}
+
 const formatDate = (dateStr: string) => {
   if (!dateStr) return ''
   const d = new Date(dateStr)
-  return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + d.toLocaleDateString('vi-VN')
+  return (
+    d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) +
+    ' ' +
+    d.toLocaleDateString('vi-VN')
+  )
 }
 
 onMounted(() => {
@@ -443,36 +504,63 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="pos-layout flex flex-col lg:flex-row h-[calc(100vh-80px)] overflow-hidden bg-[#F9F6F0] rounded-2xl border border-[#E2D7CC] shadow-sm">
+  <div
+    class="pos-layout flex h-[calc(100vh-80px)] flex-col overflow-hidden rounded-2xl border border-[#E2D7CC] bg-[#F9F6F0] shadow-sm lg:flex-row"
+  >
     <!-- Left Section: Products (60%) -->
-    <section class="lg:w-[60%] flex flex-col h-full border-r border-[#E2D7CC] bg-white p-5 gap-4 overflow-hidden">
+    <section
+      class="flex h-full flex-col gap-4 overflow-hidden border-r border-[#E2D7CC] bg-white p-5 lg:w-[60%]"
+    >
       <!-- Stitch 2.0 Shift Summary Bar (With Shift & Staff Info) -->
-      <div class="bg-white border border-[#E2D7CC] rounded-xl p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0 shadow-sm">
+      <div
+        class="flex shrink-0 flex-col items-start justify-between gap-3 rounded-xl border border-[#E2D7CC] bg-white p-3 shadow-sm sm:flex-row sm:items-center"
+      >
         <div class="flex flex-col gap-1">
           <div class="flex items-center gap-2">
-            <span class="bg-[#326824]/10 text-[#326824] px-2.5 py-0.5 rounded-lg text-[11px] font-bold">
+            <span
+              class="rounded-lg bg-[#326824]/10 px-2.5 py-0.5 text-[11px] font-bold text-[#326824]"
+            >
               {{ shiftSummary.shiftName || 'Ca sáng (06:00 - 14:00)' }}
             </span>
-            <span class="text-[11px] text-gray-700 font-semibold flex items-center gap-1">
-              <span class="material-symbols-outlined text-xs text-[#8E3E2F]">person</span>
+            <span
+              class="flex items-center gap-1 text-[11px] font-semibold text-gray-700"
+            >
+              <span class="material-symbols-outlined text-xs text-[#8E3E2F]"
+                >person</span
+              >
               {{ currentStaffName }}
             </span>
           </div>
 
-          <div class="flex items-center gap-4 mt-1">
+          <div class="mt-1 flex items-center gap-4">
             <div class="flex flex-col">
-              <span class="text-[10px] font-bold text-[#72796c] uppercase tracking-wider">Doanh thu ca</span>
-              <span class="text-base font-bold text-[#326824] font-display">{{ formatCurrency(shiftSummary.shiftRevenue) }}</span>
+              <span
+                class="text-[10px] font-bold uppercase tracking-wider text-[#72796c]"
+                >Doanh thu ca</span
+              >
+              <span class="font-display text-base font-bold text-[#326824]">{{
+                formatCurrency(shiftSummary.shiftRevenue)
+              }}</span>
             </div>
             <div class="h-6 w-px bg-[#E2D7CC]"></div>
             <div class="flex flex-col">
-              <span class="text-[10px] font-bold text-[#72796c] uppercase tracking-wider">Đơn hàng</span>
-              <span class="text-sm font-bold text-[#1e1b1b]">{{ shiftSummary.totalOrders }}</span>
+              <span
+                class="text-[10px] font-bold uppercase tracking-wider text-[#72796c]"
+                >Đơn hàng</span
+              >
+              <span class="text-sm font-bold text-[#1e1b1b]">{{
+                shiftSummary.totalOrders
+              }}</span>
             </div>
             <div class="h-6 w-px bg-[#E2D7CC]"></div>
             <div class="flex flex-col">
-              <span class="text-[10px] font-bold text-[#72796c] uppercase tracking-wider">Số phần</span>
-              <span class="text-sm font-bold text-[#1e1b1b]">{{ shiftSummary.totalCupsSold }}</span>
+              <span
+                class="text-[10px] font-bold uppercase tracking-wider text-[#72796c]"
+                >Số phần</span
+              >
+              <span class="text-sm font-bold text-[#1e1b1b]">{{
+                shiftSummary.totalCupsSold
+              }}</span>
             </div>
           </div>
         </div>
@@ -480,7 +568,7 @@ onMounted(() => {
         <div class="flex items-center gap-2 self-end sm:self-center">
           <button
             @click="openShiftEndModal"
-            class="h-10 flex items-center gap-1.5 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white rounded-xl transition text-xs font-semibold shadow-sm cursor-pointer"
+            class="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-[#8E3E2F] px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6E281C]"
             title="Bàn giao ca làm việc & Đăng xuất"
           >
             <span class="material-symbols-outlined text-base">output</span>
@@ -489,7 +577,7 @@ onMounted(() => {
 
           <button
             @click="router.push('/reports/sales')"
-            class="h-10 flex items-center gap-1.5 px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#42493d] border border-[#c1c9b9]/60 rounded-xl transition text-xs font-semibold cursor-pointer"
+            class="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] px-4 text-xs font-semibold text-[#42493d] transition hover:bg-[#E8DFD5]"
           >
             <span class="material-symbols-outlined text-base">bar_chart</span>
             <span>Xem báo cáo</span>
@@ -498,20 +586,23 @@ onMounted(() => {
       </div>
 
       <!-- Search & Header Controls -->
-      <div class="flex flex-col sm:flex-row gap-3 items-center justify-between">
-        <div class="relative flex-1 w-full">
-          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#72796c] text-xl">search</span>
+      <div class="flex flex-col items-center justify-between gap-3 sm:flex-row">
+        <div class="relative w-full flex-1">
+          <span
+            class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-xl text-[#72796c]"
+            >search</span
+          >
           <input
             v-model="searchQuery"
             type="text"
             placeholder="Tìm kiếm sản phẩm theo tên hoặc mã SP..."
-            class="w-full h-10 pl-11 pr-4 bg-white border border-[#c1c9b9]/70 rounded-xl focus:outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 text-xs font-medium text-[#1e1b1b]"
+            class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white pl-11 pr-4 text-xs font-medium text-[#1e1b1b] focus:border-[#8E3E2F] focus:outline-none focus:ring-2 focus:ring-[#8E3E2F]/20"
           />
         </div>
 
         <button
           @click="openOrderHistory(1)"
-          class="h-10 flex items-center gap-1.5 px-4 bg-[#F2ECE4] text-[#5D4037] border border-[#c1c9b9]/60 rounded-xl hover:bg-[#E8DFD5] text-xs font-semibold transition whitespace-nowrap cursor-pointer"
+          class="flex h-10 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] px-4 text-xs font-semibold text-[#5D4037] transition hover:bg-[#E8DFD5]"
         >
           <span class="material-symbols-outlined text-base">history</span>
           <span>Lịch sử đơn</span>
@@ -519,13 +610,17 @@ onMounted(() => {
       </div>
 
       <!-- Category Filter Pills -->
-      <div class="flex gap-2 overflow-x-auto pb-1 shrink-0 scrollbar-none">
+      <div class="scrollbar-none flex shrink-0 gap-2 overflow-x-auto pb-1">
         <button
           v-for="cat in categories"
           :key="cat"
           @click="selectedCategory = cat"
-          class="h-9 px-4 rounded-xl text-xs font-semibold whitespace-nowrap transition flex items-center cursor-pointer"
-          :class="selectedCategory === cat ? 'bg-[#8E3E2F] text-white shadow-sm' : 'bg-[#F2ECE4] text-[#42493d] hover:bg-[#E8DFD5]'"
+          class="flex h-9 cursor-pointer items-center whitespace-nowrap rounded-xl px-4 text-xs font-semibold transition"
+          :class="
+            selectedCategory === cat
+              ? 'bg-[#8E3E2F] text-white shadow-sm'
+              : 'bg-[#F2ECE4] text-[#42493d] hover:bg-[#E8DFD5]'
+          "
         >
           {{ cat }}
         </button>
@@ -533,68 +628,150 @@ onMounted(() => {
 
       <!-- Stitch 2.0 Product Cards Grid -->
       <div class="flex-1 overflow-y-auto pr-1">
-        <div v-if="loadingProducts" class="flex justify-center items-center py-20 text-[#72796c] text-xs">
-          <span class="material-symbols-outlined animate-spin mr-2">refresh</span> Đang tải danh sách sản phẩm...
+        <div
+          v-if="loadingProducts"
+          class="flex items-center justify-center py-20 text-xs text-[#72796c]"
+        >
+          <span class="material-symbols-outlined mr-2 animate-spin"
+            >refresh</span
+          >
+          Đang tải danh sách sản phẩm...
         </div>
 
-        <div v-else-if="filteredProducts.length === 0" class="text-center py-16 text-[#72796c] text-xs font-medium">
+        <div
+          v-else-if="filteredProducts.length === 0"
+          class="py-16 text-center text-xs font-medium text-[#72796c]"
+        >
           Không tìm thấy sản phẩm phù hợp
         </div>
 
-        <div v-else class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div
+          v-else
+          class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4"
+        >
           <div
             v-for="p in filteredProducts"
             :key="p.id"
-            @click="!isProductSuspended(p) && addToCart(p)"
-            class="bg-white rounded-xl border border-[#E2D7CC] shadow-sm overflow-hidden flex flex-col transition group relative"
+            @click="handleProductClick(p)"
+            class="group relative flex flex-col overflow-hidden rounded-xl border border-[#E2D7CC] bg-white shadow-sm transition"
             :class="[
               isProductSuspended(p)
-                ? 'opacity-50 bg-[#f9f9f9] cursor-not-allowed select-none pointer-events-none'
-                : 'cursor-pointer hover:shadow-md hover:border-[#8E3E2F]'
+                ? 'pointer-events-none cursor-not-allowed select-none bg-[#f9f9f9] opacity-50'
+                : p.isOutOfStock
+                  ? 'cursor-pointer select-none border-[#fecaca] bg-[#fef2f2] opacity-60 transition-all hover:border-[#ef4444] hover:opacity-80 hover:shadow-md'
+                  : 'cursor-pointer hover:border-[#8E3E2F] hover:shadow-md',
             ]"
           >
-            <span class="absolute top-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-md backdrop-blur-sm z-10 font-bold">
+            <span
+              class="absolute left-2 top-2 z-10 rounded-md bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm"
+            >
               {{ p.category }}
             </span>
 
             <button
-              v-if="!isProductSuspended(p)"
-              @click.stop="addToCart(p)"
-              class="absolute top-2 right-2 bg-[#326824] hover:bg-[#4a813a] text-white w-7 h-7 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition z-10"
+              v-if="!isProductSuspended(p) && !p.isOutOfStock"
+              @click.stop="handleProductClick(p)"
+              class="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-[#326824] text-white shadow-md transition hover:scale-110 hover:bg-[#4a813a]"
               title="Thêm vào đơn hàng"
             >
               <span class="material-symbols-outlined text-base">add</span>
             </button>
             <div
-              v-else
-              class="absolute top-2 right-2 bg-gray-400 text-white w-7 h-7 rounded-full flex items-center justify-center shadow-sm cursor-not-allowed z-10"
+              v-else-if="isProductSuspended(p)"
+              class="absolute right-2 top-2 z-10 flex h-7 w-7 cursor-not-allowed items-center justify-center rounded-full bg-gray-400 text-white shadow-sm"
               title="Tạm ngừng kinh doanh"
             >
               <span class="material-symbols-outlined text-base">block</span>
             </div>
+            <div
+              v-else-if="p.isOutOfStock"
+              class="absolute right-2 top-2 z-10 flex h-7 w-7 cursor-not-allowed items-center justify-center rounded-full bg-orange-500 text-white shadow-sm"
+              :title="
+                'Hết nguyên liệu: ' +
+                (p.outOfStockIngredients?.join(', ') || '')
+              "
+            >
+              <span class="material-symbols-outlined text-base"
+                >inventory_2</span
+              >
+            </div>
 
-            <div class="h-32 w-full bg-[#F2ECE4] relative overflow-hidden flex items-center justify-center">
+            <div
+              class="relative flex h-32 w-full items-center justify-center overflow-hidden bg-[#F2ECE4]"
+            >
               <img
                 v-if="p.img"
                 :src="p.img"
                 :alt="p.name"
-                class="w-full h-full object-cover transition duration-300"
-                :class="isProductSuspended(p) ? 'grayscale contrast-75' : 'group-hover:scale-105'"
+                class="h-full w-full object-cover transition duration-300"
+                :class="
+                  isProductSuspended(p) || p.isOutOfStock
+                    ? 'contrast-75 grayscale'
+                    : 'group-hover:scale-105'
+                "
               />
-              <div v-else class="w-full h-full flex flex-col items-center justify-center text-[#8E3E2F]/60 bg-[#F9F6F0]">
-                <span class="material-symbols-outlined text-4xl">ramen_dining</span>
-                <span class="text-[10px] text-[#72796c] font-medium mt-1">Chưa có ảnh</span>
+              <div
+                v-else
+                class="flex h-full w-full flex-col items-center justify-center bg-[#F9F6F0] text-[#8E3E2F]/60"
+              >
+                <span class="material-symbols-outlined text-4xl"
+                  >ramen_dining</span
+                >
+                <span class="mt-1 text-[10px] font-medium text-[#72796c]"
+                  >Chưa có ảnh</span
+                >
               </div>
-              <div v-if="isProductSuspended(p)" class="absolute inset-0 bg-black/25 flex items-center justify-center z-10">
-                <span class="bg-red-600/95 text-white text-[11px] px-2.5 py-1 rounded-md font-bold shadow-md flex items-center gap-1">
+              <div
+                v-if="isProductSuspended(p)"
+                class="absolute inset-0 z-10 flex items-center justify-center bg-black/25"
+              >
+                <span
+                  class="flex items-center gap-1 rounded-md bg-red-600/95 px-2.5 py-1 text-[11px] font-bold text-white shadow-md"
+                >
                   <span class="material-symbols-outlined text-sm">block</span>
                   Tạm ngừng
                 </span>
               </div>
+              <div
+                v-else-if="p.isOutOfStock"
+                class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/30 p-2 text-center transition-all hover:bg-black/40"
+              >
+                <span
+                  class="mb-1 flex items-center gap-1 rounded-md bg-red-600/95 px-2.5 py-1 text-[11px] font-bold text-white shadow-md"
+                >
+                  <span class="material-symbols-outlined text-sm"
+                    >inventory_2</span
+                  >
+                  Hết nguyên liệu
+                </span>
+                <span
+                  class="max-w-full cursor-pointer truncate rounded bg-black/60 px-1.5 py-0.5 text-[9px] text-white/95 shadow-sm hover:underline"
+                >
+                  Nhấn để xem chi tiết
+                </span>
+              </div>
             </div>
-            <div class="p-3 flex flex-col flex-1 justify-between gap-1">
-              <h3 class="text-xs font-bold line-clamp-2" :class="isProductSuspended(p) ? 'text-gray-500' : 'text-[#1e1b1b]'">{{ p.name }}</h3>
-              <p class="text-xs font-bold mt-1" :class="isProductSuspended(p) ? 'text-gray-400' : 'text-[#326824]'">{{ formatCurrency(p.rawPrice) }}</p>
+            <div class="flex flex-1 flex-col justify-between gap-1 p-3">
+              <h3
+                class="line-clamp-2 text-xs font-bold"
+                :class="
+                  isProductSuspended(p) || p.isOutOfStock
+                    ? 'text-gray-500'
+                    : 'text-[#1e1b1b]'
+                "
+              >
+                {{ p.name }}
+              </h3>
+              <p
+                class="mt-1 text-xs font-bold"
+                :class="
+                  isProductSuspended(p) || p.isOutOfStock
+                    ? 'text-gray-400'
+                    : 'text-[#326824]'
+                "
+              >
+                {{ formatCurrency(p.rawPrice) }}
+              </p>
             </div>
           </div>
         </div>
@@ -602,25 +779,34 @@ onMounted(() => {
     </section>
 
     <!-- Right Section: Cart & Order (40%) -->
-    <section class="lg:w-[40%] bg-white flex flex-col h-full z-10 shadow-lg">
+    <section class="z-10 flex h-full flex-col bg-white shadow-lg lg:w-[40%]">
       <!-- Order Tabs Header -->
-      <div class="flex items-center gap-1.5 px-4 pt-3 bg-white shrink-0 overflow-x-auto border-b border-[#E2D7CC] scrollbar-none">
+      <div
+        class="scrollbar-none flex shrink-0 items-center gap-1.5 overflow-x-auto border-b border-[#E2D7CC] bg-white px-4 pt-3"
+      >
         <div
           v-for="tab in orderTabs"
           :key="tab.id"
           @click="activeTabId = tab.id"
-          class="flex items-center gap-1 px-3 py-1.5 rounded-t-xl text-xs font-bold whitespace-nowrap cursor-pointer transition border-t border-x border-[#E2D7CC]"
-          :class="activeTabId === tab.id ? 'bg-[#8E3E2F] text-white border-[#8E3E2F]' : 'bg-[#F2ECE4] text-[#42493d] hover:bg-[#E8DFD5]'"
+          class="flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-t-xl border-x border-t border-[#E2D7CC] px-3 py-1.5 text-xs font-bold transition"
+          :class="
+            activeTabId === tab.id
+              ? 'border-[#8E3E2F] bg-[#8E3E2F] text-white'
+              : 'bg-[#F2ECE4] text-[#42493d] hover:bg-[#E8DFD5]'
+          "
         >
           <span>Đơn #{{ tab.name }}</span>
-          <button @click.stop="closeTab(tab.id)" class="hover:bg-black/20 p-0.5 rounded text-[10px] flex items-center justify-center">
+          <button
+            @click.stop="closeTab(tab.id)"
+            class="flex items-center justify-center rounded p-0.5 text-[10px] hover:bg-black/20"
+          >
             <span class="material-symbols-outlined text-xs">close</span>
           </button>
         </div>
 
         <button
           @click="addTab"
-          class="p-1 rounded-lg text-[#8E3E2F] hover:bg-[#F2ECE4] transition flex items-center justify-center font-bold"
+          class="flex items-center justify-center rounded-lg p-1 font-bold text-[#8E3E2F] transition hover:bg-[#F2ECE4]"
           title="Tạo đơn hàng mới"
         >
           <span class="material-symbols-outlined text-lg">add</span>
@@ -628,18 +814,28 @@ onMounted(() => {
       </div>
 
       <!-- Active Order Info Header -->
-      <div class="p-3 px-4 border-b border-[#E2D7CC] flex justify-between items-center bg-[#F9F6F0] shrink-0">
+      <div
+        class="flex shrink-0 items-center justify-between border-b border-[#E2D7CC] bg-[#F9F6F0] p-3 px-4"
+      >
         <div>
-          <h2 class="text-xs font-bold font-display text-[#1e1b1b]">Đơn hàng #{{ activeTab.name }}</h2>
-          <p class="text-[11px] text-[#72796c] font-medium">Khách lẻ - {{ activeTab.tableNo }}</p>
+          <h2 class="font-display text-xs font-bold text-[#1e1b1b]">
+            Đơn hàng #{{ activeTab.name }}
+          </h2>
+          <p class="text-[11px] font-medium text-[#72796c]">
+            Khách lẻ - {{ activeTab.tableNo }}
+          </p>
         </div>
-        <button @click="clearCart" class="text-[#ba1a1a] hover:bg-[#ffdad6] p-1.5 rounded-xl transition" title="Xóa tất cả sản phẩm">
+        <button
+          @click="clearCart"
+          class="rounded-xl p-1.5 text-[#ba1a1a] transition hover:bg-[#ffdad6]"
+          title="Xóa tất cả sản phẩm"
+        >
           <span class="material-symbols-outlined text-lg">delete</span>
         </button>
       </div>
 
       <!-- Scrollable Cart Content -->
-      <div class="flex-1 overflow-y-auto p-4 space-y-3">
+      <div class="flex-1 space-y-3 overflow-y-auto p-4">
         <!-- Promo Code Input -->
         <div class="space-y-1.5">
           <div class="flex gap-2">
@@ -647,32 +843,32 @@ onMounted(() => {
               v-model="activeTab.promoCode"
               type="text"
               placeholder="Nhập mã giảm giá (VD: GIAM10K)"
-              class="flex-1 h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+              class="h-10 flex-1 rounded-xl border border-[#c1c9b9]/70 bg-white px-3.5 text-xs text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             />
             <button
               @click="applyPromoCode"
-              class="h-10 px-4 bg-[#8E3E2F] text-white rounded-xl text-xs font-semibold hover:bg-[#6E281C] transition flex items-center justify-center cursor-pointer shadow-sm"
+              class="flex h-10 cursor-pointer items-center justify-center rounded-xl bg-[#8E3E2F] px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6E281C]"
             >
               Áp dụng
             </button>
           </div>
           <div class="flex items-center gap-1.5">
-            <span class="text-[10px] text-[#72796c] font-semibold">Gợi ý:</span>
+            <span class="text-[10px] font-semibold text-[#72796c]">Gợi ý:</span>
             <button
               @click="
-                activeTab.promoCode = 'GIAM10K';
+                activeTab.promoCode = 'GIAM10K'
                 applyPromoCode()
               "
-              class="h-6 px-2.5 bg-[#F2ECE4] border border-[#c1c9b9]/60 text-[#8E3E2F] rounded-lg text-[10px] font-bold hover:bg-[#E8DFD5] transition flex items-center cursor-pointer"
+              class="flex h-6 cursor-pointer items-center rounded-lg border border-[#c1c9b9]/60 bg-[#F2ECE4] px-2.5 text-[10px] font-bold text-[#8E3E2F] transition hover:bg-[#E8DFD5]"
             >
               GIAM10K
             </button>
             <button
               @click="
-                activeTab.promoCode = 'FREESHIP';
+                activeTab.promoCode = 'FREESHIP'
                 applyPromoCode()
               "
-              class="h-6 px-2.5 bg-[#F2ECE4] border border-[#c1c9b9]/60 text-[#8E3E2F] rounded-lg text-[10px] font-bold hover:bg-[#E8DFD5] transition flex items-center cursor-pointer"
+              class="flex h-6 cursor-pointer items-center rounded-lg border border-[#c1c9b9]/60 bg-[#F2ECE4] px-2.5 text-[10px] font-bold text-[#8E3E2F] transition hover:bg-[#E8DFD5]"
             >
               FREESHIP
             </button>
@@ -680,40 +876,66 @@ onMounted(() => {
         </div>
 
         <!-- Cart Empty State -->
-        <div v-if="activeTab.cart.length === 0" class="text-center text-[#72796c] py-12 text-xs font-medium">
-          <span class="material-symbols-outlined text-3xl text-[#c1c9b9] block mb-1">shopping_cart</span>
+        <div
+          v-if="activeTab.cart.length === 0"
+          class="py-12 text-center text-xs font-medium text-[#72796c]"
+        >
+          <span
+            class="material-symbols-outlined mb-1 block text-3xl text-[#c1c9b9]"
+            >shopping_cart</span
+          >
           Chưa chọn sản phẩm nào vào đơn hàng
         </div>
 
         <!-- Cart Items List with Animation -->
         <TransitionGroup name="cart-item" tag="div" class="space-y-3">
-          <div v-for="(item, idx) in activeTab.cart" :key="item.product.id" class="flex flex-col gap-1 pb-3 border-b border-dashed border-[#E2D7CC]">
+          <div
+            v-for="(item, idx) in activeTab.cart"
+            :key="item.product.id"
+            class="flex flex-col gap-1 border-b border-dashed border-[#E2D7CC] pb-3"
+          >
             <div class="flex items-start justify-between gap-2">
               <div class="flex-1">
-                <h4 class="text-xs font-bold text-[#1e1b1b]">{{ item.product.name }}</h4>
-                <p class="text-[10px] text-[#72796c]">{{ formatCurrency(item.product.rawPrice) }}</p>
+                <h4 class="text-xs font-bold text-[#1e1b1b]">
+                  {{ item.product.name }}
+                </h4>
+                <p class="text-[10px] text-[#72796c]">
+                  {{ formatCurrency(item.product.rawPrice) }}
+                </p>
               </div>
 
-              <div class="flex items-center gap-1 bg-[#F2ECE4] p-0.5 rounded-xl">
-                <button @click="updateQty(idx, -1)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-white text-[#1e1b1b] shadow-sm hover:bg-[#E8DFD5] cursor-pointer">
+              <div
+                class="flex items-center gap-1 rounded-xl bg-[#F2ECE4] p-0.5"
+              >
+                <button
+                  @click="updateQty(idx, -1)"
+                  class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-lg bg-white text-[#1e1b1b] shadow-sm hover:bg-[#E8DFD5]"
+                >
                   <span class="material-symbols-outlined text-xs">remove</span>
                 </button>
                 <input
                   type="number"
                   :value="item.quantity"
                   min="1"
-                  @change="setQty(idx, ($event.target as HTMLInputElement).value)"
+                  @change="
+                    setQty(idx, ($event.target as HTMLInputElement).value)
+                  "
                   @keydown.enter="($event.target as HTMLInputElement).blur()"
                   @focus="($event.target as HTMLInputElement).select()"
-                  class="w-16 h-6 text-center text-xs font-bold text-[#1e1b1b] bg-white rounded-lg border border-[#c1c9b9]/60 focus:outline-none focus:border-[#8E3E2F] focus:ring-1 focus:ring-[#8E3E2F]/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  class="h-6 w-16 rounded-lg border border-[#c1c9b9]/60 bg-white text-center text-xs font-bold text-[#1e1b1b] [appearance:textfield] focus:border-[#8E3E2F] focus:outline-none focus:ring-1 focus:ring-[#8E3E2F]/30 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
-                <button @click="updateQty(idx, 1)" class="w-6 h-6 flex items-center justify-center rounded-lg bg-white text-[#1e1b1b] shadow-sm hover:bg-[#E8DFD5] cursor-pointer">
+                <button
+                  @click="updateQty(idx, 1)"
+                  class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-lg bg-white text-[#1e1b1b] shadow-sm hover:bg-[#E8DFD5]"
+                >
                   <span class="material-symbols-outlined text-xs">add</span>
                 </button>
               </div>
 
-              <div class="text-right min-w-[70px]">
-                <p class="text-xs font-bold text-[#1e1b1b]">{{ formatCurrency(item.product.rawPrice * item.quantity) }}</p>
+              <div class="min-w-[70px] text-right">
+                <p class="text-xs font-bold text-[#1e1b1b]">
+                  {{ formatCurrency(item.product.rawPrice * item.quantity) }}
+                </p>
               </div>
             </div>
 
@@ -722,26 +944,41 @@ onMounted(() => {
               v-model="item.note"
               type="text"
               placeholder="Ghi chú món (VD: ít cay, thêm nước tương...)"
-              class="w-full h-8 px-2.5 py-1 bg-white border border-[#c1c9b9]/70 rounded-lg text-xs text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+              class="h-8 w-full rounded-lg border border-[#c1c9b9]/70 bg-white px-2.5 py-1 text-xs text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             />
           </div>
         </TransitionGroup>
       </div>
 
       <!-- Checkout & Payment Section Footer -->
-      <div class="p-4 bg-[#F9F6F0] border-t border-[#E2D7CC] space-y-3 shrink-0">
+      <div
+        class="shrink-0 space-y-3 border-t border-[#E2D7CC] bg-[#F9F6F0] p-4"
+      >
         <div class="space-y-1 text-xs text-[#42493d]">
           <div class="flex justify-between">
-            <span>Tạm tính ({{ activeTab.cart.reduce((s, i) => s + i.quantity, 0) }} món)</span>
-            <span class="font-semibold text-[#1e1b1b]">{{ formatCurrency(subtotalPrice) }}</span>
+            <span
+              >Tạm tính ({{
+                activeTab.cart.reduce((s, i) => s + i.quantity, 0)
+              }}
+              món)</span
+            >
+            <span class="font-semibold text-[#1e1b1b]">{{
+              formatCurrency(subtotalPrice)
+            }}</span>
           </div>
           <div class="flex justify-between" v-if="activeTab.discountAmount > 0">
             <span>Giảm giá</span>
-            <span class="font-semibold text-[#326824]">-{{ formatCurrency(activeTab.discountAmount) }}</span>
+            <span class="font-semibold text-[#326824]"
+              >-{{ formatCurrency(activeTab.discountAmount) }}</span
+            >
           </div>
-          <div class="flex justify-between text-base font-bold text-[#1e1b1b] pt-1.5 border-t border-[#E2D7CC]">
+          <div
+            class="flex justify-between border-t border-[#E2D7CC] pt-1.5 text-base font-bold text-[#1e1b1b]"
+          >
             <span>Tổng cộng thanh toán</span>
-            <span class="text-[#326824] text-lg font-display">{{ formatCurrency(finalPrice) }}</span>
+            <span class="font-display text-lg text-[#326824]">{{
+              formatCurrency(finalPrice)
+            }}</span>
           </div>
         </div>
 
@@ -752,15 +989,21 @@ onMounted(() => {
               { id: 'cash', label: 'Tiền mặt', icon: 'payments' },
               { id: 'qr', label: 'Quét QR', icon: 'qr_code_2' },
               { id: 'bank', label: 'Chuyển khoản', icon: 'account_balance' },
-              { id: 'card', label: 'Thẻ', icon: 'credit_card' }
+              { id: 'card', label: 'Thẻ', icon: 'credit_card' },
             ]"
             :key="method.id"
             @click="activeTab.paymentMethod = method.id"
-            class="p-1.5 rounded-xl border flex flex-col items-center gap-0.5 text-[10px] font-semibold transition"
-            :class="activeTab.paymentMethod === method.id ? 'border-[#8E3E2F] bg-[#8E3E2F]/10 text-[#8E3E2F]' : 'border-[#c1c9b9]/60 bg-white text-[#42493d] hover:bg-[#F2ECE4]'"
+            class="flex flex-col items-center gap-0.5 rounded-xl border p-1.5 text-[10px] font-semibold transition"
+            :class="
+              activeTab.paymentMethod === method.id
+                ? 'border-[#8E3E2F] bg-[#8E3E2F]/10 text-[#8E3E2F]'
+                : 'border-[#c1c9b9]/60 bg-white text-[#42493d] hover:bg-[#F2ECE4]'
+            "
           >
-            <span class="material-symbols-outlined text-base">{{ method.icon }}</span>
-            <span class="truncate w-full text-center">{{ method.label }}</span>
+            <span class="material-symbols-outlined text-base">{{
+              method.icon
+            }}</span>
+            <span class="w-full truncate text-center">{{ method.label }}</span>
           </button>
         </div>
 
@@ -768,101 +1011,201 @@ onMounted(() => {
         <button
           @click="handlePaymentClick"
           :disabled="activeTab.cart.length === 0 || isSubmittingPayment"
-          class="w-full py-3 bg-[#326824] hover:bg-[#4a813a] active:scale-[0.99] disabled:opacity-50 text-white font-bold text-sm rounded-xl shadow transition flex items-center justify-center gap-2"
+          class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#326824] py-3 text-sm font-bold text-white shadow transition hover:bg-[#4a813a] active:scale-[0.99] disabled:opacity-50"
         >
-          <span v-if="isSubmittingPayment" class="material-symbols-outlined animate-spin text-lg">refresh</span>
+          <span
+            v-if="isSubmittingPayment"
+            class="material-symbols-outlined animate-spin text-lg"
+            >refresh</span
+          >
           <span>THANH TOÁN {{ formatCurrency(finalPrice) }}</span>
-          <span v-if="!isSubmittingPayment" class="material-symbols-outlined text-lg">arrow_forward</span>
+          <span
+            v-if="!isSubmittingPayment"
+            class="material-symbols-outlined text-lg"
+            >arrow_forward</span
+          >
         </button>
       </div>
     </section>
 
     <!-- Shift End / Handover Modal -->
-    <Dialog v-model:visible="showShiftEndModal" modal header="Báo cáo Bàn giao Ca làm việc (Kết Ca)" :style="{ width: '520px' }">
+    <Dialog
+      v-model:visible="showShiftEndModal"
+      modal
+      header="Báo cáo Bàn giao Ca làm việc (Kết Ca)"
+      :style="{ width: '520px' }"
+    >
       <div class="space-y-4 py-1 text-xs">
-        <div class="p-3.5 bg-[#fdfbf7] border border-[#E2D7CC] rounded-xl space-y-1.5">
-          <div class="flex justify-between items-center">
-            <span class="font-bold text-sm text-[#326824]">{{ shiftSummary.shiftName || 'Ca sáng (06:00 - 14:00)' }}</span>
+        <div
+          class="space-y-1.5 rounded-xl border border-[#E2D7CC] bg-[#fdfbf7] p-3.5"
+        >
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-[#326824]">{{
+              shiftSummary.shiftName || 'Ca sáng (06:00 - 14:00)'
+            }}</span>
             <Tag value="Đang trực ca" severity="success" />
           </div>
-          <p class="text-gray-700">Nhân viên trực ca: <strong class="text-gray-900">{{ currentStaffName }}</strong></p>
-          <p class="text-gray-500 text-[11px]">Thời điểm bàn giao: {{ formatDate(new Date().toISOString()) }}</p>
+          <p class="text-gray-700">
+            Nhân viên trực ca:
+            <strong class="text-gray-900">{{ currentStaffName }}</strong>
+          </p>
+          <p class="text-[11px] text-gray-500">
+            Thời điểm bàn giao: {{ formatDate(new Date().toISOString()) }}
+          </p>
         </div>
 
         <!-- Detailed Breakdown -->
-        <div class="border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100">
-          <div class="p-3 flex justify-between items-center bg-gray-50 font-bold text-gray-800">
+        <div
+          class="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200"
+        >
+          <div
+            class="flex items-center justify-between bg-gray-50 p-3 font-bold text-gray-800"
+          >
             <span>Hạng mục kết ca</span>
             <span>Giá trị</span>
           </div>
 
-          <div class="p-3 flex justify-between items-center">
+          <div class="flex items-center justify-between p-3">
             <span class="text-gray-700">1. Doanh thu Tiền mặt (Cash)</span>
-            <span class="font-bold text-gray-900">{{ formatCurrency(shiftSummary.cashRevenue) }}</span>
+            <span class="font-bold text-gray-900">{{
+              formatCurrency(shiftSummary.cashRevenue)
+            }}</span>
           </div>
 
-          <div class="p-3 flex justify-between items-center">
-            <span class="text-gray-700">2. Doanh thu Quét QR / Chuyển khoản</span>
-            <span class="font-bold text-gray-900">{{ formatCurrency(shiftSummary.transferRevenue) }}</span>
+          <div class="flex items-center justify-between p-3">
+            <span class="text-gray-700"
+              >2. Doanh thu Quét QR / Chuyển khoản</span
+            >
+            <span class="font-bold text-gray-900">{{
+              formatCurrency(shiftSummary.transferRevenue)
+            }}</span>
           </div>
 
-          <div class="p-3 flex justify-between items-center">
+          <div class="flex items-center justify-between p-3">
             <span class="text-gray-700">3. Doanh thu Thẻ (Card)</span>
-            <span class="font-bold text-gray-900">{{ formatCurrency(shiftSummary.cardRevenue) }}</span>
+            <span class="font-bold text-gray-900">{{
+              formatCurrency(shiftSummary.cardRevenue)
+            }}</span>
           </div>
 
-          <div class="p-3 flex justify-between items-center text-[#326824]">
+          <div class="flex items-center justify-between p-3 text-[#326824]">
             <span>4. Tổng tiền giảm giá (KM/Discount)</span>
-            <span class="font-semibold">-{{ formatCurrency(shiftSummary.totalDiscount) }}</span>
+            <span class="font-semibold"
+              >-{{ formatCurrency(shiftSummary.totalDiscount) }}</span
+            >
           </div>
 
-          <div class="p-3 flex justify-between items-center bg-[#F2ECE4]/60 text-sm font-bold text-[#326824]">
+          <div
+            class="flex items-center justify-between bg-[#F2ECE4]/60 p-3 text-sm font-bold text-[#326824]"
+          >
             <span>TỔNG DOANH THU CA</span>
-            <span class="text-base font-display">{{ formatCurrency(shiftSummary.shiftRevenue) }}</span>
+            <span class="font-display text-base">{{
+              formatCurrency(shiftSummary.shiftRevenue)
+            }}</span>
           </div>
 
-          <div class="p-3 flex justify-between items-center text-gray-600 text-[11px]">
-            <span>Tổng số đơn bán trong ca: <strong>{{ shiftSummary.totalOrders }} đơn</strong></span>
-            <span>Tổng số phần bán ra: <strong>{{ shiftSummary.totalCupsSold }} phần</strong></span>
+          <div
+            class="flex items-center justify-between p-3 text-[11px] text-gray-600"
+          >
+            <span
+              >Tổng số đơn bán trong ca:
+              <strong>{{ shiftSummary.totalOrders }} đơn</strong></span
+            >
+            <span
+              >Tổng số phần bán ra:
+              <strong>{{ shiftSummary.totalCupsSold }} phần</strong></span
+            >
           </div>
         </div>
       </div>
 
       <template #footer>
-        <div class="flex gap-2 w-full">
-          <Button label="In phiếu kết ca" icon="pi pi-print" severity="info" outlined class="flex-1" @click="triggerBrowserPrint" />
-          <Button label="Xác nhận Kết ca & Đăng xuất" icon="pi pi-sign-out" severity="danger" class="flex-1" @click="confirmShiftEndAndLogout" />
+        <div class="flex w-full gap-2">
+          <Button
+            label="In phiếu kết ca"
+            icon="pi pi-print"
+            severity="info"
+            outlined
+            class="flex-1"
+            @click="triggerBrowserPrint"
+          />
+          <Button
+            label="Xác nhận Kết ca & Đăng xuất"
+            icon="pi pi-sign-out"
+            severity="danger"
+            class="flex-1"
+            @click="confirmShiftEndAndLogout"
+          />
         </div>
       </template>
     </Dialog>
 
     <!-- VietQR Payment Dialog -->
-    <Dialog v-model:visible="showQrModal" modal header="Thanh toán VietQR / Chuyển khoản" :style="{ width: '420px' }">
-      <div class="text-center py-2 space-y-3">
-        <p class="text-xs text-[#42493d] font-medium">Quét mã QR qua ứng dụng Ngân hàng để thanh toán:</p>
-        <div class="p-3 border-2 border-[#8E3E2F] rounded-2xl inline-block bg-white shadow-md">
-          <img :src="qrData.qrUrl" alt="VietQR Code" class="w-52 h-52 object-contain" />
+    <Dialog
+      v-model:visible="showQrModal"
+      modal
+      header="Thanh toán VietQR / Chuyển khoản"
+      :style="{ width: '420px' }"
+    >
+      <div class="space-y-3 py-2 text-center">
+        <p class="text-xs font-medium text-[#42493d]">
+          Quét mã QR qua ứng dụng Ngân hàng để thanh toán:
+        </p>
+        <div
+          class="inline-block rounded-2xl border-2 border-[#8E3E2F] bg-white p-3 shadow-md"
+        >
+          <img
+            :src="qrData.qrUrl"
+            alt="VietQR Code"
+            class="h-52 w-52 object-contain"
+          />
         </div>
         <div class="space-y-1">
-          <div class="text-2xl font-bold font-display text-[#326824]">{{ formatCurrency(qrData.amount) }}</div>
-          <p class="text-xs text-[#72796c] font-semibold">Nội dung CK: <span class="text-[#8E3E2F] font-bold">{{ qrData.addInfo }}</span></p>
-          <p class="text-[11px] text-gray-500">Chủ tài khoản: {{ qrData.accountName }}</p>
+          <div class="font-display text-2xl font-bold text-[#326824]">
+            {{ formatCurrency(qrData.amount) }}
+          </div>
+          <p class="text-xs font-semibold text-[#72796c]">
+            Nội dung CK:
+            <span class="font-bold text-[#8E3E2F]">{{ qrData.addInfo }}</span>
+          </p>
+          <p class="text-[11px] text-gray-500">
+            Chủ tài khoản: {{ qrData.accountName }}
+          </p>
         </div>
       </div>
       <template #footer>
-        <div class="flex gap-2 w-full">
-          <Button label="Hủy bỏ" severity="secondary" outlined class="flex-1" @click="showQrModal = false" />
-          <Button label="Xác nhận Đã thu tiền" icon="pi pi-check" severity="success" class="flex-1" @click="confirmPaymentDone" />
+        <div class="flex w-full gap-2">
+          <Button
+            label="Hủy bỏ"
+            severity="secondary"
+            outlined
+            class="flex-1"
+            @click="showQrModal = false"
+          />
+          <Button
+            label="Xác nhận Đã thu tiền"
+            icon="pi pi-check"
+            severity="success"
+            class="flex-1"
+            @click="confirmPaymentDone"
+          />
         </div>
       </template>
     </Dialog>
 
     <!-- Order History Modal -->
-    <Dialog v-model:visible="showHistoryModal" modal header="Lịch sử đơn hàng" :style="{ width: '850px' }">
-      <div class="py-2 space-y-3">
+    <Dialog
+      v-model:visible="showHistoryModal"
+      modal
+      header="Lịch sử đơn hàng"
+      :style="{ width: '850px' }"
+    >
+      <div class="space-y-3 py-2">
         <!-- Date Filter & Record Count Header Bar -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-3 bg-[#fdfbf7] border border-[#E2D7CC] rounded-xl">
-          <div class="flex items-center gap-2 flex-wrap">
+        <div
+          class="flex flex-col items-start justify-between gap-3 rounded-xl border border-[#E2D7CC] bg-[#fdfbf7] p-3 sm:flex-row sm:items-center"
+        >
+          <div class="flex flex-wrap items-center gap-2">
             <span class="text-xs font-bold text-gray-700">Lọc ngày:</span>
             <DatePicker
               v-model="historyDateRange"
@@ -875,21 +1218,21 @@ onMounted(() => {
             />
             <button
               @click="openOrderHistory(1)"
-              class="h-10 flex items-center gap-1.5 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white rounded-xl text-xs font-semibold transition shadow-sm cursor-pointer"
+              class="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-[#8E3E2F] px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6E281C]"
             >
               <span class="material-symbols-outlined text-base">search</span>
               <span>Tìm kiếm</span>
             </button>
             <button
               @click="setHistoryDateToday"
-              class="h-10 px-3.5 bg-[#F2ECE4] text-[#8E3E2F] border border-[#c1c9b9]/60 rounded-xl text-xs font-semibold hover:bg-[#E8DFD5] transition cursor-pointer"
+              class="h-10 cursor-pointer rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] px-3.5 text-xs font-semibold text-[#8E3E2F] transition hover:bg-[#E8DFD5]"
             >
               Hôm nay
             </button>
             <button
               v-if="historyDateRange && historyDateRange.length > 0"
               @click="clearHistoryDateFilter"
-              class="h-10 px-3.5 bg-[#F2ECE4] text-[#42493d] border border-[#c1c9b9]/60 rounded-xl text-xs font-semibold hover:bg-[#E8DFD5] transition cursor-pointer"
+              class="h-10 cursor-pointer rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] px-3.5 text-xs font-semibold text-[#42493d] transition hover:bg-[#E8DFD5]"
             >
               Tất cả ngày
             </button>
@@ -899,13 +1242,19 @@ onMounted(() => {
             <Tag
               :value="`Tổng cộng: ${historyPagination.totalRecords || orderHistory.length} đơn hàng`"
               severity="info"
-              class="text-xs font-bold px-3 py-1"
+              class="px-3 py-1 text-xs font-bold"
             />
           </div>
         </div>
 
-        <div v-if="loadingHistory" class="text-center py-8 text-xs text-gray-500">
-          <span class="material-symbols-outlined animate-spin mr-1">refresh</span> Đang tải lịch sử đơn hàng...
+        <div
+          v-if="loadingHistory"
+          class="py-8 text-center text-xs text-gray-500"
+        >
+          <span class="material-symbols-outlined mr-1 animate-spin"
+            >refresh</span
+          >
+          Đang tải lịch sử đơn hàng...
         </div>
 
         <DataTable
@@ -918,34 +1267,65 @@ onMounted(() => {
         >
           <Column field="orderNumber" header="Mã đơn" sortable>
             <template #body="slotProps">
-              <span class="font-bold text-xs text-[#8E3E2F]">{{ slotProps.data.orderNumber }}</span>
+              <span class="text-xs font-bold text-[#8E3E2F]">{{
+                slotProps.data.orderNumber
+              }}</span>
             </template>
           </Column>
           <Column field="orderDate" header="Thời gian">
             <template #body="slotProps">
-              <span class="text-xs text-gray-600">{{ formatDate(slotProps.data.orderDate) }}</span>
+              <span class="text-xs text-gray-600">{{
+                formatDate(slotProps.data.orderDate)
+              }}</span>
             </template>
           </Column>
           <Column field="finalAmount" header="Tổng tiền" sortable>
             <template #body="slotProps">
-              <span class="font-bold text-xs text-[#326824]">{{ formatCurrency(slotProps.data.finalAmount) }}</span>
+              <span class="text-xs font-bold text-[#326824]">{{
+                formatCurrency(slotProps.data.finalAmount)
+              }}</span>
             </template>
           </Column>
           <Column field="paymentMethod" header="PTTT">
             <template #body="slotProps">
-              <span class="text-xs uppercase font-semibold text-gray-700">{{ slotProps.data.paymentMethod }}</span>
+              <span class="text-xs font-semibold uppercase text-gray-700">{{
+                slotProps.data.paymentMethod
+              }}</span>
             </template>
           </Column>
           <Column field="status" header="Trạng thái">
             <template #body="slotProps">
-              <Tag :value="slotProps.data.status === 'completed' ? 'Hoàn thành' : 'Đã hủy'" :severity="slotProps.data.status === 'completed' ? 'success' : 'danger'" />
+              <Tag
+                :value="
+                  slotProps.data.status === 'completed'
+                    ? 'Hoàn thành'
+                    : 'Đã hủy'
+                "
+                :severity="
+                  slotProps.data.status === 'completed' ? 'success' : 'danger'
+                "
+              />
             </template>
           </Column>
           <Column header="Thao tác">
             <template #body="slotProps">
               <div class="flex gap-1">
-                <Button icon="pi pi-eye" severity="secondary" text size="small" title="Xem chi tiết đơn" @click="viewOrderDetail(slotProps.data)" />
-                <Button icon="pi pi-print" severity="info" text size="small" title="In lại bill" @click="printReceipt(slotProps.data)" />
+                <Button
+                  icon="pi pi-eye"
+                  severity="secondary"
+                  text
+                  size="small"
+                  title="Xem chi tiết đơn"
+                  @click="viewOrderDetail(slotProps.data)"
+                />
+                <Button
+                  icon="pi pi-print"
+                  severity="info"
+                  text
+                  size="small"
+                  title="In lại bill"
+                  @click="printReceipt(slotProps.data)"
+                />
               </div>
             </template>
           </Column>
@@ -954,141 +1334,329 @@ onMounted(() => {
     </Dialog>
 
     <!-- Order Detail Dialog -->
-    <Dialog v-model:visible="showOrderDetailModal" modal :header="`Chi tiết đơn hàng #${selectedOrderDetail?.orderNumber}`" :style="{ width: '550px' }">
+    <Dialog
+      v-model:visible="showOrderDetailModal"
+      modal
+      :header="`Chi tiết đơn hàng #${selectedOrderDetail?.orderNumber}`"
+      :style="{ width: '550px' }"
+    >
       <div v-if="selectedOrderDetail" class="space-y-4 py-1 text-xs">
         <!-- Summary Header Card -->
-        <div class="p-3.5 bg-[#fdfbf7] border border-[#E2D7CC] rounded-xl flex justify-between items-center">
+        <div
+          class="flex items-center justify-between rounded-xl border border-[#E2D7CC] bg-[#fdfbf7] p-3.5"
+        >
           <div class="space-y-1">
             <div class="flex items-center gap-2">
-              <span class="font-bold text-sm text-[#8E3E2F]">#{{ selectedOrderDetail.orderNumber }}</span>
+              <span class="text-sm font-bold text-[#8E3E2F]"
+                >#{{ selectedOrderDetail.orderNumber }}</span
+              >
               <Tag
-                :value="selectedOrderDetail.status === 'completed' ? 'Hoàn thành' : 'Đã hủy'"
-                :severity="selectedOrderDetail.status === 'completed' ? 'success' : 'danger'"
+                :value="
+                  selectedOrderDetail.status === 'completed'
+                    ? 'Hoàn thành'
+                    : 'Đã hủy'
+                "
+                :severity="
+                  selectedOrderDetail.status === 'completed'
+                    ? 'success'
+                    : 'danger'
+                "
               />
             </div>
-            <p class="text-gray-500 text-[11px]">Thời gian: {{ formatDate(selectedOrderDetail.orderDate) }}</p>
-            <p class="text-gray-600 text-[11px]">Phương thức TT: <strong class="uppercase text-gray-800">{{ selectedOrderDetail.paymentMethod }}</strong></p>
+            <p class="text-[11px] text-gray-500">
+              Thời gian: {{ formatDate(selectedOrderDetail.orderDate) }}
+            </p>
+            <p class="text-[11px] text-gray-600">
+              Phương thức TT:
+              <strong class="uppercase text-gray-800">{{
+                selectedOrderDetail.paymentMethod
+              }}</strong>
+            </p>
           </div>
           <div class="text-right">
-            <span class="text-gray-500 text-[11px] block">Tổng tiền đơn</span>
-            <span class="text-lg font-bold text-[#326824] font-display">{{ formatCurrency(selectedOrderDetail.finalAmount) }}</span>
+            <span class="block text-[11px] text-gray-500">Tổng tiền đơn</span>
+            <span class="font-display text-lg font-bold text-[#326824]">{{
+              formatCurrency(selectedOrderDetail.finalAmount)
+            }}</span>
           </div>
         </div>
 
         <!-- Products List -->
         <div>
-          <h4 class="font-bold text-gray-800 text-xs mb-2 flex items-center gap-1.5">
-            <span class="material-symbols-outlined text-base text-[#8E3E2F]">format_list_bulleted</span>
-            Danh sách sản phẩm bán ra ({{ selectedOrderDetail.items?.length || 0 }} món):
+          <h4
+            class="mb-2 flex items-center gap-1.5 text-xs font-bold text-gray-800"
+          >
+            <span class="material-symbols-outlined text-base text-[#8E3E2F]"
+              >format_list_bulleted</span
+            >
+            Danh sách sản phẩm bán ra ({{
+              selectedOrderDetail.items?.length || 0
+            }}
+            món):
           </h4>
 
-          <div class="border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100">
-            <div v-for="item in selectedOrderDetail.items" :key="item.id" class="p-3 flex items-center justify-between gap-3 hover:bg-gray-50">
+          <div
+            class="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200"
+          >
+            <div
+              v-for="item in selectedOrderDetail.items"
+              :key="item.id"
+              class="flex items-center justify-between gap-3 p-3 hover:bg-gray-50"
+            >
               <div class="flex items-center gap-3">
                 <img
                   :src="
                     item.product?.imageUrl ||
                     'https://lh3.googleusercontent.com/aida-public/AB6AXuB5s3vZRGHW-l9un_Pku9yhvejdxLJD-OPfHm88Lc0T2AN7J6Os0hUMTGwyEIsYWrXV2BRsx0QeEy1vBfkKG4Mx8WSlQ00T_yhtFDukz-1LSmzY566Oum2kVS2Hl0b_ZQ_kOW0NbJx7c0MfdZkoGMZKdnW_Hsxp3GolG21jiq5uOA8-hVgLYaoRT3O1xtw1gEFUY3yB1jxBkPXnzvI-CFwBu3Ngx7OT8_SKrA4yzA_cYxiBBS5DM9aV'
                   "
-                  class="w-10 h-10 object-cover rounded-lg border border-gray-200"
+                  class="h-10 w-10 rounded-lg border border-gray-200 object-cover"
                 />
                 <div>
-                  <h5 class="font-bold text-gray-800 text-xs">{{ item.product?.name || 'Sản phẩm' }}</h5>
-                  <p class="text-[11px] text-gray-500">{{ item.quantity }} x {{ formatCurrency(item.unitPrice) }}</p>
-                  <p v-if="item.note" class="text-[10px] text-[#8E3E2F] italic">Ghi chú: {{ item.note }}</p>
+                  <h5 class="text-xs font-bold text-gray-800">
+                    {{ item.product?.name || 'Sản phẩm' }}
+                  </h5>
+                  <p class="text-[11px] text-gray-500">
+                    {{ item.quantity }} x {{ formatCurrency(item.unitPrice) }}
+                  </p>
+                  <p v-if="item.note" class="text-[10px] italic text-[#8E3E2F]">
+                    Ghi chú: {{ item.note }}
+                  </p>
                 </div>
               </div>
               <div class="text-right">
-                <span class="font-bold text-gray-900 text-xs">{{ formatCurrency(item.subtotal) }}</span>
+                <span class="text-xs font-bold text-gray-900">{{
+                  formatCurrency(item.subtotal)
+                }}</span>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Payment Calculations -->
-        <div class="p-3 bg-gray-50 rounded-xl space-y-1.5 text-gray-700">
+        <div class="space-y-1.5 rounded-xl bg-gray-50 p-3 text-gray-700">
           <div class="flex justify-between">
             <span>Tạm tính tiền hàng:</span>
-            <span class="font-semibold">{{ formatCurrency(selectedOrderDetail.totalAmount) }}</span>
+            <span class="font-semibold">{{
+              formatCurrency(selectedOrderDetail.totalAmount)
+            }}</span>
           </div>
-          <div class="flex justify-between text-[#326824]" v-if="selectedOrderDetail.discountAmount > 0">
+          <div
+            class="flex justify-between text-[#326824]"
+            v-if="selectedOrderDetail.discountAmount > 0"
+          >
             <span>Mã giảm giá:</span>
-            <span class="font-semibold">-{{ formatCurrency(selectedOrderDetail.discountAmount) }}</span>
+            <span class="font-semibold"
+              >-{{ formatCurrency(selectedOrderDetail.discountAmount) }}</span
+            >
           </div>
-          <div class="flex justify-between font-bold text-sm text-gray-900 pt-1 border-t border-gray-200">
+          <div
+            class="flex justify-between border-t border-gray-200 pt-1 text-sm font-bold text-gray-900"
+          >
             <span>Tổng thanh toán thực tế:</span>
-            <span class="text-[#326824]">{{ formatCurrency(selectedOrderDetail.finalAmount) }}</span>
+            <span class="text-[#326824]">{{
+              formatCurrency(selectedOrderDetail.finalAmount)
+            }}</span>
           </div>
         </div>
       </div>
 
       <template #footer>
-        <div class="flex gap-2 w-full">
-          <Button label="In hóa đơn" icon="pi pi-print" severity="info" outlined class="flex-1" @click="printReceipt(selectedOrderDetail!)" />
-          <Button label="Đóng" severity="secondary" class="flex-1" @click="showOrderDetailModal = false" />
+        <div class="flex w-full gap-2">
+          <Button
+            label="In hóa đơn"
+            icon="pi pi-print"
+            severity="info"
+            outlined
+            class="flex-1"
+            @click="printReceipt(selectedOrderDetail!)"
+          />
+          <Button
+            label="Đóng"
+            severity="secondary"
+            class="flex-1"
+            @click="showOrderDetailModal = false"
+          />
         </div>
       </template>
     </Dialog>
 
     <!-- Print Bill Modal -->
-    <Dialog v-model:visible="showPrintModal" modal header="Hóa đơn thanh toán (Bill Preview)" :style="{ width: '380px' }">
-      <div v-if="selectedPrintOrder" id="printable-receipt" class="p-4 bg-white border border-gray-200 rounded-lg text-xs space-y-3 font-mono text-gray-800">
-        <div class="text-center space-y-1">
-          <h2 class="text-base font-bold uppercase tracking-wider text-[#5D4037]">SKY COFFEE</h2>
+    <Dialog
+      v-model:visible="showPrintModal"
+      modal
+      header="Hóa đơn thanh toán (Bill Preview)"
+      :style="{ width: '380px' }"
+    >
+      <div
+        v-if="selectedPrintOrder"
+        id="printable-receipt"
+        class="space-y-3 rounded-lg border border-gray-200 bg-white p-4 font-mono text-xs text-gray-800"
+      >
+        <div class="space-y-1 text-center">
+          <h2
+            class="text-base font-bold uppercase tracking-wider text-[#5D4037]"
+          >
+            SKY COFFEE
+          </h2>
           <p class="text-[11px] text-gray-500">ĐC: 123 Đường Cà Phê, TP. HCM</p>
           <p class="text-[11px] text-gray-500">Hotline: 0901.234.567</p>
-          <div class="border-b border-dashed border-gray-400 my-2"></div>
-          <h3 class="font-bold text-sm">HÓA ĐƠN BÁN HÀNG</h3>
-          <p class="text-[11px]">Mã đơn: <strong>{{ selectedPrintOrder.orderNumber }}</strong></p>
-          <p class="text-[10px] text-gray-500">{{ formatDate(selectedPrintOrder.orderDate) }}</p>
+          <div class="my-2 border-b border-dashed border-gray-400"></div>
+          <h3 class="text-sm font-bold">HÓA ĐƠN BÁN HÀNG</h3>
+          <p class="text-[11px]">
+            Mã đơn: <strong>{{ selectedPrintOrder.orderNumber }}</strong>
+          </p>
+          <p class="text-[10px] text-gray-500">
+            {{ formatDate(selectedPrintOrder.orderDate) }}
+          </p>
         </div>
 
-        <div class="border-b border-dashed border-gray-400 my-2"></div>
+        <div class="my-2 border-b border-dashed border-gray-400"></div>
 
         <div class="space-y-1.5">
-          <div v-for="item in selectedPrintOrder.items" :key="item.id" class="flex justify-between items-start text-[11px]">
+          <div
+            v-for="item in selectedPrintOrder.items"
+            :key="item.id"
+            class="flex items-start justify-between text-[11px]"
+          >
             <div>
               <p class="font-bold">{{ item.product?.name || 'Sản phẩm' }}</p>
-              <p class="text-[10px] text-gray-500">{{ item.quantity }} x {{ formatCurrency(item.unitPrice) }}</p>
-              <p v-if="item.note" class="text-[10px] italic text-gray-400">Ghi chú: {{ item.note }}</p>
+              <p class="text-[10px] text-gray-500">
+                {{ item.quantity }} x {{ formatCurrency(item.unitPrice) }}
+              </p>
+              <p v-if="item.note" class="text-[10px] italic text-gray-400">
+                Ghi chú: {{ item.note }}
+              </p>
             </div>
             <span class="font-bold">{{ formatCurrency(item.subtotal) }}</span>
           </div>
         </div>
 
-        <div class="border-b border-dashed border-gray-400 my-2"></div>
+        <div class="my-2 border-b border-dashed border-gray-400"></div>
 
         <div class="space-y-1 text-[11px]">
           <div class="flex justify-between">
             <span>Tạm tính:</span>
             <span>{{ formatCurrency(selectedPrintOrder.totalAmount) }}</span>
           </div>
-          <div class="flex justify-between" v-if="selectedPrintOrder.discountAmount > 0">
+          <div
+            class="flex justify-between"
+            v-if="selectedPrintOrder.discountAmount > 0"
+          >
             <span>Giảm giá:</span>
-            <span>-{{ formatCurrency(selectedPrintOrder.discountAmount) }}</span>
+            <span
+              >-{{ formatCurrency(selectedPrintOrder.discountAmount) }}</span
+            >
           </div>
-          <div class="flex justify-between font-bold text-xs pt-1 border-t border-gray-300">
+          <div
+            class="flex justify-between border-t border-gray-300 pt-1 text-xs font-bold"
+          >
             <span>TỔNG CỘNG:</span>
             <span>{{ formatCurrency(selectedPrintOrder.finalAmount) }}</span>
           </div>
           <div class="flex justify-between text-[10px] text-gray-500">
             <span>Hình thức TT:</span>
-            <span class="uppercase">{{ selectedPrintOrder.paymentMethod }}</span>
+            <span class="uppercase">{{
+              selectedPrintOrder.paymentMethod
+            }}</span>
           </div>
         </div>
 
-        <div class="border-b border-dashed border-gray-400 my-2"></div>
+        <div class="my-2 border-b border-dashed border-gray-400"></div>
 
-        <div class="text-center text-[10px] text-gray-500 space-y-0.5">
+        <div class="space-y-0.5 text-center text-[10px] text-gray-500">
           <p>Cảm ơn quý khách và hẹn gặp lại!</p>
           <p>Wifi: SkyCoffee / Pass: skycoffee2026</p>
         </div>
       </div>
 
       <template #footer>
-        <div class="flex gap-2 w-full">
-          <Button label="Đóng" severity="secondary" class="flex-1" @click="showPrintModal = false" />
-          <Button label="In hóa đơn" icon="pi pi-print" severity="primary" class="flex-1" @click="triggerBrowserPrint" />
+        <div class="flex w-full gap-2">
+          <Button
+            label="Đóng"
+            severity="secondary"
+            class="flex-1"
+            @click="showPrintModal = false"
+          />
+          <Button
+            label="In hóa đơn"
+            icon="pi pi-print"
+            severity="primary"
+            class="flex-1"
+            @click="triggerBrowserPrint"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Missing Ingredients Modal -->
+    <Dialog
+      v-model:visible="showMissingIngredientsModal"
+      modal
+      header="Sản phẩm tạm hết hàng"
+      :style="{ width: '450px' }"
+    >
+      <div v-if="selectedMissingProduct" class="space-y-4 py-2">
+        <div
+          class="flex items-center gap-3 rounded-xl border border-red-100 bg-red-50 p-3"
+        >
+          <span class="material-symbols-outlined text-3xl text-red-500"
+            >inventory_2</span
+          >
+          <div>
+            <h3 class="font-bold text-red-900">
+              {{ selectedMissingProduct.name }}
+            </h3>
+            <p class="text-xs text-red-700">
+              Món này hiện không thể phục vụ do thiếu nguyên liệu trong kho.
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200"
+        >
+          <div
+            class="flex justify-between bg-gray-50 p-3 text-xs font-bold text-gray-700"
+          >
+            <span>Nguyên liệu định mức</span>
+            <span class="text-right">Kho hiện tại</span>
+          </div>
+          <template
+            v-for="recipe in selectedMissingProduct.recipeItems"
+            :key="recipe.id"
+          >
+            <div
+              v-if="
+                selectedMissingProduct.outOfStockIngredients?.includes(
+                  recipe.ingredientName || '',
+                )
+              "
+              class="flex items-center justify-between p-3 text-sm"
+            >
+              <span class="font-bold font-medium text-red-600">
+                {{ recipe.ingredientName }}
+              </span>
+              <div class="flex flex-col items-end gap-1">
+                <span class="text-xs text-gray-500"
+                  >Cần: {{ formatQuantity(recipe.amount) }}
+                  {{ recipe.unit }}</span
+                >
+                <span class="text-xs font-semibold text-red-600">
+                  Tồn: {{ formatQuantity(recipe.currentStock) }}
+                  {{ recipe.stockUnit }}
+                </span>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+      <template #footer>
+        <div class="flex w-full justify-end gap-2">
+          <Button
+            label="Đã hiểu"
+            severity="secondary"
+            @click="showMissingIngredientsModal = false"
+          />
         </div>
       </template>
     </Dialog>

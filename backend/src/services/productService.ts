@@ -4,8 +4,8 @@ import {
   MASTER_CODES,
   buildListQuery,
   buildPaginationResponse,
-  calculateRecipeCostFactor,
 } from '../utils'
+import { calculateRecipeCostFactor } from '../utils/unitConversion'
 
 
 const initialCategories = [
@@ -264,7 +264,27 @@ const getProducts = async (queryParamsOrBody: any = {}) => {
         unitCost: r.ingredient ? r.ingredient.costPerUnit : 0,
         unit: r.unit || (r.ingredient ? r.ingredient.unit : ''), // unit người dùng nhập trong recipe (recipeUnit)
         stockUnit: r.ingredient ? r.ingredient.unit : '', // đơn vị kho của nguyên liệu
+        currentStock: r.ingredient ? Number(r.ingredient.quantity) : 0,
       }))
+
+      let isOutOfStock = false
+      const outOfStockIngredients: string[] = []
+      if (p.recipes && p.recipes.length > 0) {
+        for (const r of p.recipes) {
+          if (r.ingredient) {
+            const requiredInStockUnit = calculateRecipeCostFactor(
+              r.amount,
+              r.unit || r.ingredient.unit,
+              r.ingredient.unit,
+              r.ingredient.name
+            )
+            if (Number(r.ingredient.quantity) < requiredInStockUnit) {
+              isOutOfStock = true
+              outOfStockIngredients.push(r.ingredient.name)
+            }
+          }
+        }
+      }
 
       return {
         id: p.code || `SP-${p.id}`,
@@ -289,6 +309,8 @@ const getProducts = async (queryParamsOrBody: any = {}) => {
         status: p.status,
         img: p.imageUrl,
         unit: p.unit,
+        isOutOfStock,
+        outOfStockIngredients,
         recipeItems,
       }
     })
