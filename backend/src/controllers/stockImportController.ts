@@ -66,8 +66,51 @@ const getStockImportById = async (
   }
 }
 
+const updateStockImport = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params
+    const payload = {
+      ...req.body,
+    }
+    const result = await stockImportService.updateStockImport(id, payload)
+    return ApiResponder.success(
+      res,
+      result,
+      'Cập nhật phiếu nhập kho và tồn kho thành công',
+      EHttpStatuses.OK
+    )
+  } catch (error: any) {
+    next(error)
+  }
+}
+
+const deleteStockImport = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params
+    const result = await stockImportService.deleteStockImport(id)
+    return ApiResponder.success(
+      res,
+      result,
+      'Xóa phiếu nhập kho và hoàn tác tồn kho thành công',
+      EHttpStatuses.OK
+    )
+  } catch (error: any) {
+    next(error)
+  }
+}
+
 export default {
   createStockImport,
   getStockImports,
   getStockImportById,
+  updateStockImport,
+  deleteStockImport,
 }

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import Select from 'primevue/select'
+import UnsavedChangesDialog from '@/components/common/UnsavedChangesDialog.vue'
 import { fetchMasterCodes } from '@/api/masterCode.api'
 import { fetchIngredients } from '@/api/ingredient.api'
 import { createProduct } from '@/api/product.api'
@@ -21,6 +22,36 @@ const isActiveStatus = ref(true)
 const isCustomCategory = ref(false)
 const isSubmitting = ref(false)
 const formError = ref('')
+
+const showLeaveConfirmDialog = ref(false)
+let leaveNext: any = null
+
+onBeforeRouteLeave((to, from, next) => {
+  const isDirty =
+    productName.value.trim() !== '' || productCode.value.trim() !== ''
+  if (isDirty) {
+    showLeaveConfirmDialog.value = true
+    leaveNext = next
+  } else {
+    next()
+  }
+})
+
+const confirmLeave = () => {
+  showLeaveConfirmDialog.value = false
+  if (leaveNext) {
+    leaveNext(true)
+    leaveNext = null
+  }
+}
+
+const cancelLeave = () => {
+  showLeaveConfirmDialog.value = false
+  if (leaveNext) {
+    leaveNext(false)
+    leaveNext = null
+  }
+}
 
 // Image Upload State
 const fileInputRef = ref<HTMLInputElement | null>(null)
@@ -302,16 +333,16 @@ const saveProduct = async () => {
 </script>
 
 <template>
-  <div class="product-create-page w-full flex flex-col gap-6 pb-16">
+  <div class="product-create-page flex w-full flex-col gap-6 pb-16">
     <!-- Action Header -->
     <div
-      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2D7CC]"
+      class="flex flex-col justify-between gap-4 border-b border-[#E2D7CC] pb-2 sm:flex-row sm:items-center"
     >
       <div>
-        <h1 class="text-2xl font-bold font-display text-[#1e1b1b]">
+        <h1 class="font-display text-2xl font-bold text-[#1e1b1b]">
           Thêm sản phẩm & Tính Cost 3D
         </h1>
-        <p class="text-xs text-[#42493d] mt-1 font-medium">
+        <p class="mt-1 text-xs font-medium text-[#42493d]">
           Khai báo thông tin món và cấu hình định mức nguyên liệu (BOM)
         </p>
       </div>
@@ -319,7 +350,7 @@ const saveProduct = async () => {
         <button
           @click="router.back()"
           type="button"
-          class="h-10 px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#42493d] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition cursor-pointer"
+          class="h-10 cursor-pointer rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] px-4 text-xs font-semibold text-[#42493d] transition hover:bg-[#E8DFD5]"
         >
           Hủy bỏ
         </button>
@@ -327,11 +358,11 @@ const saveProduct = async () => {
           @click="saveProduct"
           :disabled="isSubmitting"
           type="button"
-          class="h-10 px-5 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+          class="flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-[#8E3E2F] px-5 text-xs font-semibold text-white shadow transition hover:bg-[#6E281C] disabled:opacity-50"
         >
           <span
             v-if="isSubmitting"
-            class="material-symbols-outlined text-lg animate-spin"
+            class="material-symbols-outlined animate-spin text-lg"
             >refresh</span
           >
           <span v-else class="material-symbols-outlined text-lg">check</span>
@@ -343,17 +374,17 @@ const saveProduct = async () => {
     <!-- Error Alert -->
     <div
       v-if="formError"
-      class="p-3 bg-[#ffdad6] text-[#ba1a1a] rounded-xl text-xs font-semibold"
+      class="rounded-xl bg-[#ffdad6] p-3 text-xs font-semibold text-[#ba1a1a]"
     >
       {{ formError }}
     </div>
 
     <!-- Bento Grid Section 1: Basic Details & Image Upload -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <!-- Upload Card -->
       <div
         @click="triggerFileSelect"
-        class="bg-white rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#8E3E2F] transition group relative overflow-hidden min-h-[220px]"
+        class="group relative flex min-h-[220px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border border-[#E2D7CC] bg-white p-6 text-center shadow-sm transition hover:border-[#8E3E2F]"
       >
         <input
           ref="fileInputRef"
@@ -367,14 +398,14 @@ const saveProduct = async () => {
           <img
             :src="previewImageUrl"
             alt="Preview sản phẩm"
-            class="w-full h-44 object-cover rounded-xl mb-2"
+            class="mb-2 h-44 w-full rounded-xl object-cover"
           />
-          <div class="flex items-center gap-2 mt-1">
-            <span class="text-xs text-[#8E3E2F] font-bold">Đổi ảnh khác</span>
+          <div class="mt-1 flex items-center gap-2">
+            <span class="text-xs font-bold text-[#8E3E2F]">Đổi ảnh khác</span>
             <button
               @click.stop="removeImage"
               type="button"
-              class="text-xs text-[#ba1a1a] hover:underline font-bold"
+              class="text-xs font-bold text-[#ba1a1a] hover:underline"
             >
               Xóa ảnh
             </button>
@@ -383,12 +414,12 @@ const saveProduct = async () => {
 
         <template v-else>
           <div
-            class="w-16 h-16 rounded-2xl bg-[#F2ECE4] text-[#8E3E2F] flex items-center justify-center mb-3 group-hover:scale-110 transition"
+            class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F2ECE4] text-[#8E3E2F] transition group-hover:scale-110"
           >
             <span class="material-symbols-outlined text-3xl">add_a_photo</span>
           </div>
           <h3 class="text-sm font-bold text-[#1e1b1b]">Tải ảnh sản phẩm</h3>
-          <p class="text-xs text-[#72796c] mt-1">
+          <p class="mt-1 text-xs text-[#72796c]">
             Nhấp hoặc kéo thả tệp hình ảnh (PNG, JPG max 5MB)
           </p>
         </template>
@@ -396,51 +427,51 @@ const saveProduct = async () => {
 
       <!-- General Info Form Card -->
       <div
-        class="lg:col-span-2 bg-white rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col gap-4"
+        class="flex flex-col gap-4 rounded-2xl border border-[#E2D7CC] bg-white p-6 shadow-sm lg:col-span-2"
       >
         <h2
-          class="text-base font-bold font-display text-[#1e1b1b] border-b border-[#E2D7CC] pb-3"
+          class="font-display border-b border-[#E2D7CC] pb-3 text-base font-bold text-[#1e1b1b]"
         >
           Thông tin cơ bản
         </h2>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div class="sm:col-span-2">
             <label
-              class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5"
+              class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1e1b1b]"
               >Tên sản phẩm *</label
             >
             <input
               v-model="productName"
               type="text"
-              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+              class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white px-3.5 text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
               placeholder="VD: Mì Trộn Sa Tế Đặc Biệt"
             />
           </div>
 
           <div>
             <label
-              class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider mb-1.5"
+              class="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-[#1e1b1b]"
               >Giá bán (VNĐ) *</label
             >
             <input
               v-model.number="sellingPrice"
               type="number"
-              class="w-full h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+              class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white px-3.5 text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             />
           </div>
 
           <!-- Category (Searchable Dropdown with Custom Input Toggle) -->
           <div>
-            <div class="flex justify-between items-center mb-1.5">
+            <div class="mb-1.5 flex items-center justify-between">
               <label
-                class="block text-xs font-semibold text-[#1e1b1b] uppercase tracking-wider"
+                class="block text-xs font-semibold uppercase tracking-wider text-[#1e1b1b]"
                 >Danh mục *</label
               >
               <button
                 type="button"
                 @click="isCustomCategory = !isCustomCategory"
-                class="text-[10px] text-[#8E3E2F] underline font-semibold cursor-pointer"
+                class="cursor-pointer text-[10px] font-semibold text-[#8E3E2F] underline"
               >
                 {{
                   isCustomCategory
@@ -454,7 +485,7 @@ const saveProduct = async () => {
               v-model="category"
               type="text"
               placeholder="Nhập tên danh mục mới..."
-              class="w-full h-10 px-3.5 bg-white border border-[#8E3E2F] rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:ring-2 focus:ring-[#8E3E2F]/20"
+              class="h-10 w-full rounded-xl border border-[#8E3E2F] bg-white px-3.5 text-xs font-medium text-[#1e1b1b] outline-none focus:ring-2 focus:ring-[#8E3E2F]/20"
             />
             <Select
               v-else
@@ -463,12 +494,12 @@ const saveProduct = async () => {
               editable
               filter
               placeholder="Tìm & chọn danh mục..."
-              class="w-full h-10 text-xs font-medium"
+              class="h-10 w-full text-xs font-medium"
             />
           </div>
 
           <div
-            class="sm:col-span-2 flex items-center justify-between pt-2 border-t border-[#E2D7CC]"
+            class="flex items-center justify-between border-t border-[#E2D7CC] pt-2 sm:col-span-2"
           >
             <span class="text-xs font-bold text-[#1e1b1b]"
               >Trạng thái kinh doanh:</span
@@ -476,7 +507,7 @@ const saveProduct = async () => {
             <button
               type="button"
               @click="isActiveStatus = !isActiveStatus"
-              class="h-9 px-3.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center"
+              class="flex h-9 cursor-pointer items-center rounded-xl px-3.5 text-xs font-bold transition"
               :class="
                 isActiveStatus
                   ? 'bg-[#c9edb5]/60 text-[#326824]'
@@ -491,25 +522,25 @@ const saveProduct = async () => {
     </div>
 
     <!-- Bento Grid Section 2: BOM Costing & 3D Visual Simulation -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
       <!-- BOM Costing Form -->
       <div
-        class="lg:col-span-2 bg-white rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col gap-4"
+        class="flex flex-col gap-4 rounded-2xl border border-[#E2D7CC] bg-white p-6 shadow-sm lg:col-span-2"
       >
         <div
-          class="flex justify-between items-center border-b border-[#E2D7CC] pb-3"
+          class="flex items-center justify-between border-b border-[#E2D7CC] pb-3"
         >
-          <h2 class="text-base font-bold font-display text-[#1e1b1b]">
+          <h2 class="font-display text-base font-bold text-[#1e1b1b]">
             Định mức nguyên liệu (BOM)
           </h2>
           <span
-            class="text-xs font-semibold text-[#326824] bg-[#c9edb5]/40 px-3 py-1 rounded-lg"
+            class="rounded-lg bg-[#c9edb5]/40 px-3 py-1 text-xs font-semibold text-[#326824]"
             >Tính Cost tự động</span
           >
         </div>
 
         <!-- Add Ingredient Row (Searchable Select) -->
-        <div class="flex flex-col sm:flex-row gap-3">
+        <div class="flex flex-col gap-3 sm:flex-row">
           <Select
             v-model="selectedIngId"
             :options="availableIngredients"
@@ -517,18 +548,18 @@ const saveProduct = async () => {
             optionValue="id"
             filter
             placeholder="Tìm & chọn nguyên liệu từ kho..."
-            class="flex-1 h-10 text-xs font-medium"
+            class="h-10 flex-1 text-xs font-medium"
           />
           <input
             v-model.number="addAmount"
             type="number"
             placeholder="Số lượng"
-            class="w-full sm:w-28 h-10 px-3.5 bg-white border border-[#c1c9b9]/70 rounded-xl text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+            class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white px-3.5 text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 sm:w-28"
           />
           <button
             @click="addRecipeItem"
             type="button"
-            class="h-10 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-1 shrink-0 cursor-pointer shadow-sm"
+            class="flex h-10 shrink-0 cursor-pointer items-center justify-center gap-1 rounded-xl bg-[#8E3E2F] px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6E281C]"
           >
             <span class="material-symbols-outlined text-base">add</span>
             <span>Thêm NL</span>
@@ -539,40 +570,40 @@ const saveProduct = async () => {
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs text-[#1e1b1b]">
             <thead
-              class="bg-[#F5EFE8] text-[#42493d] font-semibold uppercase tracking-wider border-b border-[#E2D7CC]"
+              class="border-b border-[#E2D7CC] bg-[#F5EFE8] font-semibold uppercase tracking-wider text-[#42493d]"
             >
               <tr>
-                <th class="py-3 px-4">Tên nguyên liệu</th>
-                <th class="py-3 px-4 text-center">Định lượng</th>
-                <th class="py-3 px-4 text-center">ĐVT BOM</th>
-                <th class="py-3 px-4 text-center">Đơn giá quy đổi</th>
-                <th class="py-3 px-4 text-right">Thành tiền</th>
-                <th class="py-3 px-4 text-center">Xóa</th>
+                <th class="px-4 py-3">Tên nguyên liệu</th>
+                <th class="px-4 py-3 text-center">Định lượng</th>
+                <th class="px-4 py-3 text-center">ĐVT BOM</th>
+                <th class="px-4 py-3 text-center">Đơn giá quy đổi</th>
+                <th class="px-4 py-3 text-right">Thành tiền</th>
+                <th class="px-4 py-3 text-center">Xóa</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-[#F2ECE4]">
               <tr
                 v-for="(item, idx) in recipeItems"
                 :key="idx"
-                class="hover:bg-[#F5EFE8]/50 transition"
+                class="transition hover:bg-[#F5EFE8]/50"
               >
-                <td class="py-3 px-4 font-semibold text-[#1e1b1b]">
+                <td class="px-4 py-3 font-semibold text-[#1e1b1b]">
                   <div>{{ item.ingredient.name }}</div>
-                  <div class="text-[10px] text-[#72796c] font-medium">
+                  <div class="text-[10px] font-medium text-[#72796c]">
                     Kho: {{ formatCurrency(item.ingredient.unitCost) }} /
                     {{ item.ingredient.unit }}
                   </div>
                 </td>
-                <td class="py-3 px-4 text-center">
+                <td class="px-4 py-3 text-center">
                   <input
                     v-model.number="item.amount"
                     type="number"
                     min="0"
                     step="any"
-                    class="w-20 px-2 py-1 border border-[#c1c9b9]/70 rounded-lg text-center font-bold text-xs outline-none focus:border-[#8E3E2F]"
+                    class="w-20 rounded-lg border border-[#c1c9b9]/70 px-2 py-1 text-center text-xs font-bold outline-none focus:border-[#8E3E2F]"
                   />
                 </td>
-                <td class="py-3 px-4 text-center">
+                <td class="px-4 py-3 text-center">
                   <Select
                     v-model="item.recipeUnit"
                     :options="COMMON_UNITS"
@@ -582,19 +613,19 @@ const saveProduct = async () => {
                   />
                 </td>
                 <td
-                  class="py-3 px-4 text-center font-mono text-[11px] text-[#72796c]"
+                  class="px-4 py-3 text-center font-mono text-[11px] text-[#72796c]"
                 >
                   {{ formatCurrency(getItemUnitCost(item)) }} /
                   {{ item.recipeUnit }}
                 </td>
-                <td class="py-3 px-4 text-right font-bold text-[#1e1b1b]">
+                <td class="px-4 py-3 text-right font-bold text-[#1e1b1b]">
                   {{ formatCurrency(getItemCost(item)) }}
                 </td>
-                <td class="py-3 px-4 text-center">
+                <td class="px-4 py-3 text-center">
                   <button
                     @click="removeRecipeItem(idx)"
                     type="button"
-                    class="p-1 text-[#ba1a1a] hover:bg-[#ffdad6] rounded-md transition"
+                    class="rounded-md p-1 text-[#ba1a1a] transition hover:bg-[#ffdad6]"
                   >
                     <span class="material-symbols-outlined text-base"
                       >delete</span
@@ -603,7 +634,7 @@ const saveProduct = async () => {
                 </td>
               </tr>
               <tr v-if="recipeItems.length === 0">
-                <td colspan="6" class="py-4 text-center text-[#72796c] italic">
+                <td colspan="6" class="py-4 text-center italic text-[#72796c]">
                   Chưa có nguyên liệu nào trong định mức BOM
                 </td>
               </tr>
@@ -613,23 +644,23 @@ const saveProduct = async () => {
 
         <!-- Cost & Margin Footer -->
         <div
-          class="mt-2 p-4 bg-[#F2ECE4] rounded-xl flex justify-between items-center border border-[#E2D7CC]"
+          class="mt-2 flex items-center justify-between rounded-xl border border-[#E2D7CC] bg-[#F2ECE4] p-4"
         >
           <div>
             <span
-              class="text-[11px] text-[#72796c] uppercase font-bold tracking-wider block"
+              class="block text-[11px] font-bold uppercase tracking-wider text-[#72796c]"
               >Tổng giá vốn (Cost NVL)</span
             >
-            <span class="text-xl font-bold font-display text-[#326824]">{{
+            <span class="font-display text-xl font-bold text-[#326824]">{{
               formatCurrency(totalCost)
             }}</span>
           </div>
           <div class="text-right">
             <span
-              class="text-[11px] text-[#72796c] uppercase font-bold tracking-wider block"
+              class="block text-[11px] font-bold uppercase tracking-wider text-[#72796c]"
               >Biên lợi nhuận gộp</span
             >
-            <span class="text-xl font-bold font-display text-[#326824]">{{
+            <span class="font-display text-xl font-bold text-[#326824]">{{
               profitMargin
             }}</span>
           </div>
@@ -638,34 +669,34 @@ const saveProduct = async () => {
 
       <!-- 3D Simulation Card -->
       <div
-        class="bg-gradient-to-b from-[#8E3E2F]/10 to-[#C46D28]/10 rounded-2xl p-6 border border-[#E2D7CC] shadow-sm flex flex-col justify-between"
+        class="flex flex-col justify-between rounded-2xl border border-[#E2D7CC] bg-gradient-to-b from-[#8E3E2F]/10 to-[#C46D28]/10 p-6 shadow-sm"
       >
-        <div class="flex items-center gap-2 mb-4">
-          <span class="material-symbols-outlined text-[#8E3E2F] text-xl"
+        <div class="mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-xl text-[#8E3E2F]"
             >ramen_dining</span
           >
-          <h3 class="text-base font-bold font-display text-[#1e1b1b]">
+          <h3 class="font-display text-base font-bold text-[#1e1b1b]">
             Mô phỏng Đĩa Mì Trộn / Topping
           </h3>
         </div>
 
         <!-- Simulated Noodle Plate Layer Stack -->
-        <div class="flex-1 flex flex-col items-center justify-center my-6">
+        <div class="my-6 flex flex-1 flex-col items-center justify-center">
           <div
-            class="w-48 h-44 border-4 border-white/80 bg-white/60 backdrop-blur-md rounded-2xl shadow-xl p-3 flex flex-col justify-end overflow-hidden relative border-b-8 border-b-[#8E3E2F]/40"
+            class="relative flex h-44 w-48 flex-col justify-end overflow-hidden rounded-2xl border-4 border-b-8 border-white/80 border-b-[#8E3E2F]/40 bg-white/60 p-3 shadow-xl backdrop-blur-md"
           >
             <div
-              class="w-full h-10 bg-amber-100 text-[#8E3E2F] text-[10px] font-bold flex items-center justify-center rounded-t-lg border-b border-white/50"
+              class="flex h-10 w-full items-center justify-center rounded-t-lg border-b border-white/50 bg-amber-100 text-[10px] font-bold text-[#8E3E2F]"
             >
               🍳 Trứng ốp la & Hành hoa
             </div>
             <div
-              class="w-full h-16 bg-[#8E3E2F] text-white text-[10px] font-bold flex items-center justify-center"
+              class="flex h-16 w-full items-center justify-center bg-[#8E3E2F] text-[10px] font-bold text-white"
             >
               🍜 Mì trộn sốt sa tế Cô Xi
             </div>
             <div
-              class="w-full h-10 bg-[#326824] text-white text-[10px] font-bold flex items-center justify-center rounded-b-lg border-t border-white/30"
+              class="flex h-10 w-full items-center justify-center rounded-b-lg border-t border-white/30 bg-[#326824] text-[10px] font-bold text-white"
             >
               🥬 Rau cải & Topping thịt
             </div>
@@ -675,17 +706,17 @@ const saveProduct = async () => {
         <!-- Info Badges -->
         <div class="grid grid-cols-2 gap-3 text-center">
           <div
-            class="p-3 bg-white rounded-xl border border-[#E2D7CC] shadow-sm"
+            class="rounded-xl border border-[#E2D7CC] bg-white p-3 shadow-sm"
           >
-            <span class="text-[10px] text-[#72796c] uppercase font-bold block"
+            <span class="block text-[10px] font-bold uppercase text-[#72796c]"
               >Khẩu phần</span
             >
             <span class="text-sm font-bold text-[#1e1b1b]">1 Phần chuẩn</span>
           </div>
           <div
-            class="p-3 bg-white rounded-xl border border-[#E2D7CC] shadow-sm"
+            class="rounded-xl border border-[#E2D7CC] bg-white p-3 shadow-sm"
           >
-            <span class="text-[10px] text-[#72796c] uppercase font-bold block"
+            <span class="block text-[10px] font-bold uppercase text-[#72796c]"
               >Độ cay</span
             >
             <span class="text-sm font-bold text-[#1e1b1b]">Vừa / Tùy chọn</span>
@@ -693,6 +724,12 @@ const saveProduct = async () => {
         </div>
       </div>
     </div>
+    <!-- Unsaved Changes Confirm Dialog -->
+    <UnsavedChangesDialog
+      :visible="showLeaveConfirmDialog"
+      @confirm="confirmLeave"
+      @cancel="cancelLeave"
+    />
   </div>
 </template>
 

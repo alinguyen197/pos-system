@@ -418,22 +418,22 @@ const handleConfirmDelete = async () => {
 </script>
 
 <template>
-  <div class="product-list-page h-full flex flex-col gap-4 overflow-hidden">
+  <div class="product-list-page flex h-full flex-col gap-4 overflow-hidden">
     <!-- Header Title & Action -->
     <div
-      class="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2D7CC]"
+      class="flex shrink-0 flex-col justify-between gap-4 border-b border-[#E2D7CC] pb-2 sm:flex-row sm:items-center"
     >
       <div>
-        <h1 class="text-2xl font-bold font-display text-[#1e1b1b]">
+        <h1 class="font-display text-2xl font-bold text-[#1e1b1b]">
           Quản lý Sản phẩm
         </h1>
-        <p class="text-xs text-[#42493d] mt-1 font-medium">
+        <p class="mt-1 text-xs font-medium text-[#42493d]">
           Danh sách thực đơn, định mức nguyên liệu BOM và trừ kho POS
         </p>
       </div>
       <button
         @click="router.push('/products/create')"
-        class="h-10 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 cursor-pointer"
+        class="flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-[#8E3E2F] px-4 text-xs font-semibold text-white shadow transition hover:bg-[#6E281C]"
       >
         <span class="material-symbols-outlined text-lg">add</span>
         <span>Thêm sản phẩm mới</span>
@@ -442,30 +442,30 @@ const handleConfirmDelete = async () => {
 
     <!-- Main Card -->
     <div
-      class="flex-1 min-h-0 bg-white rounded-2xl border border-[#E2D7CC] shadow-sm overflow-hidden flex flex-col"
+      class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-[#E2D7CC] bg-white shadow-sm"
     >
       <!-- Search & Filters -->
-      <div class="shrink-0 p-4 border-b border-[#E2D7CC] bg-[#F9F6F0]">
+      <div class="shrink-0 border-b border-[#E2D7CC] bg-[#F9F6F0] p-4">
         <!-- Form Search with Category Select Dropdown, Search and Reset buttons -->
         <form
           @submit.prevent="handleSearch"
-          class="flex flex-col sm:flex-row items-end gap-3 w-full"
+          class="flex w-full flex-col items-end gap-3 sm:flex-row"
         >
           <div class="w-full sm:w-64">
             <label
-              class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+              class="mb-1 block text-[11px] font-bold uppercase text-[#42493d]"
               >Từ khóa tìm kiếm</label
             >
             <div class="relative">
               <span
-                class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#72796c] text-xl"
+                class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-xl text-[#72796c]"
                 >search</span
               >
               <input
                 v-model="searchKeyword"
                 type="text"
                 placeholder="Tìm tên sản phẩm, mã SP..."
-                class="w-full h-10 pl-11 pr-4 bg-white border border-[#c1c9b9]/70 rounded-xl focus:outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 text-xs font-medium text-[#1e1b1b]"
+                class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white pl-11 pr-4 text-xs font-medium text-[#1e1b1b] focus:border-[#8E3E2F] focus:outline-none focus:ring-2 focus:ring-[#8E3E2F]/20"
               />
             </div>
           </div>
@@ -473,7 +473,7 @@ const handleConfirmDelete = async () => {
           <!-- Filterable Category Select Dropdown -->
           <div class="w-full sm:w-56">
             <label
-              class="block text-[11px] font-bold text-[#42493d] uppercase mb-1"
+              class="mb-1 block text-[11px] font-bold uppercase text-[#42493d]"
               >Danh mục sản phẩm</label
             >
             <Select
@@ -483,14 +483,14 @@ const handleConfirmDelete = async () => {
               optionValue="code"
               filter
               placeholder="Tất cả danh mục"
-              class="w-full h-10 text-xs"
+              class="h-10 w-full text-xs"
             />
           </div>
 
-          <div class="flex items-center gap-2 w-full sm:w-auto">
+          <div class="flex w-full items-center gap-2 sm:w-auto">
             <button
               type="submit"
-              class="h-10 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5 whitespace-nowrap flex-1 sm:flex-none cursor-pointer"
+              class="flex h-10 flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-[#8E3E2F] px-4 text-xs font-semibold text-white shadow transition hover:bg-[#6E281C] sm:flex-none"
             >
               <span class="material-symbols-outlined text-base">search</span>
               <span>Tìm kiếm</span>
@@ -498,7 +498,7 @@ const handleConfirmDelete = async () => {
             <button
               type="button"
               @click="onResetSearch"
-              class="h-10 px-3.5 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#42493d] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition flex items-center justify-center gap-1.5 whitespace-nowrap flex-1 sm:flex-none cursor-pointer"
+              class="flex h-10 flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] px-3.5 text-xs font-semibold text-[#42493d] transition hover:bg-[#E8DFD5] sm:flex-none"
               title="Đặt lại bộ lọc"
             >
               <span class="material-symbols-outlined text-base">refresh</span>
@@ -516,7 +516,7 @@ const handleConfirmDelete = async () => {
         paginator
         scrollable
         scrollHeight="flex"
-        class="flex-1 min-h-0 flex flex-col"
+        class="flex min-h-0 flex-1 flex-col"
         :rows="pagination.pageSize"
         :totalRecords="pagination.totalRecords"
         :first="(pagination.page - 1) * pagination.pageSize"
@@ -530,7 +530,7 @@ const handleConfirmDelete = async () => {
       >
         <template #empty>
           <div
-            class="py-12 text-center text-[#72796c] flex flex-col items-center justify-center gap-2"
+            class="flex flex-col items-center justify-center gap-2 py-12 text-center text-[#72796c]"
           >
             <span class="material-symbols-outlined text-4xl text-[#c1c9b9]"
               >search_off</span
@@ -557,17 +557,17 @@ const handleConfirmDelete = async () => {
           <template #body="slotProps">
             <div class="flex items-center gap-3">
               <div
-                class="w-10 h-10 rounded-xl bg-[#F2ECE4] overflow-hidden shrink-0 border border-[#E2D7CC] flex items-center justify-center"
+                class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#E2D7CC] bg-[#F2ECE4]"
               >
                 <img
                   v-if="slotProps.data.img"
                   :src="slotProps.data.img"
                   :alt="slotProps.data.name"
-                  class="w-full h-full object-cover"
+                  class="h-full w-full object-cover"
                 />
                 <span
                   v-else
-                  class="material-symbols-outlined text-[#8E3E2F] text-xl"
+                  class="material-symbols-outlined text-xl text-[#8E3E2F]"
                   >ramen_dining</span
                 >
               </div>
@@ -575,7 +575,7 @@ const handleConfirmDelete = async () => {
                 <span class="font-bold text-[#1e1b1b]">{{
                   slotProps.data.name
                 }}</span>
-                <span class="text-[11px] text-[#72796c] font-medium">{{
+                <span class="text-[11px] font-medium text-[#72796c]">{{
                   slotProps.data.category
                 }}</span>
               </div>
@@ -618,7 +618,7 @@ const handleConfirmDelete = async () => {
         >
           <template #body="slotProps">
             <span
-              class="px-2.5 py-1 rounded-md bg-[#c9edb5]/60 text-[#326824] font-bold text-[11px] inline-block"
+              class="inline-block rounded-md bg-[#c9edb5]/60 px-2.5 py-1 text-[11px] font-bold text-[#326824]"
             >
               {{ slotProps.data.margin }}
             </span>
@@ -632,7 +632,7 @@ const handleConfirmDelete = async () => {
         >
           <template #body="slotProps">
             <span
-              class="px-2 py-0.5 rounded bg-[#F2ECE4] text-[#8E3E2F] font-mono text-[11px] font-semibold"
+              class="rounded bg-[#F2ECE4] px-2 py-0.5 font-mono text-[11px] font-semibold text-[#8E3E2F]"
             >
               {{ (slotProps.data.recipeItems || []).length }} nguyên liệu
             </span>
@@ -646,7 +646,7 @@ const handleConfirmDelete = async () => {
         >
           <template #body="slotProps">
             <span
-              class="px-2.5 py-1 rounded-md font-bold text-[11px] inline-block"
+              class="inline-block rounded-md px-2.5 py-1 text-[11px] font-bold"
               :class="
                 slotProps.data.status === 'Đang kinh doanh'
                   ? 'bg-[#c9edb5]/60 text-[#326824]'
@@ -667,14 +667,14 @@ const handleConfirmDelete = async () => {
             <div class="flex items-center justify-center gap-1">
               <button
                 @click="openEdit(slotProps.data)"
-                class="p-1.5 text-[#8E3E2F] hover:bg-[#F2ECE4] rounded-lg transition"
+                class="rounded-lg p-1.5 text-[#8E3E2F] transition hover:bg-[#F2ECE4]"
                 title="Sửa sản phẩm"
               >
                 <span class="material-symbols-outlined text-lg">edit</span>
               </button>
               <button
                 @click="openClone(slotProps.data)"
-                class="p-1.5 text-[#326824] hover:bg-[#c9edb5]/60 rounded-lg transition"
+                class="rounded-lg p-1.5 text-[#326824] transition hover:bg-[#c9edb5]/60"
                 title="Nhân bản sản phẩm"
               >
                 <span class="material-symbols-outlined text-lg"
@@ -683,7 +683,7 @@ const handleConfirmDelete = async () => {
               </button>
               <button
                 @click="openDelete(slotProps.data)"
-                class="p-1.5 text-[#ba1a1a] hover:bg-[#ffdad6] rounded-lg transition"
+                class="rounded-lg p-1.5 text-[#ba1a1a] transition hover:bg-[#ffdad6]"
                 title="Xóa sản phẩm"
               >
                 <span class="material-symbols-outlined text-lg">delete</span>
@@ -701,10 +701,10 @@ const handleConfirmDelete = async () => {
       modal
       class="w-full max-w-7xl p-0"
     >
-      <div class="p-5 flex flex-col gap-4">
+      <div class="flex flex-col gap-4 p-5">
         <div
           v-if="editError"
-          class="p-3 bg-[#ffdad6] text-[#ba1a1a] rounded-lg text-xs font-semibold"
+          class="rounded-lg bg-[#ffdad6] p-3 text-xs font-semibold text-[#ba1a1a]"
         >
           {{ editError }}
         </div>
@@ -712,7 +712,7 @@ const handleConfirmDelete = async () => {
         <!-- Image Uploader in Edit Modal -->
         <div>
           <label
-            class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1.5"
+            class="mb-1.5 block text-xs font-semibold uppercase text-[#1e1b1b]"
             >Hình ảnh sản phẩm</label
           >
           <input
@@ -724,12 +724,12 @@ const handleConfirmDelete = async () => {
           />
           <div class="flex items-center gap-3">
             <div
-              class="w-16 h-16 rounded-xl border border-[#E2D7CC] bg-[#F2ECE4] overflow-hidden shrink-0 flex items-center justify-center"
+              class="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[#E2D7CC] bg-[#F2ECE4]"
             >
               <img
                 v-if="editPreviewImage"
                 :src="editPreviewImage"
-                class="w-full h-full object-cover"
+                class="h-full w-full object-cover"
               />
               <span
                 v-else
@@ -741,7 +741,7 @@ const handleConfirmDelete = async () => {
               <button
                 type="button"
                 @click="triggerEditFileSelect"
-                class="px-3 py-1.5 bg-[#8E3E2F] text-white text-xs font-semibold rounded-lg hover:bg-[#6E281C] transition"
+                class="rounded-lg bg-[#8E3E2F] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#6E281C]"
               >
                 Tải ảnh mới
               </button>
@@ -749,7 +749,7 @@ const handleConfirmDelete = async () => {
                 v-if="editPreviewImage"
                 type="button"
                 @click="removeEditImage"
-                class="text-xs text-[#ba1a1a] hover:underline font-semibold text-left"
+                class="text-left text-xs font-semibold text-[#ba1a1a] hover:underline"
               >
                 Xóa ảnh
               </button>
@@ -759,21 +759,21 @@ const handleConfirmDelete = async () => {
 
         <div>
           <label
-            class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1"
+            class="mb-1 block text-xs font-semibold uppercase text-[#1e1b1b]"
             >Tên sản phẩm *</label
           >
           <input
             v-model="editForm.name"
             type="text"
             placeholder="VD: Mì Trộn Sa Tế Đặc Biệt"
-            class="w-full h-10 px-3.5 border border-[#c1c9b9]/70 rounded-xl text-xs bg-white outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 font-medium text-[#1e1b1b]"
+            class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white px-3.5 text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
           />
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label
-              class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1"
+              class="mb-1 block text-xs font-semibold uppercase text-[#1e1b1b]"
               >Giá bán (VNĐ) *</label
             >
             <input
@@ -782,12 +782,12 @@ const handleConfirmDelete = async () => {
               min="0"
               step="1000"
               placeholder="VD: 35000"
-              class="w-full h-10 px-3.5 border border-[#c1c9b9]/70 rounded-xl text-xs bg-white outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 font-medium text-[#1e1b1b]"
+              class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white px-3.5 text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             />
           </div>
           <div>
             <label
-              class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1"
+              class="mb-1 block text-xs font-semibold uppercase text-[#1e1b1b]"
               >Danh mục *</label
             >
             <Select
@@ -796,12 +796,12 @@ const handleConfirmDelete = async () => {
               editable
               filter
               placeholder="Chọn hoặc nhập danh mục"
-              class="w-full h-10 text-xs font-medium"
+              class="h-10 w-full text-xs font-medium"
             />
           </div>
           <div>
             <label
-              class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1"
+              class="mb-1 block text-xs font-semibold uppercase text-[#1e1b1b]"
               >Đơn vị bán *</label
             >
             <Select
@@ -810,38 +810,38 @@ const handleConfirmDelete = async () => {
               editable
               filter
               placeholder="Chọn hoặc nhập đơn vị"
-              class="w-full h-10 text-xs font-medium"
+              class="h-10 w-full text-xs font-medium"
             />
           </div>
           <div>
             <label
-              class="block text-xs font-semibold text-[#1e1b1b] uppercase mb-1"
+              class="mb-1 block text-xs font-semibold uppercase text-[#1e1b1b]"
               >Trạng thái kinh doanh</label
             >
             <Select
               v-model="editForm.status"
               :options="['Đang kinh doanh', 'Tạm ngừng']"
-              class="w-full h-10 text-xs font-medium"
+              class="h-10 w-full text-xs font-medium"
             />
           </div>
         </div>
 
         <!-- BOM Section -->
         <div class="border-t border-[#E2D7CC] pt-4">
-          <div class="flex justify-between items-center mb-3">
+          <div class="mb-3 flex items-center justify-between">
             <h3
               class="text-xs font-bold uppercase tracking-wider text-[#1e1b1b]"
             >
               Định mức công thức (BOM)
             </h3>
             <span
-              class="text-[11px] font-semibold text-[#326824] bg-[#c9edb5]/40 px-2.5 py-0.5 rounded-md"
+              class="rounded-md bg-[#c9edb5]/40 px-2.5 py-0.5 text-[11px] font-semibold text-[#326824]"
               >Tính Cost tự động</span
             >
           </div>
 
           <!-- Add Ingredient Row -->
-          <div class="flex flex-col sm:flex-row gap-2.5 mb-3">
+          <div class="mb-3 flex flex-col gap-2.5 sm:flex-row">
             <Select
               v-model="selectedEditIngId"
               :options="availableIngredients"
@@ -849,18 +849,18 @@ const handleConfirmDelete = async () => {
               optionValue="id"
               filter
               placeholder="Chọn nguyên liệu..."
-              class="flex-1 h-10 text-xs font-medium"
+              class="h-10 flex-1 text-xs font-medium"
             />
             <input
               v-model.number="addEditAmount"
               type="number"
               placeholder="Định lượng"
-              class="w-full sm:w-28 h-10 px-3.5 border border-[#c1c9b9]/70 rounded-xl text-xs font-medium bg-white outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 text-[#1e1b1b]"
+              class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white px-3.5 text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20 sm:w-28"
             />
             <button
               @click="addEditRecipeItem"
               type="button"
-              class="h-10 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white text-xs font-semibold rounded-xl transition cursor-pointer flex items-center justify-center gap-1 shrink-0 shadow-sm"
+              class="flex h-10 shrink-0 cursor-pointer items-center justify-center gap-1 rounded-xl bg-[#8E3E2F] px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6E281C]"
             >
               <span class="material-symbols-outlined text-base">add</span>
               <span>Thêm</span>
@@ -868,43 +868,43 @@ const handleConfirmDelete = async () => {
           </div>
 
           <!-- BOM Ingredients Table -->
-          <div class="overflow-x-auto border border-[#E2D7CC] rounded-xl">
+          <div class="overflow-x-auto rounded-xl border border-[#E2D7CC]">
             <table class="w-full text-left text-xs text-[#1e1b1b]">
               <thead
-                class="bg-[#F5EFE8] text-[#42493d] font-semibold uppercase tracking-wider border-b border-[#E2D7CC]"
+                class="border-b border-[#E2D7CC] bg-[#F5EFE8] font-semibold uppercase tracking-wider text-[#42493d]"
               >
                 <tr>
-                  <th class="py-2.5 px-3">Tên nguyên liệu</th>
-                  <th class="py-2.5 px-3 text-center">Định lượng</th>
-                  <th class="py-2.5 px-3 text-center">ĐVT BOM</th>
-                  <th class="py-2.5 px-3 text-center">Đơn giá quy đổi</th>
-                  <th class="py-2.5 px-3 text-right">Thành tiền</th>
-                  <th class="py-2.5 px-3 text-center">Xóa</th>
+                  <th class="px-3 py-2.5">Tên nguyên liệu</th>
+                  <th class="px-3 py-2.5 text-center">Định lượng</th>
+                  <th class="px-3 py-2.5 text-center">ĐVT BOM</th>
+                  <th class="px-3 py-2.5 text-center">Đơn giá quy đổi</th>
+                  <th class="px-3 py-2.5 text-right">Thành tiền</th>
+                  <th class="px-3 py-2.5 text-center">Xóa</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-[#F2ECE4]">
                 <tr
                   v-for="(item, idx) in editRecipeItems"
                   :key="idx"
-                  class="hover:bg-[#F5EFE8]/50 transition"
+                  class="transition hover:bg-[#F5EFE8]/50"
                 >
-                  <td class="py-2 px-3 font-semibold text-[#1e1b1b]">
+                  <td class="px-3 py-2 font-semibold text-[#1e1b1b]">
                     <div>{{ item.ingredientName }}</div>
-                    <div class="text-[10px] text-[#72796c] font-medium">
+                    <div class="text-[10px] font-medium text-[#72796c]">
                       Kho: {{ formatCurrency(item.unitCost) }} /
                       {{ item.stockUnit }}
                     </div>
                   </td>
-                  <td class="py-2 px-3 text-center">
+                  <td class="px-3 py-2 text-center">
                     <input
                       v-model.number="item.amount"
                       type="number"
                       min="0"
                       step="any"
-                      class="w-16 px-2 py-0.5 border border-[#c1c9b9]/70 rounded text-center font-bold text-xs outline-none focus:border-[#8E3E2F]"
+                      class="w-16 rounded border border-[#c1c9b9]/70 px-2 py-0.5 text-center text-xs font-bold outline-none focus:border-[#8E3E2F]"
                     />
                   </td>
-                  <td class="py-2 px-3 text-center">
+                  <td class="px-3 py-2 text-center">
                     <Select
                       v-model="item.recipeUnit"
                       :options="COMMON_UNITS"
@@ -914,19 +914,19 @@ const handleConfirmDelete = async () => {
                     />
                   </td>
                   <td
-                    class="py-2 px-3 text-center font-mono text-[11px] text-[#72796c]"
+                    class="px-3 py-2 text-center font-mono text-[11px] text-[#72796c]"
                   >
                     {{ formatCurrency(getEditItemUnitCost(item)) }} /
                     {{ item.recipeUnit }}
                   </td>
-                  <td class="py-2 px-3 text-right font-bold text-[#1e1b1b]">
+                  <td class="px-3 py-2 text-right font-bold text-[#1e1b1b]">
                     {{ formatCurrency(getEditItemCost(item)) }}
                   </td>
-                  <td class="py-2 px-3 text-center">
+                  <td class="px-3 py-2 text-center">
                     <button
                       @click="removeEditRecipeItem(idx)"
                       type="button"
-                      class="p-1 text-[#ba1a1a] hover:bg-[#ffdad6] rounded transition"
+                      class="rounded p-1 text-[#ba1a1a] transition hover:bg-[#ffdad6]"
                     >
                       <span class="material-symbols-outlined text-sm"
                         >delete</span
@@ -937,7 +937,7 @@ const handleConfirmDelete = async () => {
                 <tr v-if="editRecipeItems.length === 0">
                   <td
                     colspan="6"
-                    class="py-3 text-center text-[#72796c] italic"
+                    class="py-3 text-center italic text-[#72796c]"
                   >
                     Chưa có nguyên liệu nào trong định mức công thức
                   </td>
@@ -948,34 +948,34 @@ const handleConfirmDelete = async () => {
 
           <!-- Cost & Margin Summary inside Edit Modal -->
           <div
-            class="mt-3 p-3 bg-[#F2ECE4] rounded-xl flex justify-between items-center border border-[#E2D7CC]"
+            class="mt-3 flex items-center justify-between rounded-xl border border-[#E2D7CC] bg-[#F2ECE4] p-3"
           >
             <div>
               <span
-                class="text-[10px] text-[#72796c] uppercase font-bold tracking-wider block"
+                class="block text-[10px] font-bold uppercase tracking-wider text-[#72796c]"
                 >Tổng giá vốn (Cost NVL)</span
               >
-              <span class="text-base font-bold font-display text-[#326824]">{{
+              <span class="font-display text-base font-bold text-[#326824]">{{
                 formatCurrency(editTotalCost)
               }}</span>
             </div>
             <div class="text-right">
               <span
-                class="text-[10px] text-[#72796c] uppercase font-bold tracking-wider block"
+                class="block text-[10px] font-bold uppercase tracking-wider text-[#72796c]"
                 >Biên lợi nhuận gộp</span
               >
-              <span class="text-base font-bold font-display text-[#326824]">{{
+              <span class="font-display text-base font-bold text-[#326824]">{{
                 editProfitMargin
               }}</span>
             </div>
           </div>
         </div>
 
-        <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-[#E2D7CC]">
+        <div class="mt-4 flex justify-end gap-2 border-t border-[#E2D7CC] pt-3">
           <button
             @click="showEditModal = false"
             type="button"
-            class="h-10 px-4 bg-[#F2ECE4] text-[#42493d] font-semibold text-xs rounded-xl hover:bg-[#E8DFD5] transition cursor-pointer"
+            class="h-10 cursor-pointer rounded-xl bg-[#F2ECE4] px-4 text-xs font-semibold text-[#42493d] transition hover:bg-[#E8DFD5]"
           >
             Hủy
           </button>
@@ -983,11 +983,11 @@ const handleConfirmDelete = async () => {
             @click="handleSaveEdit"
             :disabled="isSavingEdit"
             type="button"
-            class="h-10 px-4 bg-[#8E3E2F] text-white font-semibold text-xs rounded-xl hover:bg-[#6E281C] transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-sm"
+            class="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-[#8E3E2F] px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6E281C] disabled:opacity-50"
           >
             <span
               v-if="isSavingEdit"
-              class="material-symbols-outlined text-sm animate-spin"
+              class="material-symbols-outlined animate-spin text-sm"
               >refresh</span
             >
             <span>{{ isSavingEdit ? 'Đang lưu...' : 'Lưu thay đổi' }}</span>
@@ -1003,18 +1003,18 @@ const handleConfirmDelete = async () => {
       modal
       class="w-full max-w-md p-0"
     >
-      <div class="p-5 flex flex-col gap-4">
+      <div class="flex flex-col gap-4 p-5">
         <p class="text-xs font-medium text-[#42493d]">
           Bạn có chắc chắn muốn xóa sản phẩm
           <strong class="text-[#1e1b1b]">{{ deleteTarget?.name }}</strong> (Mã:
           {{ deleteTarget?.id }})?
         </p>
 
-        <div class="flex justify-end gap-2 mt-2 pt-3 border-t border-[#E2D7CC]">
+        <div class="mt-2 flex justify-end gap-2 border-t border-[#E2D7CC] pt-3">
           <button
             @click="showDeleteModal = false"
             type="button"
-            class="h-10 px-4 bg-[#F2ECE4] text-[#42493d] font-semibold text-xs rounded-xl hover:bg-[#E8DFD5] transition cursor-pointer"
+            class="h-10 cursor-pointer rounded-xl bg-[#F2ECE4] px-4 text-xs font-semibold text-[#42493d] transition hover:bg-[#E8DFD5]"
           >
             Hủy bỏ
           </button>
@@ -1022,11 +1022,11 @@ const handleConfirmDelete = async () => {
             @click="handleConfirmDelete"
             :disabled="isDeleting"
             type="button"
-            class="h-10 px-4 bg-[#ba1a1a] text-white font-semibold text-xs rounded-xl hover:bg-[#93000a] transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer shadow-sm"
+            class="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-[#ba1a1a] px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#93000a] disabled:opacity-50"
           >
             <span
               v-if="isDeleting"
-              class="material-symbols-outlined text-sm animate-spin"
+              class="material-symbols-outlined animate-spin text-sm"
               >refresh</span
             >
             <span>{{ isDeleting ? 'Đang xóa...' : 'Đồng ý Xóa' }}</span>

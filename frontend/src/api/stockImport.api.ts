@@ -57,39 +57,78 @@ export interface FetchStockImportsResponse {
   summary?: StockImportSummaryData
 }
 
-export const fetchStockImports = async (params?: any): Promise<FetchStockImportsResponse> => {
+export const fetchStockImports = async (
+  params?: any,
+): Promise<FetchStockImportsResponse> => {
   try {
     const isSilent = params?.silent || false
-    const response = await http.post('/api/stock-imports/search', params || {}, {
-      headers: isSilent ? { 'x-silent-loading': 'true' } : {},
-    })
+    const response = await http.post(
+      '/api/stock-imports/search',
+      params || {},
+      {
+        headers: isSilent ? { 'x-silent-loading': 'true' } : {},
+      },
+    )
     if (response.data && response.data.success && response.data.data) {
       const data = response.data.data
       if (Array.isArray(data)) {
         return {
           items: data,
-          pagination: { page: 1, pageSize: data.length, totalRecords: data.length, totalPages: 1 },
+          pagination: {
+            page: 1,
+            pageSize: data.length,
+            totalRecords: data.length,
+            totalPages: 1,
+          },
         }
       }
       return {
         items: data.items || [],
-        pagination: data.pagination || { page: 1, pageSize: 10, totalRecords: (data.items || []).length, totalPages: 1 },
+        pagination: data.pagination || {
+          page: 1,
+          pageSize: 10,
+          totalRecords: (data.items || []).length,
+          totalPages: 1,
+        },
         summary: data.summary,
       }
     }
-    return { items: [], pagination: { page: 1, pageSize: 10, totalRecords: 0, totalPages: 1 } }
+    return {
+      items: [],
+      pagination: { page: 1, pageSize: 10, totalRecords: 0, totalPages: 1 },
+    }
   } catch (error) {
     console.error('Failed to fetch stock imports from API:', error)
-    return { items: [], pagination: { page: 1, pageSize: 10, totalRecords: 0, totalPages: 1 } }
+    return {
+      items: [],
+      pagination: { page: 1, pageSize: 10, totalRecords: 0, totalPages: 1 },
+    }
   }
 }
 
-export const fetchStockImportById = async (id: string | number): Promise<any> => {
+export const fetchStockImportById = async (
+  id: string | number,
+): Promise<any> => {
   const response = await http.get(`/api/stock-imports/${id}`)
   return response.data
 }
 
-export const createStockImport = async (payload: StockImportPayload): Promise<any> => {
+export const createStockImport = async (
+  payload: StockImportPayload,
+): Promise<any> => {
   const response = await http.post('/api/stock-imports', payload)
+  return response.data
+}
+
+export const updateStockImport = async (
+  id: string | number,
+  payload: StockImportPayload,
+): Promise<any> => {
+  const response = await http.put(`/api/stock-imports/${id}`, payload)
+  return response.data
+}
+
+export const deleteStockImport = async (id: string | number): Promise<any> => {
+  const response = await http.delete(`/api/stock-imports/${id}`)
   return response.data
 }
