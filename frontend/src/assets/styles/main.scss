@@ -4,21 +4,23 @@
   --font-family-body: 'Be Vietnam Pro', 'Inter', system-ui, -apple-system, sans-serif;
   --font-family-title: 'Be Vietnam Pro', 'Manrope', system-ui, -apple-system, sans-serif;
 
-  /* XUXI Mi Tron Co Xi Brand Palette */
-  --color-brand-xuxi: #8E3E2F;
-  --color-brand-xuxi-dark: #6E281C;
-  --color-brand-accent: #C46D28;
-  --color-bg-canvas: #F9F6F0;
-  --color-surface: #ffffff;
-  --color-surface-low: #F5EFE8;
-  --color-surface-high: #E8DFD5;
+  /* TIỆM MÌ HẠNH PHÚC CÔ XI Brand Palette */
+  --color-brand-xuxi: #F59E0B;        /* Vàng Mật Ong Rực Rỡ (Primary) */
+  --color-brand-xuxi-dark: #D97706;   /* Vàng Cam Đậm (Primary Dark/Hover) */
+  --color-brand-accent: #EA580C;      /* Cam Phô Mai / Cam Ớt (Accent / Hover) */
+  --color-brand-header-bg: #3D1E0A;   /* Nâu Socola Đất Nướng Cho Header & Sidebar */
 
-  --color-text-main: #2A1C16;
-  --color-text-muted: #6E584D;
+  --color-bg-canvas: #FEF9E7;         /* Nền Kem Nếp Mì Ấm Áp */
+  --color-surface: #FFFFFF;           /* Trắng Phô Mai / Nền Card */
+  --color-surface-low: #FFF3D6;       /* Nền Thẻ Phụ / Highlight */
+  --color-surface-high: #FDE68A;      /* Border / Kẻ Khung */
 
-  --color-accent-green: #27AE60;
-  --color-warning: #C46D28;
-  --color-danger: #8E3E2F;
+  --color-text-main: #3D1E0A;         /* Nâu Socola Đất Nướng (Chữ chính) */
+  --color-text-muted: #8C6D58;        /* Nâu Muted Nhạt (Chữ phụ) */
+
+  --color-accent-green: #22C55E;     /* Xanh Cải Tươi (Success) */
+  --color-warning: #F59E0B;          /* Vàng Ngô (Warning) */
+  --color-danger: #EF4444;           /* Đỏ Ớt (Danger) */
 }
 
 body {
@@ -45,11 +47,11 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--color-bg-canvas);
 }
 ::-webkit-scrollbar-thumb {
-  background: #c1c9b9;
+  background: #FDE68A;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #8E3E2F;
+  background: var(--color-brand-accent);
 }
 
 /* PrimeVue Component Overrides for Stitch Alignment */
@@ -58,8 +60,8 @@ h1, h2, h3, h4, h5, h6 {
 .p-card {
   background: #ffffff !important;
   border-radius: 12px !important;
-  border: 1px solid rgba(193, 201, 185, 0.4) !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+  border: 1px solid rgba(245, 158, 11, 0.25) !important;
+  box-shadow: 0 4px 6px -1px rgba(61, 30, 10, 0.05), 0 2px 4px -1px rgba(61, 30, 10, 0.03) !important;
   color: var(--color-text-main) !important;
   overflow: hidden;
 
@@ -99,12 +101,12 @@ textarea,
   font-weight: 500 !important;
   color: var(--color-text-main) !important;
   background-color: #ffffff !important;
-  border: 1px solid rgba(193, 201, 185, 0.7) !important;
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
   border-radius: 12px !important;
   transition: all 0.15s ease-in-out !important;
 
   &::placeholder {
-    color: #72796c !important;
+    color: var(--color-text-muted) !important;
     opacity: 0.8 !important;
     font-weight: 400 !important;
   }
@@ -112,13 +114,13 @@ textarea,
   &:focus,
   &:focus-within,
   &.p-focus {
-    border-color: #8E3E2F !important;
-    box-shadow: 0 0 0 3px rgba(141, 103, 73, 0.18) !important;
+    border-color: var(--color-brand-xuxi-dark) !important;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22) !important;
     outline: none !important;
   }
 
   &:disabled {
-    background-color: #F2ECE4 !important;
+    background-color: #FFF3D6 !important;
     opacity: 0.65 !important;
     cursor: not-allowed !important;
   }
@@ -141,7 +143,7 @@ select {
   font-weight: 500 !important;
   color: var(--color-text-main) !important;
   background-color: #ffffff !important;
-  border: 1px solid rgba(193, 201, 185, 0.7) !important;
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
   border-radius: 12px !important;
   height: 40px !important;
   min-height: 40px !important;
@@ -151,19 +153,19 @@ select {
   appearance: none !important;
   -webkit-appearance: none !important;
   -moz-appearance: none !important;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2372796c' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%238C6D58' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
   background-position: right 0.75rem center !important;
   background-repeat: no-repeat !important;
   background-size: 1.25rem 1.25rem !important;
   cursor: pointer !important;
 
   &:hover {
-    border-color: #8E3E2F !important;
+    border-color: var(--color-brand-xuxi) !important;
   }
 
   &:focus {
-    border-color: #8E3E2F !important;
-    box-shadow: 0 0 0 3px rgba(141, 103, 73, 0.18) !important;
+    border-color: var(--color-brand-xuxi-dark) !important;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22) !important;
   }
 }
 
@@ -172,7 +174,7 @@ select {
   display: inline-flex !important;
   align-items: center !important;
   background-color: #ffffff !important;
-  border: 1px solid rgba(193, 201, 185, 0.7) !important;
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
   border-radius: 12px !important;
   height: 40px !important;
   min-height: 40px !important;
@@ -185,20 +187,20 @@ select {
   box-shadow: none !important;
 
   &:hover:not(.p-disabled) {
-    border-color: #8E3E2F !important;
+    border-color: var(--color-brand-xuxi) !important;
   }
 
   &:focus,
   &:focus-within,
   &.p-focus {
-    border-color: #8E3E2F !important;
-    box-shadow: 0 0 0 3px rgba(141, 103, 73, 0.18) !important;
+    border-color: var(--color-brand-xuxi-dark) !important;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.22) !important;
     outline: none !important;
   }
 
   &:disabled,
   &.p-disabled {
-    background-color: #F2ECE4 !important;
+    background-color: #FFF3D6 !important;
     opacity: 0.65 !important;
     cursor: not-allowed !important;
   }
@@ -241,7 +243,7 @@ select {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  color: #72796c !important;
+  color: var(--color-text-muted) !important;
   background: transparent !important;
   background-color: transparent !important;
   border: none !important;
@@ -253,27 +255,27 @@ select {
 /* Select Overlay Panel (Dropdown list) */
 .p-select-overlay {
   background: #ffffff !important;
-  border: 1px solid #E2D7CC !important;
+  border: 1px solid #FDE68A !important;
   border-radius: 12px !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 10px 25px -5px rgba(61, 30, 10, 0.1), 0 8px 10px -6px rgba(61, 30, 10, 0.05) !important;
   overflow: hidden !important;
 
   .p-select-option {
     font-size: 0.8125rem !important;
     font-weight: 500 !important;
     padding: 0.55rem 0.85rem !important;
-    color: #1e1b1b !important;
+    color: var(--color-text-main) !important;
     border-radius: 8px !important;
     margin: 2px 4px !important;
 
     &.p-select-option-selected {
-      background-color: #F2ECE4 !important;
-      color: #8E3E2F !important;
+      background-color: #FFF3D6 !important;
+      color: #EA580C !important;
       font-weight: 700 !important;
     }
 
     &:hover:not(.p-select-option-selected) {
-      background-color: #F5EFE8 !important;
+      background-color: #FEF9E7 !important;
     }
   }
 
@@ -284,14 +286,14 @@ select {
       height: 36px !important;
       border-radius: 8px !important;
       font-size: 0.75rem !important;
-      border: 1px solid rgba(193, 201, 185, 0.7) !important;
+      border: 1px solid rgba(245, 158, 11, 0.35) !important;
       background: #ffffff !important;
       padding: 0.375rem 0.625rem !important;
       outline: none !important;
 
       &:focus {
-        border-color: #8E3E2F !important;
-        box-shadow: 0 0 0 2px rgba(141, 103, 73, 0.18) !important;
+        border-color: var(--color-brand-xuxi-dark) !important;
+        box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.22) !important;
       }
     }
   }
@@ -371,18 +373,20 @@ select {
   cursor: pointer !important;
 }
 
-/* Primary Button (Coffee Brown) */
+/* Primary Button (Golden Amber / Honey Gold) */
 .app-btn-primary,
 .p-button-primary {
-  background-color: #8E3E2F !important;
-  border: 1px solid #8E3E2F !important;
-  color: #ffffff !important;
+  background-color: var(--color-brand-xuxi, #F59E0B) !important;
+  border: 1px solid var(--color-brand-xuxi, #F59E0B) !important;
+  color: #3D1E0A !important;
+  font-weight: 700 !important;
 
   &:hover {
-    background-color: #6E281C !important;
-    border-color: #6E281C !important;
+    background-color: var(--color-brand-xuxi-dark, #D97706) !important;
+    border-color: var(--color-brand-xuxi-dark, #D97706) !important;
+    color: #ffffff !important;
     transform: translateY(-1px);
-    box-shadow: 0 4px 6px -1px rgba(110, 78, 52, 0.25) !important;
+    box-shadow: 0 4px 8px -1px rgba(217, 119, 6, 0.35) !important;
   }
 
   &:active {
@@ -393,28 +397,28 @@ select {
 /* Secondary Button (Neutral Surface) */
 .app-btn-secondary,
 .p-button-secondary {
-  background-color: #F2ECE4 !important;
-  border: 1px solid rgba(193, 201, 185, 0.6) !important;
-  color: #42493d !important;
+  background-color: #FFF3D6 !important;
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
+  color: #3D1E0A !important;
 
   &:hover {
-    background-color: #E8DFD5 !important;
-    color: #1e1b1b !important;
+    background-color: #FDE68A !important;
+    color: #2C1408 !important;
   }
 }
 
 /* Success Button (Leaf Green) */
 .app-btn-success,
 .p-button-success {
-  background-color: #326824 !important;
-  border: 1px solid #326824 !important;
+  background-color: #22C55E !important;
+  border: 1px solid #22C55E !important;
   color: #ffffff !important;
 
   &:hover {
-    background-color: #254f1b !important;
-    border-color: #254f1b !important;
+    background-color: #16A34A !important;
+    border-color: #16A34A !important;
     transform: translateY(-1px);
-    box-shadow: 0 4px 6px -1px rgba(50, 104, 36, 0.25) !important;
+    box-shadow: 0 4px 6px -1px rgba(34, 197, 94, 0.25) !important;
   }
 
   &:active {
@@ -425,37 +429,37 @@ select {
 /* Danger Button */
 .app-btn-danger,
 .p-button-danger {
-  background-color: #ba1a1a !important;
-  border: 1px solid #ba1a1a !important;
+  background-color: #EF4444 !important;
+  border: 1px solid #EF4444 !important;
   color: #ffffff !important;
 
   &:hover {
-    background-color: #93000a !important;
-    border-color: #93000a !important;
+    background-color: #DC2626 !important;
+    border-color: #DC2626 !important;
   }
 }
 
 /* Danger Light Button */
 .app-btn-danger-light {
-  background-color: #ffdad6 !important;
+  background-color: #FEE2E2 !important;
   border: 1px solid transparent !important;
-  color: #ba1a1a !important;
+  color: #EF4444 !important;
 
   &:hover {
-    background-color: #ffb4ab !important;
+    background-color: #FCA5A5 !important;
   }
 }
 
 /* Outlined Button */
 .app-btn-outline {
   background-color: #ffffff !important;
-  border: 1px solid rgba(193, 201, 185, 0.7) !important;
-  color: #42493d !important;
+  border: 1px solid rgba(245, 158, 11, 0.4) !important;
+  color: var(--color-text-main) !important;
 
   &:hover {
-    background-color: #F2ECE4 !important;
-    border-color: #8E3E2F !important;
-    color: #8E3E2F !important;
+    background-color: #FFF3D6 !important;
+    border-color: var(--color-brand-xuxi) !important;
+    color: var(--color-brand-accent) !important;
   }
 }
 
@@ -467,46 +471,46 @@ select {
   font-size: 0.75rem !important;
 
   &.p-tag-success {
-    background-color: #e6f4ea !important;
-    color: #326824 !important;
+    background-color: #DCFCE7 !important;
+    color: #15803D !important;
   }
   &.p-tag-danger {
-    background-color: #ffdad6 !important;
-    color: #ba1a1a !important;
+    background-color: #FEE2E2 !important;
+    color: #B91C1C !important;
   }
   &.p-tag-warn {
-    background-color: #fff7ed !important;
-    color: #d97706 !important;
+    background-color: #FEF3C7 !important;
+    color: #D97706 !important;
   }
   &.p-tag-info {
-    background-color: #e5eeff !important;
-    color: #1e40af !important;
+    background-color: #DBEAFE !important;
+    color: #1E40AF !important;
   }
   &.p-tag-secondary {
-    background-color: #E8DFD5 !important;
-    color: #42493d !important;
+    background-color: #FFF3D6 !important;
+    color: #3D1E0A !important;
   }
 }
 
 /* DataTable Overrides */
 .p-datatable {
   .p-datatable-thead > tr > th {
-    background-color: #F5EFE8 !important;
-    color: #42493d !important;
-    font-weight: 600 !important;
+    background-color: #FFF3D6 !important;
+    color: #3D1E0A !important;
+    font-weight: 700 !important;
     font-size: 0.85rem !important;
     padding: 0.65rem 0.85rem !important;
-    border-bottom: 1px solid rgba(193, 201, 185, 0.4) !important;
+    border-bottom: 1px solid rgba(245, 158, 11, 0.3) !important;
   }
 
   .p-datatable-tbody > tr > td {
     padding: 0.65rem 0.85rem !important;
     font-size: 0.875rem !important;
-    border-bottom: 1px solid #F2ECE4 !important;
+    border-bottom: 1px solid #FEF9E7 !important;
   }
 
   .p-datatable-tbody > tr:hover {
-    background-color: rgba(251, 241, 241, 0.5) !important;
+    background-color: rgba(254, 249, 231, 0.8) !important;
   }
 }
 
@@ -514,18 +518,18 @@ select {
 .p-dialog {
   border-radius: 16px !important;
   overflow: hidden !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
-  border: 1px solid #E2D7CC !important;
+  box-shadow: 0 20px 25px -5px rgba(61, 30, 10, 0.1), 0 10px 10px -5px rgba(61, 30, 10, 0.04) !important;
+  border: 1px solid #FDE68A !important;
 
   .p-dialog-header {
-    background-color: #F9F6F0 !important;
-    border-bottom: 1px solid #E2D7CC !important;
+    background-color: #FEF9E7 !important;
+    border-bottom: 1px solid #FDE68A !important;
     padding: 1rem 1.25rem !important;
 
     .p-dialog-title {
       font-size: 1rem !important;
       font-weight: 700 !important;
-      color: #1e1b1b !important;
+      color: #3D1E0A !important;
     }
   }
 
@@ -535,8 +539,8 @@ select {
   }
 
   .p-dialog-footer {
-    background-color: #F9F6F0 !important;
-    border-top: 1px solid #E2D7CC !important;
+    background-color: #FEF9E7 !important;
+    border-top: 1px solid #FDE68A !important;
     padding: 0.875rem 1.25rem !important;
   }
 }

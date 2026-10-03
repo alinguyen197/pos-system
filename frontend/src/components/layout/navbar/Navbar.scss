@@ -1,6 +1,6 @@
 .app-sidebar {
   width: 240px;
-  background-color: #8E3E2F;
+  background-color: var(--color-brand-header-bg, #3D1E0A);
   color: #ffffff;
   display: flex;
   flex-direction: column;
@@ -69,7 +69,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 2px solid rgba(255, 255, 255, 0.45);
+      border: 2px solid #F59E0B;
       background-color: #ffffff;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
       flex-shrink: 0;
@@ -97,7 +97,7 @@
 
       .subtitle {
         font-size: 0.7rem;
-        color: rgba(255, 255, 255, 0.7);
+        color: #FDE68A;
       }
     }
   }
@@ -115,7 +115,7 @@
       gap: 0.75rem;
       padding: 0.65rem 0.85rem;
       border-radius: 8px;
-      color: rgba(255, 255, 255, 0.75);
+      color: rgba(255, 255, 255, 0.85);
       text-decoration: none;
       font-size: 0.875rem;
       font-weight: 500;
@@ -140,16 +140,16 @@
       }
 
       &:hover {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: rgba(245, 158, 11, 0.2);
         color: #ffffff;
       }
 
       &.router-link-exact-active,
       &.active {
-        background-color: rgba(255, 255, 255, 0.25);
-        color: #ffffff;
-        font-weight: 700;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background-color: var(--color-brand-xuxi, #F59E0B);
+        color: #3D1E0A;
+        font-weight: 800;
+        box-shadow: 0 2px 6px rgba(245, 158, 11, 0.35);
       }
     }
   }

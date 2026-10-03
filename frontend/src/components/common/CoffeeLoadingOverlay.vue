@@ -22,7 +22,7 @@
           <path
             d="M 22 96 Q 22 128, 80 128 Q 138 128, 138 96 Q 138 90, 80 90 Q 22 90, 22 96 Z"
             fill="#FFFFFF"
-            stroke="#8E3E2F"
+            stroke="#3D1E0A"
             stroke-width="3.5"
           />
 
@@ -155,7 +155,7 @@
 /* Steam Animation */
 .steam-line {
   fill: none;
-  stroke: #8E3E2F;
+  stroke: #F59E0B;
   stroke-width: 2.2;
   stroke-linecap: round;
   opacity: 0;

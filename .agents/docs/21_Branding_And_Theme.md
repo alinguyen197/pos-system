@@ -8,21 +8,22 @@
 
 ---
 
-## 2. Bảng màu Giảm rực rỡ (Subdued Culinary Palette)
+## 2. Bảng màu Tiệm Mì Hạnh Phúc Cô Xi (Warm Amber & Chocolate Palette)
 
-Để tránh gây mỏi mắt khi sử dụng hàng ngày và tạo phong cách ẩm thực cao cấp, ấm áp và ngon miệng:
+Hệ thống sử dụng bộ màu lấy cảm hứng từ nhận diện "Tiệm Mì Hạnh Phúc Cô Xi" mang đến cảm giác ấm áp, tươi vui và vô cùng kích thích vị giác:
 
 | Token Name | Mã Hex | Ý nghĩa & Vị trí ứng dụng |
 | :--- | :--- | :--- |
-| `primary` / `brand-xuxi` | `#8E3E2F` | Đỏ gạch / terracotta trầm ấm (Sidebar, Header, Button chính, Badge active) |
-| `primary-container` | `#6E281C` | Nâu đỏ trầm nhấn sâu (Hover button, sidebar active item) |
-| `surface-bright` / `canvas` | `#F9F6F0` | Kem ngà ấm dịu (Nền ứng dụng toàn hệ thống, nền Login) |
-| `surface` | `#FFFFFF` | Trắng tinh khiết (Nền thẻ Card, Panel, Modal) |
-| `surface-container` | `#F2ECE4` | Vải lanh nhạt (Thẻ phụ, nền input disabled, dropdown hover) |
-| `outline-variant` | `#E2D7CC` | Cát ấm trung tính (Đường viền các thẻ, input, divider) |
-| `secondary` / `accent` | `#C46D28` | Hổ phách ấm (Nút thao tác phụ, điểm nhấn vàng cam nhẹ) |
-| `on-surface` | `#2A1C16` | Nâu espresso đậm (Tiêu đề, text chính, số liệu) |
-| `on-surface-variant` | `#6E584D` | Nâu đá trầm (Text phụ, placeholder, nhãn ghi chú) |
+| `primary` / `brand-xuxi` | `#F59E0B` | Vàng Mật Ong Rực Rỡ (Nút bấm chính, viền active menu, badge nổi bật) |
+| `primary-container` | `#D97706` | Vàng Cam Đậm nhấn sâu (Hover button, sidebar active item) |
+| `brand-header-bg` | `#3D1E0A` | Nâu Socola Đất Nướng (Nền Sidebar, Header, khung viền chữ) |
+| `surface-bright` / `canvas` | `#FEF9E7` | Kem Nếp Mì Ấm Áp (Nền ứng dụng toàn hệ thống, nền Login) |
+| `surface` | `#FFFFFF` | Trắng Phô Mai tinh khiết (Nền thẻ Card, Panel, Modal) |
+| `surface-container` | `#FFF3D6` | Kem Sữa Dừa nhạt (Thẻ phụ, nền input disabled, dropdown hover) |
+| `outline-variant` | `#FDE68A` | Vàng Ngô nhạt (Đường viền các thẻ, input, divider) |
+| `secondary` / `accent` | `#EA580C` | Cam Phô Mai / Cam Ớt (Nút thao tác phụ, điểm nhấn cam cay) |
+| `on-surface` | `#3D1E0A` | Nâu Socola Đất Nướng (Tiêu đề, text chính, số liệu) |
+| `on-surface-variant` | `#8C6D58` | Nâu Muted Nhạt (Text phụ, placeholder, nhãn ghi chú) |
 
 ---
 
