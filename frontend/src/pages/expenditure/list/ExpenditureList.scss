@@ -1,0 +1,53 @@
+.expenditure-list-page {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+
+  .font-display {
+    font-family: 'Plus Jakarta Sans', 'Outfit', system-ui, sans-serif;
+  }
+
+  // PrimeVue DataTable Custom Styling for Warm Cafe Theme
+  :deep(.p-datatable) {
+    .p-datatable-header {
+      background: #f9f6f0;
+      border-color: #e2d7cc;
+    }
+
+    .p-datatable-thead > tr > th {
+      background-color: #f5efe8;
+      color: #42493d;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-color: #e2d7cc;
+      padding: 0.85rem 1rem;
+    }
+
+    .p-datatable-tbody > tr {
+      background: #ffffff;
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background-color: #f9f6f0 !important;
+      }
+
+      > td {
+        border-color: #f0e6dd;
+        padding: 0.85rem 1rem;
+        font-size: 0.8125rem;
+      }
+    }
+
+    .p-paginator {
+      background: #f9f6f0;
+      border-color: #e2d7cc;
+      padding: 0.75rem;
+      font-size: 0.8125rem;
+
+      .p-paginator-page.p-highlight {
+        background: #8e3e2f;
+        color: #ffffff;
+      }
+    }
+  }
+}

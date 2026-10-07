@@ -102,4 +102,17 @@ export const reportApi = {
     })
     return res.data
   },
+
+  getCashflowReport: async (params?: { period?: string; from?: string; to?: string }): Promise<any> => {
+    const res = await http.get('/api/reports/cashflow', { params })
+    return res.data?.data
+  },
+
+  exportCashflowReport: async (params?: { period?: string; from?: string; to?: string }): Promise<Blob> => {
+    const res = await http.get('/api/reports/cashflow/export', {
+      params,
+      responseType: 'blob',
+    })
+    return res.data
+  },
 }

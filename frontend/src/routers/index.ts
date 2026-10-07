@@ -51,6 +51,12 @@ export const routes = [
     meta: { requiresAuth: true, roles: ['admin', 'manager'] },
   },
   {
+    path: '/expenditures',
+    name: 'ExpenditureList',
+    component: () => import('@/pages/expenditure/list/ExpenditureList.vue'),
+    meta: { requiresAuth: true, roles: ['admin', 'manager', 'staff', 'viewer'] },
+  },
+  {
     path: '/users',
     name: 'UserList',
     component: () => import('@/pages/user/list/UserList.vue'),

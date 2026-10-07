@@ -33,6 +33,15 @@ const initialMasterCodes = [
   { groupCategory: 'USER_ROLE', code: 'staff', label: 'Nhân viên thu ngân / Pha chế', sortOrder: 3 },
   { groupCategory: 'USER_ROLE', code: 'viewer', label: 'Người xem', sortOrder: 4 },
 
+  // Expense Categories (Khoản chi & Dòng tiền)
+  { groupCategory: 'EXPENSE_CATEGORY', code: 'reinvestment', label: 'Tái đầu tư & Thiết bị CSVC', sortOrder: 1 },
+  { groupCategory: 'EXPENSE_CATEGORY', code: 'operation', label: 'Vận hành (Điện, Nước, Gas, Net)', sortOrder: 2 },
+  { groupCategory: 'EXPENSE_CATEGORY', code: 'premises', label: 'Thuê mặt bằng', sortOrder: 3 },
+  { groupCategory: 'EXPENSE_CATEGORY', code: 'salary', label: 'Lương & Thưởng nhân viên', sortOrder: 4 },
+  { groupCategory: 'EXPENSE_CATEGORY', code: 'marketing', label: 'Quảng cáo & Khuyến mại', sortOrder: 5 },
+  { groupCategory: 'EXPENSE_CATEGORY', code: 'repair', label: 'Sửa chữa & Bảo trì', sortOrder: 6 },
+  { groupCategory: 'EXPENSE_CATEGORY', code: 'other', label: 'Chi phí khác', sortOrder: 7 },
+
   // Units of Measurement (Đơn vị tính)
   { groupCategory: 'UNIT', code: 'ly', label: 'ly', sortOrder: 1 },
   { groupCategory: 'UNIT', code: 'kg', label: 'kg', sortOrder: 2 },

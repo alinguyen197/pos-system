@@ -11,5 +11,7 @@ router.get('/sales/by-category', authenticateJWT, authorize('admin', 'manager', 
 router.get('/sales/by-product', authenticateJWT, authorize('admin', 'manager', 'staff', 'viewer'), reportController.getSalesByProduct)
 router.get('/sales/by-staff', authenticateJWT, authorize('admin', 'manager', 'staff', 'viewer'), reportController.getSalesByStaff)
 router.get('/sales/export', authenticateJWT, authorize('admin', 'manager', 'staff', 'viewer'), reportController.exportSalesReport)
+router.get('/cashflow', authenticateJWT, authorize('admin', 'manager', 'staff', 'viewer'), reportController.getCashflowReport)
+router.get('/cashflow/export', authenticateJWT, authorize('admin', 'manager', 'staff', 'viewer'), reportController.exportCashflowReport)
 
 export default router

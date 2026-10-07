@@ -10,6 +10,7 @@ import ProductRecipe from './productRecipe.model'
 import Order from './order.model'
 import OrderItem from './orderItem.model'
 import StockImport from './stockImport.model'
+import Expenditure from './expenditure.model'
 
 const env = process.env.NODE_ENV || 'development'
 // nếu env là development thì config sẽ lấy từ development trong database.ts
@@ -39,6 +40,7 @@ const db = {
   Order: Order.initModel(sequelize),
   OrderItem: OrderItem.initModel(sequelize),
   StockImport: StockImport.initModel(sequelize),
+  Expenditure: Expenditure.initModel(sequelize),
 }
 // Setup associations
 Object.values(db).forEach((model: any) => {

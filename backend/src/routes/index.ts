@@ -9,6 +9,7 @@ import uploadRouters from './uploadRouters'
 import orderRouters from './orderRouters'
 import dashboardRouters from './dashboardRouters'
 import reportRouters from './reportRouters'
+import expenditureRouters from './expenditureRouters'
 
 const initWebRoutes = (app: Application) => {
   app.use('/api/auth', authRouters)
@@ -21,6 +22,7 @@ const initWebRoutes = (app: Application) => {
   app.use('/api/orders', orderRouters)
   app.use('/api/dashboard', dashboardRouters)
   app.use('/api/reports', reportRouters)
+  app.use('/api/expenditures', expenditureRouters)
 }
 
 export default initWebRoutes

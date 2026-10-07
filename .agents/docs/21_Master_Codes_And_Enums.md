@@ -101,3 +101,21 @@
 | `ta` | `DOZEN` | tá | Multi-pack | 12 quả/cái |
 | `thung` | `CARTON` | thùng | Multi-pack | 24 - 30 cái |
 
+### 2.8. Phân loại Chi tiêu & Tái đầu tư (Expense Categories - `EXPENSE_CATEGORY`)
+| Master Code | Key | Display Label | Mục đích & Nghiệp vụ |
+| :--- | :--- | :--- | :--- |
+| `reinvestment` | `REINVESTMENT` | Tái đầu tư & Thiết bị CSVC | Mua sắm chén, dĩa, ly tách, máy pha cà phê, bàn ghế, tủ kệ mới |
+| `operation` | `OPERATION` | Vận hành (Điện, Nước, Gas, Net) | Chi phí tiện ích cố định hàng tháng của quán |
+| `premises` | `PREMISES` | Thuê mặt bằng | Tiền thuê mặt bằng, cọc mặt bằng định kỳ |
+| `salary` | `SALARY` | Lương & Thưởng nhân viên | Chi trả lương, phụ cấp, thưởng cho nhân viên thu ngân/pha chế |
+| `marketing` | `MARKETING` | Quảng cáo & Khuyến mại | Chi phí chạy ads, in ấn tờ rơi, banner sự kiện |
+| `repair` | `REPAIR` | Sửa chữa & Bảo trì | Sửa chữa máy pha cà phê, máy lạnh, điện nước bị hỏng hóc |
+| `other` | `OTHER` | Chi phí khác | Các khoản chi phí linh tinh, đột xuất khác |
+
+### 2.9. Phương thức Thanh toán Chi tiêu (Payment Methods - `PAYMENT_METHOD`)
+| Master Code | Key | Display Label |
+| :--- | :--- | :--- |
+| `cash` | `CASH` | Tiền mặt |
+| `bank_transfer` | `BANK_TRANSFER` | Chuyển khoản ngân hàng |
+| `other` | `OTHER` | Khác |
+

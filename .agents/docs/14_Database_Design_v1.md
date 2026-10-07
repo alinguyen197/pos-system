@@ -16,21 +16,24 @@
 | 1.1 | 2026-08-26 | Thêm viewer role, bổ sung audit columns cho các bảng thiếu, thêm bảng refresh_tokens                                   | KhoaNA15        |
 | 1.2 | 2026-08-26 | Thêm 4 bảng: refresh_tokens, roles, role_screens, notifications                                                        | KhoaNA15        |
 | 1.3 | 2026-08-29 | Tối ưu 100% UI: Bổ sung avatar_url cho users, cost_price cho products, bổ sung bảng product_recipes (BOM định mức NVL) | Sky Agent       |
+| 1.4 | 2026-10-07 | Thêm bảng `expenditures` quản lý phiếu chi, phân loại chi tiêu vận hành & tái đầu tư CSVC, báo cáo dòng tiền ròng        | Sky Agent       |
 
 ---
 
 ## 1. Phân tích nghiệp vụ → Bảng dữ liệu
 
-| Màn hình            | Nghiệp vụ                               | Bảng liên quan                                         |
-| :------------------ | :-------------------------------------- | :----------------------------------------------------- |
-| Quản lý User        | CRUD tài khoản nhân viên/admin, avatar  | `users`, `roles`                                       |
-| Phân quyền màn hình | Role nào được vào màn hình nào          | `roles`, `role_screens`                                |
-| Quản lý sản phẩm    | Nhập menu, giá bán, Cost NVL & Định mức | `categories`, `products`, `product_recipes`            |
-| Quản lý kho         | Nhập kho nguyên liệu, theo dõi tồn kho  | `stock_items`, `stock_imports`, `stock_import_details` |
-| Bán hàng trong ngày | Tạo đơn, ghi nhận từng ly bán           | `orders`, `order_items`                                |
-| Dashboard           | Thống kê doanh số, top sản phẩm         | Truy vấn từ `orders`, `order_items`, `products`        |
-| Xác thực            | Quản lý token đăng nhập                 | `refresh_tokens`                                       |
-| Thông báo           | Gửi/hiển thị notification               | `notifications`                                        |
+| Màn hình            | Nghiệp vụ                                    | Bảng liên quan                                         |
+| :------------------ | :------------------------------------------- | :----------------------------------------------------- |
+| Quản lý User        | CRUD tài khoản nhân viên/admin, avatar       | `users`, `roles`                                       |
+| Phân quyền màn hình | Role nào được vào màn hình nào               | `roles`, `role_screens`                                |
+| Quản lý sản phẩm    | Nhập menu, giá bán, Cost NVL & Định mức      | `categories`, `products`, `product_recipes`            |
+| Quản lý kho         | Nhập kho nguyên liệu, theo dõi tồn kho       | `stock_items`, `stock_imports`, `stock_import_details` |
+| Bán hàng trong ngày | Tạo đơn, ghi nhận từng ly bán                | `orders`, `order_items`                                |
+| Quản lý Chi tiêu    | CRUD phiếu chi, mua sắm CSVC, chi phí khác   | `expenditures`, `users`                                |
+| Báo cáo Dòng tiền   | Dòng tiền Thu - Chi, Lợi nhuận ròng thực tế  | `orders`, `stock_imports`, `expenditures`              |
+| Dashboard           | Thống kê doanh số, top sản phẩm              | Truy vấn từ `orders`, `order_items`, `products`        |
+| Xác thực            | Quản lý token đăng nhập                      | `refresh_tokens`                                       |
+| Thông báo           | Gửi/hiển thị notification                    | `notifications`                                        |
 
 ---
 
@@ -642,6 +645,33 @@ Lưu thông báo gửi đến user (cảnh báo tồn kho, đơn hàng mới, th
 | `CF001`    | NL001 (Cà phê hạt Robusta) |           0.018 | kg   |
 | `CF001`    | NL002 (Sữa đặc Ông Thọ)    |           0.040 | hộp  |
 
+### 3.14. `expenditures` — Quản lý Chi tiêu & Tái đầu tư
+
+Bảng ghi nhận các khoản chi phí phát sinh ngoài kho (mua vật dụng bàn ghế ly tách chén đũa, điện nước wifi, mặt bằng, lương nhân viên...).
+
+| Cột | Kiểu | Nullable | Mặc định | Ghi chú |
+| :--- | :--- | :---: | :--- | :--- |
+| `id` | BIGSERIAL | NO | auto | Khóa chính |
+| `expense_code` | VARCHAR(50) | NO | | Mã phiếu chi (VD: `PC-20261007-001`), Unique |
+| `category` | VARCHAR(50) | NO | | Mã danh mục (`EXPENSE_CATEGORY`): reinvestment, operation, premises, salary, marketing, repair, other |
+| `title` | VARCHAR(255) | NO | | Tiêu đề khoản chi (VD: Mua 50 bộ chén dĩa) |
+| `amount` | NUMERIC(12,2) | NO | 0 | Số tiền chi (VND) |
+| `expense_date` | TIMESTAMPTZ | NO | NOW() | Thời điểm phát sinh chi phí |
+| `payment_method` | VARCHAR(50) | NO | 'cash' | Phương thức thanh toán (`cash`, `bank_transfer`, `other`) |
+| `recipient` | VARCHAR(255) | YES | NULL | Người nhận tiền / Nhà cung cấp |
+| `image_url` | VARCHAR(500) | YES | NULL | Link ảnh hóa đơn / chứng từ thanh toán |
+| `note` | TEXT | YES | NULL | Ghi chú diễn giải chi tiết |
+| `created_by` | BIGINT | YES | NULL | FK -> `users.id` (Nhân viên lập phiếu chi) |
+| `is_deleted` | BOOLEAN | NO | FALSE | Soft delete flag |
+| `created_at` | TIMESTAMPTZ | NO | NOW() | Thời gian tạo bản ghi |
+| `updated_at` | TIMESTAMPTZ | NO | NOW() | Thời gian cập nhật |
+
+**Index:**
+- `uq_expenditures_code` — UNIQUE on `expense_code`
+- `idx_expenditures_date` — on `expense_date`
+- `idx_expenditures_category` — on `category`
+- `idx_expenditures_created_by` — on `created_by`
+
 ---
 
 ## 4. Diagram quan hệ tổng quan
@@ -823,24 +853,26 @@ Thứ tự chạy migration:
 | 11 | `create-refresh-tokens` | users |
 | 12 | `create-notifications` | users |
 | 13 | `create-product-recipes` | products, stock_items |
+| 14 | `create-expenditures` | users |
 
 ---
 
 ## 8. Tổng kết
 
-| Bảng                   |   Số cột    | Phục vụ màn hình            |
-| :--------------------- | :---------: | :-------------------------- |
-| `users`                |     11      | Quản lý User (kèm avatar)   |
-| `roles`                |      8      | Phân quyền                  |
-| `role_screens`         |      5      | Phân quyền màn hình         |
-| `categories`           |     10      | Quản lý sản phẩm            |
-| `products`             |     15      | Quản lý sản phẩm, Bán hàng  |
-| `stock_items`          |     12      | Quản lý kho                 |
-| `stock_imports`        |     12      | Quản lý kho (phiếu nhập)    |
-| `stock_import_details` |      7      | Quản lý kho (chi tiết nhập) |
-| `orders`               |     14      | Bán hàng, Dashboard         |
-| `order_items`          |      8      | Bán hàng, Dashboard         |
-| `refresh_tokens`       |     10      | Xác thực                    |
-| `notifications`        |     12      | Thông báo                   |
-| `product_recipes`      |      7      | Định mức NVL (BOM), POS     |
-| **Tổng: 13 bảng**      | **131 cột** |                             |
+| Bảng                   |   Số cột    | Phục vụ màn hình                     |
+| :--------------------- | :---------: | :----------------------------------- |
+| `users`                |     11      | Quản lý User (kèm avatar)            |
+| `roles`                |      8      | Phân quyền                           |
+| `role_screens`         |      5      | Phân quyền màn hình                  |
+| `categories`           |     10      | Quản lý sản phẩm                     |
+| `products`             |     15      | Quản lý sản phẩm, Bán hàng           |
+| `stock_items`          |     12      | Quản lý kho                          |
+| `stock_imports`        |     12      | Quản lý kho (phiếu nhập)             |
+| `stock_import_details` |      7      | Quản lý kho (chi tiết nhập)          |
+| `orders`               |     14      | Bán hàng, Dashboard                  |
+| `order_items`          |      8      | Bán hàng, Dashboard                  |
+| `refresh_tokens`       |     10      | Xác thực                             |
+| `notifications`        |     12      | Thông báo                            |
+| `product_recipes`      |      7      | Định mức NVL (BOM), POS              |
+| `expenditures`         |     14      | Quản lý Chi tiêu, Báo cáo Dòng tiền  |
+| **Tổng: 14 bảng**      | **145 cột** |                                      |
