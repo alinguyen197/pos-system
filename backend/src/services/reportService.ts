@@ -667,6 +667,207 @@ const exportSalesReport = async (
   }
 }
 
+/**
+ * 8. Báo cáo Dòng tiền Thu - Chi & Lợi nhuận Ròng (`cashflow`)
+ */
+const getCashflowReport = async (
+  period = 'this_month',
+  fromDate?: string,
+  toDate?: string
+) => {
+  try {
+    const { start, end } = getDateRange(period, fromDate, toDate)
+    const Op = db.Op
+
+    // Lấy doanh thu từ đơn hàng hoàn thành
+    const orders = await db.Order.findAll({
+      where: {
+        isDeleted: false,
+        status: 'completed',
+        orderDate: { [Op.gte]: start, [Op.lte]: end },
+      },
+      attributes: ['orderDate', 'finalAmount'],
+    })
+
+    // Lấy chi phí nhập kho nguyên liệu
+    const stockImports = await db.StockImport.findAll({
+      where: {
+        isDeleted: false,
+        importDate: { [Op.gte]: start, [Op.lte]: end },
+      },
+      attributes: ['importDate', 'totalAmount'],
+    })
+
+    // Lấy các khoản chi tiêu khác (vận hành, tái đầu tư...)
+    const expenditures = await db.Expenditure.findAll({
+      where: {
+        isDeleted: false,
+        expenseDate: { [Op.gte]: start, [Op.lte]: end },
+      },
+      attributes: ['expenseDate', 'amount', 'category'],
+    })
+
+    let totalRevenue = 0
+    let totalStockCost = 0
+    let totalOtherExpenses = 0
+    let totalReinvestment = 0
+    let totalOperation = 0
+
+    const dateMap: Record<
+      string,
+      {
+        date: string
+        dayOfWeek: string
+        revenue: number
+        stockCost: number
+        otherExpenses: number
+        totalCost: number
+        netProfit: number
+      }
+    > = {}
+
+    // Khởi tạo date map
+    const curr = new Date(start)
+    while (curr <= end) {
+      const dateStr = formatDateToYYYYMMDD(curr)
+      dateMap[dateStr] = {
+        date: dateStr,
+        dayOfWeek: getDayOfWeekName(dateStr),
+        revenue: 0,
+        stockCost: 0,
+        otherExpenses: 0,
+        totalCost: 0,
+        netProfit: 0,
+      }
+      curr.setDate(curr.getDate() + 1)
+    }
+
+    orders.forEach((o: any) => {
+      const dStr = formatDateToYYYYMMDD(new Date(o.orderDate))
+      const rev = Number(o.finalAmount || 0)
+      totalRevenue += rev
+      if (dateMap[dStr]) {
+        dateMap[dStr].revenue += rev
+      }
+    })
+
+    stockImports.forEach((i: any) => {
+      const dStr = formatDateToYYYYMMDD(new Date(i.importDate))
+      const amt = Number(i.totalAmount || 0)
+      totalStockCost += amt
+      if (dateMap[dStr]) {
+        dateMap[dStr].stockCost += amt
+      }
+    })
+
+    const categoryLabels: Record<string, string> = {
+      reinvestment: 'Tái đầu tư & CSVC',
+      equipment: 'Thiết bị & Dụng cụ',
+      operation: 'Vận hành (Điện, nước, net)',
+      utilities: 'Điện, Nước, Internet',
+      premises: 'Thuê mặt bằng',
+      salary: 'Lương & Thưởng',
+      marketing: 'Marketing',
+      repair: 'Sửa chữa & Bảo trì',
+      other: 'Chi phí khác',
+    }
+    const categoryMap: Record<string, number> = {}
+
+    expenditures.forEach((e: any) => {
+      const dStr = formatDateToYYYYMMDD(new Date(e.expenseDate))
+      const amt = Number(e.amount || 0)
+      const cat = e.category || 'other'
+
+      totalOtherExpenses += amt
+      if (cat === 'reinvestment') totalReinvestment += amt
+      if (cat === 'operation') totalOperation += amt
+
+      categoryMap[cat] = (categoryMap[cat] || 0) + amt
+
+      if (dateMap[dStr]) {
+        dateMap[dStr].otherExpenses += amt
+      }
+    })
+
+    const dailyCashflow = Object.values(dateMap).map((d) => {
+      const totalCost = d.stockCost + d.otherExpenses
+      const netProfit = d.revenue - totalCost
+      return {
+        ...d,
+        totalCost: Math.round(totalCost),
+        netProfit: Math.round(netProfit),
+      }
+    }).sort((a, b) => b.date.localeCompare(a.date))
+
+    const totalExpenditures = totalStockCost + totalOtherExpenses
+    const netProfit = totalRevenue - totalExpenditures
+    const profitMargin =
+      totalRevenue > 0 ? Math.round((netProfit / totalRevenue) * 1000) / 10 : 0
+
+    const categoryBreakdown = Object.keys(categoryMap).map((catKey) => ({
+      category: catKey,
+      categoryName: categoryLabels[catKey] || catKey,
+      amount: categoryMap[catKey],
+      percentage:
+        totalOtherExpenses > 0
+          ? Math.round((categoryMap[catKey] / totalOtherExpenses) * 100)
+          : 0,
+    })).sort((a, b) => b.amount - a.amount)
+
+    return {
+      period,
+      fromDate: formatDateToYYYYMMDD(start),
+      toDate: formatDateToYYYYMMDD(end),
+      totalRevenue,
+      totalStockCost,
+      totalOtherExpenses,
+      totalReinvestment,
+      totalOperation,
+      totalExpenditures,
+      netProfit,
+      isProfitable: netProfit >= 0,
+      profitMargin,
+      categoryBreakdown,
+      dailyCashflow,
+    }
+  } catch (error: any) {
+    throw parseError(error)
+  }
+}
+
+/**
+ * 9. Xuất báo cáo Dòng tiền CSV
+ */
+const exportCashflowReport = async (
+  period = 'this_month',
+  fromDate?: string,
+  toDate?: string
+) => {
+  try {
+    const report = await getCashflowReport(period, fromDate, toDate)
+
+    let csvContent = '\uFEFF' // BOM for UTF-8 Excel support
+    csvContent += 'BÁO CÁO DÒNG TIỀN THU CHI VÀ LỢI NHUẬN RÒNG THỰC TẾ\n'
+    csvContent += `Kỳ báo cáo: ${period} (${report.fromDate} đến ${report.toDate})\n`
+    csvContent += `Tổng Doanh thu (Thu): ${report.totalRevenue.toLocaleString('vi-VN')} VND\n`
+    csvContent += `Chi nhập kho NVL: ${report.totalStockCost.toLocaleString('vi-VN')} VND\n`
+    csvContent += `Chi phí vận hành & Tái đầu tư: ${report.totalOtherExpenses.toLocaleString('vi-VN')} VND\n`
+    csvContent += `Tổng Chi Phí: ${report.totalExpenditures.toLocaleString('vi-VN')} VND\n`
+    csvContent += `Lợi nhuận ròng thực tế: ${report.netProfit.toLocaleString('vi-VN')} VND\n`
+    csvContent += `Tỷ suất lợi nhuận ròng: ${report.profitMargin}%\n\n`
+
+    csvContent += '--- CHI TIẾT DÒNG TIỀN THEO NGÀY ---\n'
+    csvContent += 'Ngày,Thứ,Doanh thu Thu (VND),Chi Nhập Kho (VND),Chi Phí Khác (VND),Tổng Chi (VND),Tiền Lời Ròng (VND)\n'
+    report.dailyCashflow.forEach((row) => {
+      csvContent += `"${row.date}","${row.dayOfWeek}",${row.revenue},${row.stockCost},${row.otherExpenses},${row.totalCost},${row.netProfit}\n`
+    })
+
+    return csvContent
+  } catch (error: any) {
+    throw parseError(error)
+  }
+}
+
 export default {
   getSalesReportSummary,
   getSalesByDate,
@@ -675,4 +876,6 @@ export default {
   getSalesByProduct,
   getSalesByStaff,
   exportSalesReport,
+  getCashflowReport,
+  exportCashflowReport,
 }

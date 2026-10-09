@@ -38,6 +38,8 @@ export const syncAllPostgresSequences = async () => {
       'product_recipes',
       'orders',
       'order_items',
+      'stock_imports',
+      'expenditures',
       'otp_codes',
       'refresh_tokens',
     ]

@@ -158,6 +158,52 @@ const exportSalesReport = async (
   }
 }
 
+const getCashflowReport = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { period, from, to } = req.query
+    const data = await reportService.getCashflowReport(
+      period as string,
+      from as string,
+      to as string
+    )
+    return ApiResponder.success(
+      res,
+      data,
+      'Lấy báo cáo dòng tiền và lợi nhuận ròng thành công'
+    )
+  } catch (error: any) {
+    next(error)
+  }
+}
+
+const exportCashflowReport = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { period, from, to } = req.query
+    const csvContent = await reportService.exportCashflowReport(
+      period as string,
+      from as string,
+      to as string
+    )
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename=bao_cao_dong_tien_${Date.now()}.csv`
+    )
+    return res.status(200).send(csvContent)
+  } catch (error: any) {
+    next(error)
+  }
+}
+
 export default {
   getSalesReportSummary,
   getSalesByDate,
@@ -166,4 +212,6 @@ export default {
   getSalesByProduct,
   getSalesByStaff,
   exportSalesReport,
+  getCashflowReport,
+  exportCashflowReport,
 }

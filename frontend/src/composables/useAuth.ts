@@ -11,10 +11,10 @@ export interface AuthUser {
 
 // Role-based Screen Permissions Matrix
 export const ROLE_PERMISSIONS: Record<string, string[]> = {
-  admin: ['/', '/pos', '/products', '/products/create', '/ingredients', '/ingredients/create', '/stock-imports/create', '/users', '/users/create', '/reports/sales'],
-  manager: ['/', '/pos', '/products', '/products/create', '/ingredients', '/ingredients/create', '/stock-imports/create', '/reports/sales'],
-  staff: ['/', '/reports/sales', '/pos'],
-  viewer: ['/', '/reports/sales'],
+  admin: ['/', '/pos', '/products', '/products/create', '/ingredients', '/ingredients/create', '/stock-imports/create', '/expenditures', '/users', '/users/create', '/reports/sales'],
+  manager: ['/', '/pos', '/products', '/products/create', '/ingredients', '/ingredients/create', '/stock-imports/create', '/expenditures', '/reports/sales'],
+  staff: ['/', '/pos', '/expenditures', '/reports/sales'],
+  viewer: ['/', '/expenditures', '/reports/sales'],
 }
 
 const getStoredUser = (): AuthUser => {

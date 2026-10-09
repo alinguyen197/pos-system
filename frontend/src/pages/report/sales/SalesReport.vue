@@ -26,7 +26,7 @@ const customFromDate = ref('')
 const customToDate = ref('')
 const isCustomMode = ref(false)
 
-const activeTab = ref<'date' | 'category' | 'product' | 'payment' | 'staff'>('date')
+const activeTab = ref<'date' | 'category' | 'product' | 'payment' | 'staff' | 'cashflow'>('date')
 const isLoading = ref(false)
 const isExporting = ref(false)
 const productSearchKeyword = ref('')
@@ -50,6 +50,58 @@ const paymentSales = ref<PaymentMethodSalesItem[]>([])
 const categorySales = ref<CategorySalesItem[]>([])
 const productSales = ref<ProductSalesItem[]>([])
 const staffSales = ref<StaffSalesItem[]>([])
+
+// State cho Tab "Dòng tiền & Lợi nhuận Ròng"
+const cashflowReport = ref<any>({
+  totalRevenue: 0,
+  totalStockCost: 0,
+  totalOtherExpenses: 0,
+  totalExpenditures: 0,
+  netProfit: 0,
+  isProfitable: true,
+  profitMargin: 0,
+  categoryBreakdown: [],
+  dailyCashflow: [],
+})
+
+const cashflowChartData = ref({
+  labels: [] as string[],
+  datasets: [
+    {
+      label: 'Doanh thu (Thu)',
+      data: [] as number[],
+      backgroundColor: '#326824',
+      borderRadius: 6,
+    },
+    {
+      label: 'Tổng Chi phí (Chi)',
+      data: [] as number[],
+      backgroundColor: '#ba1a1a',
+      borderRadius: 6,
+    },
+    {
+      label: 'Tiền lời ròng',
+      data: [] as number[],
+      backgroundColor: '#0284c7',
+      borderRadius: 6,
+    },
+  ],
+})
+
+const cashflowChartOptions = ref({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 10, font: { family: 'Inter', size: 12 } } },
+  },
+  scales: {
+    y: {
+      grid: { color: 'rgba(0, 0, 0, 0.05)' },
+      ticks: { callback: (val: any) => `${Number(val).toLocaleString('vi-VN')} ₫` },
+    },
+    x: { grid: { display: false } },
+  },
+})
 
 // Chart data cho Tab "Chi tiết theo Ngày"
 const dateChartData = ref({
@@ -110,16 +162,50 @@ const fetchReportData = async () => {
       params.to = customToDate.value
     }
 
-    const [summaryRes, dateRes, paymentRes, categoryRes, productRes, staffRes] = await Promise.all([
+    const [summaryRes, dateRes, paymentRes, categoryRes, productRes, staffRes, cashflowRes] = await Promise.all([
       reportApi.getSalesSummary(params),
       reportApi.getSalesByDate(params),
       reportApi.getSalesByPaymentMethod(params),
       reportApi.getSalesByCategory(params),
       reportApi.getSalesByProduct(params),
       reportApi.getSalesByStaff(params),
+      reportApi.getCashflowReport(params),
     ])
 
     if (summaryRes) summary.value = summaryRes
+    if (cashflowRes) {
+      cashflowReport.value = cashflowRes
+      if (cashflowRes.dailyCashflow && cashflowRes.dailyCashflow.length > 0) {
+        const sortedChrono = [...cashflowRes.dailyCashflow].sort((a, b) => a.date.localeCompare(b.date))
+        const labels = sortedChrono.map((item: any) => {
+          const parts = item.date.split('-')
+          return `${parts[2]}/${parts[1]}`
+        })
+        cashflowChartData.value = {
+          labels,
+          datasets: [
+            {
+              label: 'Doanh thu (Thu)',
+              data: sortedChrono.map((i: any) => i.revenue),
+              backgroundColor: '#326824',
+              borderRadius: 6,
+            },
+            {
+              label: 'Tổng Chi phí (Chi)',
+              data: sortedChrono.map((i: any) => i.totalCost),
+              backgroundColor: '#ba1a1a',
+              borderRadius: 6,
+            },
+            {
+              label: 'Tiền lời ròng',
+              data: sortedChrono.map((i: any) => i.netProfit),
+              backgroundColor: '#0284c7',
+              borderRadius: 6,
+            },
+          ],
+        }
+      }
+    }
     if (dateRes) {
       dateSales.value = dateRes
       // Update date chart (vẽ theo thời gian từ cũ tới mới)
@@ -187,6 +273,30 @@ const handleExport = async () => {
     window.URL.revokeObjectURL(url)
   } catch (error) {
     console.error('Lỗi khi xuất file báo cáo:', error)
+  } finally {
+    isExporting.value = false
+  }
+}
+
+const handleExportCashflow = async () => {
+  isExporting.value = true
+  try {
+    const params: { period?: string; from?: string; to?: string } = { period: selectedPeriod.value }
+    if (selectedPeriod.value === 'custom') {
+      params.from = customFromDate.value
+      params.to = customToDate.value
+    }
+    const blob = await reportApi.exportCashflowReport(params)
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `bao_cao_dong_tien_${selectedPeriod.value}_${Date.now()}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('Lỗi khi xuất file báo cáo dòng tiền:', error)
   } finally {
     isExporting.value = false
   }
@@ -366,11 +476,30 @@ onMounted(() => {
             <span class="material-symbols-outlined text-base">badge</span>
             <span>👤 Theo Nhân viên</span>
           </button>
+          <button
+            @click="activeTab = 'cashflow'"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5"
+            :class="activeTab === 'cashflow' ? 'bg-[#8E3E2F] text-white shadow' : 'bg-white text-[#42493d] border border-[#E2D7CC] hover:bg-[#F2ECE4]'"
+          >
+            <span class="material-symbols-outlined text-base">account_balance_wallet</span>
+            <span>💸 Dòng tiền & Lợi nhuận Ròng</span>
+          </button>
         </div>
 
-        <span class="text-xs font-semibold text-[#326824] bg-[#c9edb5]/40 px-3 py-1 rounded-lg">
-          Kỳ: {{ summary.fromDate }} đến {{ summary.toDate }}
-        </span>
+        <div class="flex items-center gap-2">
+          <button
+            v-if="activeTab === 'cashflow'"
+            @click="handleExportCashflow"
+            :disabled="isExporting"
+            class="h-8 px-3 bg-[#326824] hover:bg-[#25521a] text-white font-semibold text-xs rounded-lg shadow transition flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+          >
+            <span class="material-symbols-outlined text-base">download</span>
+            <span>Xuất Dòng tiền CSV</span>
+          </button>
+          <span class="text-xs font-semibold text-[#326824] bg-[#c9edb5]/40 px-3 py-1 rounded-lg">
+            Kỳ: {{ summary.fromDate }} đến {{ summary.toDate }}
+          </span>
+        </div>
       </div>
 
       <!-- TAB 1: Chi tiết theo Ngày (Bảng + Biểu đồ xu hướng) -->
@@ -654,6 +783,150 @@ onMounted(() => {
           <Column field="revenue" header="Tổng doanh thu tạo" bodyClass="text-right" headerClass="text-right" sortable>
             <template #body="slotProps">
               <span class="font-bold text-[#1e1b1b]">{{ slotProps.data.revenue.toLocaleString('vi-VN') }} ₫</span>
+            </template>
+          </Column>
+        </DataTable>
+      </div>
+
+      <!-- TAB 6: Dòng tiền & Lợi nhuận Ròng Thực tế -->
+      <div v-else-if="activeTab === 'cashflow'" class="p-6 flex flex-col gap-6">
+        <!-- Cashflow Financial Overview Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div class="p-4 bg-[#F5EFE8]/40 border border-[#E2D7CC] rounded-xl flex flex-col justify-between">
+            <span class="text-[11px] font-semibold text-[#72796c] uppercase">Tổng Thu Bán Hàng</span>
+            <span class="text-xl font-bold font-display text-[#326824] mt-1">{{ (cashflowReport.totalRevenue || 0).toLocaleString('vi-VN') }} ₫</span>
+            <span class="text-[10px] text-[#326824] font-medium mt-1">Doanh thu POS</span>
+          </div>
+
+          <div class="p-4 bg-[#F5EFE8]/40 border border-[#E2D7CC] rounded-xl flex flex-col justify-between">
+            <span class="text-[11px] font-semibold text-[#72796c] uppercase">Chi Nhập Kho NVL</span>
+            <span class="text-xl font-bold font-display text-[#8E3E2F] mt-1">{{ (cashflowReport.totalStockCost || 0).toLocaleString('vi-VN') }} ₫</span>
+            <span class="text-[10px] text-[#72796c] font-medium mt-1">Chi phí nguyên vật liệu</span>
+          </div>
+
+          <div class="p-4 bg-[#F5EFE8]/40 border border-[#E2D7CC] rounded-xl flex flex-col justify-between">
+            <span class="text-[11px] font-semibold text-[#72796c] uppercase">Chi Phí Vận Hành & CSVC</span>
+            <span class="text-xl font-bold font-display text-[#ba1a1a] mt-1">{{ (cashflowReport.totalOtherExpenses || 0).toLocaleString('vi-VN') }} ₫</span>
+            <span class="text-[10px] text-[#ba1a1a] font-medium mt-1">Tái đầu tư, điện, nước, lương...</span>
+          </div>
+
+          <div
+            class="p-4 border rounded-xl flex flex-col justify-between"
+            :class="cashflowReport.isProfitable ? 'bg-[#f0fdf4] border-[#c9edb5]' : 'bg-[#fff1f2] border-[#ffdad6]'"
+          >
+            <span class="text-[11px] font-bold text-[#1e1b1b] uppercase">Tiền Lời Ròng (Còn lại)</span>
+            <span
+              class="text-xl font-black font-display mt-1"
+              :class="cashflowReport.isProfitable ? 'text-[#326824]' : 'text-[#ba1a1a]'"
+            >
+              {{ (cashflowReport.netProfit || 0).toLocaleString('vi-VN') }} ₫
+            </span>
+            <span class="text-[10px] font-bold" :class="cashflowReport.isProfitable ? 'text-[#326824]' : 'text-[#ba1a1a]'">
+              {{ cashflowReport.isProfitable ? '🟢 DÒNG TIỀN DƯ' : '🔴 THÂM HỤT' }}
+            </span>
+          </div>
+
+          <div class="p-4 bg-[#F5EFE8]/40 border border-[#E2D7CC] rounded-xl flex flex-col justify-between">
+            <span class="text-[11px] font-semibold text-[#72796c] uppercase">Tỷ Suất Lợi Nhuận</span>
+            <span class="text-xl font-bold font-display text-[#0284c7] mt-1">{{ cashflowReport.profitMargin || 0 }}%</span>
+            <span class="text-[10px] text-[#72796c] font-medium mt-1">Tổng Chi: {{ (cashflowReport.totalExpenditures || 0).toLocaleString('vi-VN') }} ₫</span>
+          </div>
+        </div>
+
+        <!-- Cashflow Comparison Chart -->
+        <div class="p-4 bg-[#F5EFE8]/40 border border-[#E2D7CC] rounded-xl flex flex-col">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-sm font-bold font-display text-[#1e1b1b] flex items-center gap-2">
+              <span class="material-symbols-outlined text-[#326824] text-lg">compare_arrows</span>
+              <span>So sánh Dòng tiền Thu vs Chi vs Tiền lời ròng</span>
+            </h3>
+            <span class="text-xs font-semibold text-gray-500">{{ (cashflowReport.dailyCashflow || []).length }} ngày ghi nhận</span>
+          </div>
+          <div class="h-64 relative w-full flex items-center justify-center">
+            <Chart
+              v-if="cashflowReport.dailyCashflow && cashflowReport.dailyCashflow.length > 0"
+              type="bar"
+              :data="cashflowChartData"
+              :options="cashflowChartOptions"
+              class="h-full w-full"
+            />
+            <div v-else class="text-xs text-gray-400">Chưa có dữ liệu dòng tiền trong khoảng thời gian này</div>
+          </div>
+        </div>
+
+        <!-- Category Expenses Breakdown -->
+        <div v-if="cashflowReport.categoryBreakdown && cashflowReport.categoryBreakdown.length > 0" class="p-4 border border-[#E2D7CC] rounded-xl bg-white">
+          <h3 class="text-sm font-bold font-display text-[#1e1b1b] mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#8E3E2F]">pie_chart</span>
+            <span>Cơ cấu các nhóm chi phí phát sinh</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div
+              v-for="cat in cashflowReport.categoryBreakdown"
+              :key="cat.category"
+              class="p-3 rounded-lg border border-[#E2D7CC] bg-[#F9F6F0] flex flex-col justify-between"
+            >
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-bold text-[#1e1b1b]">{{ cat.categoryName }}</span>
+                <span class="font-bold text-[#8E3E2F]">{{ cat.percentage }}%</span>
+              </div>
+              <div class="text-sm font-bold text-[#ba1a1a] mt-1">{{ (cat.amount || 0).toLocaleString('vi-VN') }} ₫</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Daily Cashflow DataTable -->
+        <DataTable
+          :value="cashflowReport.dailyCashflow || []"
+          tableStyle="min-width: 50rem"
+          responsiveLayout="scroll"
+          paginator
+          :rows="10"
+          :rowsPerPageOptions="[10, 20, 31]"
+          paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+          currentPageReportTemplate="Hiển thị {first} đến {last} trong tổng số {totalRecords} ngày"
+        >
+          <Column field="date" header="Ngày" sortable>
+            <template #body="slotProps">
+              <div class="flex flex-col">
+                <span class="font-bold text-[#1e1b1b]">{{ slotProps.data.date }}</span>
+                <span class="text-[11px] text-gray-500 font-semibold">{{ slotProps.data.dayOfWeek }}</span>
+              </div>
+            </template>
+          </Column>
+
+          <Column field="revenue" header="Doanh thu (Thu)" bodyClass="text-right" headerClass="text-right" sortable>
+            <template #body="slotProps">
+              <span class="font-bold text-[#326824]">{{ (slotProps.data.revenue || 0).toLocaleString('vi-VN') }} ₫</span>
+            </template>
+          </Column>
+
+          <Column field="stockCost" header="Chi Nhập Kho" bodyClass="text-right" headerClass="text-right" sortable>
+            <template #body="slotProps">
+              <span class="font-semibold text-[#8E3E2F]">{{ (slotProps.data.stockCost || 0).toLocaleString('vi-VN') }} ₫</span>
+            </template>
+          </Column>
+
+          <Column field="otherExpenses" header="Chi Phí Khác" bodyClass="text-right" headerClass="text-right" sortable>
+            <template #body="slotProps">
+              <span class="font-semibold text-[#ba1a1a]">{{ (slotProps.data.otherExpenses || 0).toLocaleString('vi-VN') }} ₫</span>
+            </template>
+          </Column>
+
+          <Column field="totalCost" header="Tổng Chi" bodyClass="text-right" headerClass="text-right" sortable>
+            <template #body="slotProps">
+              <span class="font-bold text-[#ba1a1a]">{{ (slotProps.data.totalCost || 0).toLocaleString('vi-VN') }} ₫</span>
+            </template>
+          </Column>
+
+          <Column field="netProfit" header="Tiền Lời Ròng" bodyClass="text-right" headerClass="text-right" sortable>
+            <template #body="slotProps">
+              <span
+                class="font-bold font-mono"
+                :class="slotProps.data.netProfit >= 0 ? 'text-[#326824]' : 'text-[#ba1a1a]'"
+              >
+                {{ (slotProps.data.netProfit || 0).toLocaleString('vi-VN') }} ₫
+              </span>
             </template>
           </Column>
         </DataTable>

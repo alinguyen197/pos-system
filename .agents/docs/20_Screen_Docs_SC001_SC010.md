@@ -18,6 +18,7 @@
 | SC008 | Báo cáo bán hàng (Sales Report)      | /reports/sales        |
 | SC009 | Quản lý người dùng                   | /users                |
 | SC010 | Thêm người dùng mới                  | /users/new            |
+| SC011 | Quản lý Chi tiêu & Dòng tiền         | /expenditures         |
 
 ---
 
@@ -197,7 +198,38 @@ Query params: `?period=today|7days|this_month|this_quarter|custom&from=YYYY-MM-D
 
 ## SC010 - Thêm người dùng mới
 
-**Mô tả:** Form tạo tài khoản người dùng mới, gán vai trò và quyền hạn. **Route Frontend:** GET /users/new | Phương thức | Endpoint | Mô tả | Auth | Role | |-------------|----------|-------|------|------| | POST | /api/users | Tạo người dùng mới | ✅ | Admin | | GET | /api/roles | Lấy danh sách vai trò để gán | ✅ | Admin | Request body (POST /api/users): { "name": "string", "email": "string", "password": "string", "role": "admin|staff|manager", "phone": "string", "status": "active|inactive" }
+---
+
+## SC011 - Quản lý Chi tiêu & Dòng tiền (Expenditures & Cashflow)
+
+**Mô tả:** Màn hình quản lý toàn diện các khoản chi phí phát sinh trong và ngoài kho (mua chén, dĩa, ly tách, máy móc thiết bị CSVC tái đầu tư, tiền điện nước, mặt bằng, lương nhân viên...). Tự động tổng hợp KPI dòng tiền: Tổng Thu (Doanh thu bán hàng) - Tổng Chi (Chi nhập hàng đi chợ/kho + Chi phí vận hành/tái đầu tư) = Tiền lời ròng thực tế (Net Realized Profit). Tích hợp ảnh chứng từ/hóa đơn, phân loại động theo Master Code `EXPENSE_CATEGORY`, và xuất báo cáo CSV chi tiết.
+
+**Route Frontend:** GET `/expenditures` (và Tab 6 `💸 Dòng tiền & Lợi nhuận Ròng` tại `/reports/sales`)
+
+| Phương thức | Endpoint | Mô tả | Auth | Role |
+| :--- | :--- | :--- | :---: | :--- |
+| `GET` | `/api/expenditures/summary` | Thống kê KPI Dòng tiền (Thu, Chi kho, Chi khác, Tiền lời ròng, Tỷ lệ chi phí, Phân rã nhóm chi) | ✅ | admin, manager, staff, viewer |
+| `GET` | `/api/expenditures` | Lấy danh sách phiếu chi có phân trang, lọc theo kỳ (`period`, `fromDate`, `toDate`), phân loại (`category`), phương thức (`paymentMethod`), tìm kiếm | ✅ | admin, manager, staff, viewer |
+| `POST` | `/api/expenditures` | Tạo mới phiếu chi (Mã tự sinh `PC-YYYYMMDD-XXX`) | ✅ | admin, manager, staff |
+| `GET` | `/api/expenditures/:id` | Xem chi tiết phiếu chi | ✅ | admin, manager, staff, viewer |
+| `PUT` | `/api/expenditures/:id` | Cập nhật phiếu chi | ✅ | admin, manager |
+| `DELETE` | `/api/expenditures/:id` | Xóa mềm phiếu chi | ✅ | admin, manager |
+| `GET` | `/api/reports/cashflow` | Báo cáo dòng tiền theo ngày, tỷ suất lợi nhuận ròng | ✅ | admin, manager, staff, viewer |
+| `GET` | `/api/reports/cashflow/export` | Xuất báo cáo CSV Dòng tiền & Lợi nhuận ròng | ✅ | admin, manager |
+
+**Request Body tạo phiếu chi (`POST /api/expenditures`):**
+```json
+{
+  "title": "Mua 50 bộ chén đĩa và ly tách mới",
+  "category": "reinvestment",
+  "amount": 1500000,
+  "paymentMethod": "cash",
+  "spentAt": "2026-10-07T10:00:00.000Z",
+  "recipient": "Cửa hàng Gốm Sứ Bát Tràng",
+  "imageUrl": "https://...",
+  "notes": "Bổ sung đồ dùng phục vụ mở rộng khu vực sân vườn"
+}
+```
 
 ---
 
