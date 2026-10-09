@@ -96,12 +96,15 @@ const isLoginPage = computed(() => {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
 
   .app-body {
     display: flex;
     flex: 1;
     overflow: hidden;
+    position: relative;
+    min-width: 0;
 
     .app-main {
       flex: 1;
@@ -110,7 +113,18 @@ const isLoginPage = computed(() => {
       display: flex;
       flex-direction: column;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      min-width: 0;
+
+      @media (max-width: 1024px) {
+        padding: 1rem;
+      }
+
+      @media (max-width: 767.98px) {
+        padding: 0.65rem;
+      }
     }
   }
 }
 </style>
+

@@ -754,5 +754,114 @@ div[class*="p-toast"] {
   animation: pulseGlow 2s infinite ease-in-out;
 }
 
+/* =========================================================
+   RESPONSIVE DESIGN SYSTEM (Mobile < 768px & Tablet 768px - 1024px)
+   ========================================================= */
+
+@media (max-width: 767.98px) {
+  /* Dialogs on Mobile */
+  .p-dialog {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    margin: 10px auto !important;
+    max-height: 92vh !important;
+    max-height: 92dvh !important;
+
+    .p-dialog-header {
+      padding: 0.75rem 1rem !important;
+
+      .p-dialog-title {
+        font-size: 0.95rem !important;
+      }
+    }
+
+    .p-dialog-content {
+      padding: 0.875rem 1rem !important;
+      max-height: calc(85vh - 120px) !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .p-dialog-footer {
+      padding: 0.75rem 1rem !important;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+
+      button {
+        flex: 1 1 auto;
+      }
+    }
+  }
+
+  /* Toasts on Mobile */
+  .p-toast {
+    width: calc(100vw - 24px) !important;
+    left: 12px !important;
+    right: 12px !important;
+    top: 12px !important;
+  }
+
+  /* DataTables on Mobile */
+  .p-datatable {
+    .p-datatable-wrapper {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+
+    .p-datatable-thead > tr > th {
+      padding: 0.5rem 0.65rem !important;
+      font-size: 0.75rem !important;
+      white-space: nowrap !important;
+    }
+
+    .p-datatable-tbody > tr > td {
+      padding: 0.5rem 0.65rem !important;
+      font-size: 0.8rem !important;
+    }
+
+    .p-paginator {
+      padding: 0.5rem !important;
+      flex-wrap: wrap !important;
+      gap: 0.25rem !important;
+
+      .p-paginator-page,
+      .p-paginator-first,
+      .p-paginator-prev,
+      .p-paginator-next,
+      .p-paginator-last {
+        min-width: 28px !important;
+        height: 28px !important;
+        font-size: 0.75rem !important;
+        padding: 0 !important;
+      }
+    }
+  }
+
+  /* Cards on Mobile */
+  .p-card .p-card-body {
+    padding: 0.875rem !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  /* Tablet Specific Styles */
+  .p-dialog {
+    max-width: 90vw !important;
+  }
+
+  .p-datatable-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
+
+/* Touch-friendly scrollbars on mobile devices */
+@media (hover: none) and (pointer: coarse) {
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+}
+
 
 

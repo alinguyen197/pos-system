@@ -456,14 +456,14 @@ onMounted(async () => {
         </p>
       </div>
 
-      <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
         <!-- Quick Period Selection Pills -->
-        <div class="flex h-10 items-center gap-1 rounded-xl border border-[#c1c9b9]/40 bg-[#F2ECE4] px-1">
+        <div class="flex h-10 items-center gap-1 rounded-xl border border-[#c1c9b9]/40 bg-[#F2ECE4] px-1 overflow-x-auto scrollbar-none max-w-full">
           <button
             v-for="p in periods"
             :key="p.value"
             @click="selectedPeriod = p.value"
-            class="flex h-8 cursor-pointer items-center rounded-lg px-3 text-xs font-semibold transition"
+            class="flex h-8 cursor-pointer items-center rounded-lg px-2.5 sm:px-3 text-xs font-semibold transition whitespace-nowrap"
             :class="selectedPeriod === p.value ? 'bg-[#8E3E2F] text-white shadow-sm' : 'text-[#42493d] hover:bg-white/60'"
           >
             {{ p.label }}
@@ -493,7 +493,7 @@ onMounted(async () => {
 
         <button
           @click="loadData"
-          class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-[#c1c9b9]/60 bg-white text-[#5D4037] shadow-sm transition hover:bg-[#F2ECE4]"
+          class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-[#c1c9b9]/60 bg-white text-[#5D4037] shadow-sm transition hover:bg-[#F2ECE4] shrink-0"
           title="Tải lại dữ liệu"
         >
           <span class="material-symbols-outlined text-lg" :class="{ 'animate-spin': loading }">refresh</span>
@@ -501,7 +501,7 @@ onMounted(async () => {
 
         <button
           @click="openCreateModal"
-          class="flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-[#8E3E2F] px-4 text-xs font-semibold text-white shadow transition hover:bg-[#6E281C]"
+          class="flex-1 sm:flex-none flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#8E3E2F] px-3.5 sm:px-4 text-xs font-semibold text-white shadow transition hover:bg-[#6E281C] whitespace-nowrap"
         >
           <span class="material-symbols-outlined text-lg">add_circle</span>
           <span>Lập phiếu chi mới</span>

@@ -5,4 +5,15 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  @media (max-width: 1023.98px) {
+    height: auto !important;
+    min-height: calc(100vh - 100px);
+    min-height: calc(100dvh - 100px);
+  }
 }
+

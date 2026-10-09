@@ -59,6 +59,12 @@ Query params (revenue-chart): `?period=day|week|month&from=YYYY-MM-DD&to=YYYY-MM
 5. **Khóa chọn sản phẩm Tạm ngừng kinh doanh:**
    - Trên giao diện POS: Sản phẩm có trạng thái `status = 'Tạm ngừng'` hoặc `statusCode = 'suspended'` sẽ bị khóa chọn hoàn toàn (làm mờ `opacity-50`, gắn `pointer-events-none`, đổi nút `+` thành icon khóa `block`, không nhận bất kỳ tương tác click nào).
    - Tại Backend: API `POST /api/orders` kiểm tra và từ chối tạo đơn nếu bất kỳ món nào có trạng thái `Tạm ngừng` hoặc `isActive = false`.
+6. **Tối ưu hóa Giao diện Responsive (Điện thoại & Tablet / iPad):**
+   - **Giao diện Điện thoại (< 768px):** Tích hợp thanh chuyển Tab điều hướng `[ 🍜 Thực đơn món ]` và `[ 🛒 Giỏ hàng (N) ]`. Khi đang chọn món, hiển thị thanh Giỏ hàng nổi (Floating Sticky Cart Bar) ở cuối màn hình với tổng tiền và nút chuyển nhanh giỏ hàng. Tại màn hình giỏ hàng có nút `← Tiếp tục chọn món`.
+   - **Giao diện Tablet / iPad (768px - 1024px):** Hiển thị chia đôi 2 cột linh hoạt (Thực đơn món 55-60%, Giỏ hàng & Thanh toán 40-45%), lưới sản phẩm 2-3 cột tối ưu thao tác cảm ứng (touch targets).
+   - **Sidebar Menu Di động:** Sidebar chuyển thành Off-Canvas Drawer trượt từ bên trái với nút đóng (X) và lớp phủ mờ (Backdrop Scrim). Tự động đóng menu khi chọn điều hướng.
+   - **PrimeVue Modals & Toasts:** Dialog tự động co giãn `width: 95vw`, hỗ trợ cuộn nội bộ mượt mà trên thiết bị di động.
+
 
 | Phương thức | Endpoint | Mô tả | Auth |
 |-------------|----------|-------|------|

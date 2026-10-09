@@ -447,11 +447,11 @@ const handleConfirmDelete = async () => {
       class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-[#E2D7CC] bg-white shadow-sm"
     >
       <!-- Search & Filters -->
-      <div class="shrink-0 border-b border-[#E2D7CC] bg-[#F9F6F0] p-4">
+      <div class="shrink-0 border-b border-[#E2D7CC] bg-[#F9F6F0] p-3.5 sm:p-4">
         <!-- Form Search with Category Select Dropdown, Search and Reset buttons -->
         <form
           @submit.prevent="handleSearch"
-          class="flex w-full flex-col items-end gap-3 sm:flex-row"
+          class="flex w-full flex-col items-stretch sm:items-end gap-3 sm:flex-row"
         >
           <div class="w-full sm:w-64">
             <label

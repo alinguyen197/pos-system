@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Toolbar from 'primevue/toolbar'
@@ -35,12 +35,25 @@ const roleSeverityMap: Record<string, 'danger' | 'success' | 'info' | 'warn' | '
 const displayRoleName = computed(() => roleLabelMap[role.value] || role.value || 'Super Admin')
 const displayRoleSeverity = computed(() => roleSeverityMap[role.value] || 'info')
 
+const shortPageTitle = computed(() => {
+  if (route.path === '/') return 'Tổng quan'
+  if (route.path === '/pos') return 'Bán hàng (POS)'
+  if (route.path.startsWith('/products')) return 'Quản lý Sản phẩm'
+  if (route.path.startsWith('/ingredients')) return 'Kho Nguyên liệu'
+  if (route.path.startsWith('/stock-imports')) return 'Nhập kho'
+  if (route.path.startsWith('/expenditures')) return 'Quản lý Chi tiêu'
+  if (route.path.startsWith('/users')) return 'Quản lý Nhân viên'
+  if (route.path.startsWith('/reports')) return 'Báo cáo Doanh số'
+  return 'XUXI POS'
+})
+
 const pageTitle = computed(() => {
   if (route.path === '/') return 'Dashboard > Tổng quan'
   if (route.path === '/pos') return 'Dashboard > Bán hàng (POS)'
   if (route.path.startsWith('/products')) return 'Dashboard > Quản lý Sản phẩm'
   if (route.path.startsWith('/ingredients')) return 'Dashboard > Kho Nguyên liệu'
-  if (route.path.startsWith('/stock-imports')) return 'Dashboard > Nhập kho Nguyên liệu'
+  if (route.path.startsWith('/stock-imports')) return 'Dashboard > Nhập kho'
+  if (route.path.startsWith('/expenditures')) return 'Dashboard > Quản lý Chi tiêu'
   if (route.path.startsWith('/users')) return 'Dashboard > Quản lý Người dùng'
   if (route.path.startsWith('/reports')) return 'Dashboard > Báo cáo Doanh số'
   return 'Dashboard'
@@ -69,10 +82,11 @@ const handleLogout = () => {
           text
           rounded
           style="color: #ffffff;"
-          title="Thu gọn / Mở rộng Sidebar"
+          title="Menu / Sidebar"
           @click="toggleSidebar"
         />
-        <span class="breadcrumb-title">{{ pageTitle }}</span>
+        <span class="breadcrumb-title hidden sm:inline-block">{{ pageTitle }}</span>
+        <span class="breadcrumb-title sm:hidden truncate max-w-[140px]">{{ shortPageTitle }}</span>
       </div>
     </template>
 

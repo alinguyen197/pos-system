@@ -1,3 +1,28 @@
+/* Mobile Backdrop Scrim */
+.sidebar-mobile-backdrop {
+  display: none;
+
+  @media (max-width: 767.98px) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(30, 27, 27, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 9998;
+    cursor: pointer;
+  }
+}
+
+.fade-backdrop-enter-active,
+.fade-backdrop-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.fade-backdrop-enter-from,
+.fade-backdrop-leave-to {
+  opacity: 0;
+}
+
 .app-sidebar {
   width: 240px;
   background-color: #8E3E2F;
@@ -8,9 +33,15 @@
   box-sizing: border-box;
   height: 100%;
   flex-shrink: 0;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
+  z-index: 50;
 
+  .mobile-close-btn {
+    display: none;
+  }
+
+  /* Desktop/Tablet Collapsed State */
   &.collapsed {
     width: 72px;
 
@@ -52,9 +83,48 @@
     }
   }
 
+  /* Mobile Responsive Off-Canvas Drawer */
+  @media (max-width: 767.98px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 85vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 9999;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
+    transform: translateX(-100%);
+
+    &.mobile-open {
+      transform: translateX(0);
+    }
+
+    .mobile-close-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background-color: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      margin-left: auto;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+      }
+    }
+  }
+
   .brand-box {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.75rem;
     padding-bottom: 1rem;
     margin-bottom: 0.75rem;
@@ -108,14 +178,15 @@
     gap: 0.35rem;
     flex: 1;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 
     .nav-item {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      padding: 0.65rem 0.85rem;
-      border-radius: 8px;
-      color: rgba(255, 255, 255, 0.75);
+      padding: 0.75rem 0.85rem;
+      border-radius: 10px;
+      color: rgba(255, 255, 255, 0.8);
       text-decoration: none;
       font-size: 0.875rem;
       font-weight: 500;
@@ -123,7 +194,7 @@
       transition: all 0.15s ease;
 
       .nav-emoji {
-        font-size: 1.15rem;
+        font-size: 1.25rem;
         line-height: 1;
         flex-shrink: 0;
       }
@@ -140,7 +211,7 @@
       }
 
       &:hover {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: rgba(255, 255, 255, 0.12);
         color: #ffffff;
       }
 
@@ -178,3 +249,4 @@
     }
   }
 }
+

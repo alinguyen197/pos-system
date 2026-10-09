@@ -147,27 +147,27 @@ onMounted(() => {
         <h1 class="text-2xl font-bold font-display text-[#1e1b1b]">Tổng quan cửa hàng</h1>
         <p class="text-xs text-[#42493d] mt-1 font-medium">Báo cáo tình hình kinh doanh & tồn kho thời gian thực</p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
         <button
           @click="fetchDashboardData"
-          class="w-10 h-10 bg-white hover:bg-[#F2ECE4] border border-[#c1c9b9]/60 rounded-xl transition text-[#5D4037] flex items-center justify-center cursor-pointer shadow-sm"
+          class="w-10 h-10 bg-white hover:bg-[#F2ECE4] border border-[#c1c9b9]/60 rounded-xl transition text-[#5D4037] flex items-center justify-center cursor-pointer shadow-sm shrink-0"
           title="Tải lại dữ liệu"
         >
           <span class="material-symbols-outlined text-lg" :class="{ 'animate-spin': isLoading }">refresh</span>
         </button>
         <button
           @click="router.push('/pos')"
-          class="h-10 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 cursor-pointer"
+          class="flex-1 sm:flex-none h-10 px-3.5 sm:px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer whitespace-nowrap"
         >
           <span class="material-symbols-outlined text-lg">point_of_sale</span>
-          <span>Vào màn hình POS</span>
+          <span>Bán hàng POS</span>
         </button>
         <button
           @click="router.push('/stock-imports/create')"
-          class="h-10 px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#326824] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition flex items-center gap-2 cursor-pointer"
+          class="flex-1 sm:flex-none h-10 px-3.5 sm:px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#326824] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer whitespace-nowrap"
         >
           <span class="material-symbols-outlined text-lg">add_circle</span>
-          <span>Tạo phiếu nhập kho</span>
+          <span>Nhập kho NVL</span>
         </button>
       </div>
     </div>
