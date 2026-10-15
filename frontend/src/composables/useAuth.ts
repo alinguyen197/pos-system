@@ -49,10 +49,14 @@ const getStoredUser = (): AuthUser => {
     /* empty */
   }
   const storedRole = localStorage.getItem('role')
-  if (storedRole) {
+  const storedName =
+    localStorage.getItem('fullName') || localStorage.getItem('userName')
+  const storedEmail = localStorage.getItem('email')
+  if (storedRole || storedName || storedEmail) {
     return {
-      name: 'User',
-      role: storedRole,
+      name: storedName || 'User',
+      email: storedEmail || undefined,
+      role: storedRole || 'admin',
     }
   }
   return {}
@@ -71,6 +75,13 @@ export function useAuth() {
     localStorage.setItem('token', newToken)
     localStorage.setItem('role', user.role || 'admin')
     localStorage.setItem('user', JSON.stringify(user))
+    if (user.name) {
+      localStorage.setItem('fullName', user.name)
+      localStorage.setItem('userName', user.name)
+    }
+    if (user.email) {
+      localStorage.setItem('email', user.email)
+    }
   }
 
   const logout = () => {
@@ -79,6 +90,9 @@ export function useAuth() {
     localStorage.removeItem('token')
     localStorage.removeItem('role')
     localStorage.removeItem('user')
+    localStorage.removeItem('fullName')
+    localStorage.removeItem('userName')
+    localStorage.removeItem('email')
   }
 
   const isAllowedRoute = (path: string, userRole?: string): boolean => {

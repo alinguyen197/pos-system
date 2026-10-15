@@ -31,7 +31,7 @@ export function dispatchAppToast(payload: ToastPayload) {
   window.dispatchEvent(
     new CustomEvent('sky-app-toast', {
       detail: payload,
-    })
+    }),
   )
 }
 
@@ -39,11 +39,17 @@ export function showGlobalError(detail: string, summary: string = 'Thất bại'
   dispatchAppToast({ severity: 'error', summary, detail, life: 5000 })
 }
 
-export function showGlobalSuccess(detail: string, summary: string = 'Thành công') {
+export function showGlobalSuccess(
+  detail: string,
+  summary: string = 'Thành công',
+) {
   dispatchAppToast({ severity: 'success', summary, detail, life: 3500 })
 }
 
-export function showGlobalWarning(detail: string, summary: string = 'Cảnh báo') {
+export function showGlobalWarning(
+  detail: string,
+  summary: string = 'Cảnh báo',
+) {
   dispatchAppToast({ severity: 'warn', summary, detail, life: 4000 })
 }
 
@@ -51,7 +57,7 @@ export function useAppToast() {
   let toast: any = null
   try {
     toast = useToast()
-  } catch (e) {
+  } catch {
     // Không ở trong Vue setup context
   }
 
@@ -79,4 +85,3 @@ export function useAppToast() {
     showInfo,
   }
 }
-

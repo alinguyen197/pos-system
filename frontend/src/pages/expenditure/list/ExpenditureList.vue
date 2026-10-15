@@ -440,38 +440,56 @@ onMounted(async () => {
         ...mapped,
       ]
     }
-  } catch (e) {}
+  } catch {
+    /* empty */
+  }
   loadData()
 })
 </script>
 
 <template>
-  <div class="expenditure-list-page mx-auto flex w-full max-w-7xl flex-col gap-6 pb-16">
+  <div
+    class="expenditure-list-page mx-auto flex w-full max-w-7xl flex-col gap-6 pb-16"
+  >
     <!-- Header Title & Action Bar -->
-    <div class="flex flex-col justify-between gap-4 border-b border-[#E2D7CC] pb-2 lg:flex-row lg:items-center">
+    <div
+      class="flex flex-col justify-between gap-4 border-b border-[#E2D7CC] pb-2 lg:flex-row lg:items-center"
+    >
       <div>
-        <h1 class="font-display text-2xl font-bold text-[#1e1b1b]">Quản lý Chi tiêu & Dòng tiền</h1>
+        <h1 class="font-display text-2xl font-bold text-[#1e1b1b]">
+          Quản lý Chi tiêu & Dòng tiền
+        </h1>
         <p class="mt-1 text-xs font-medium text-[#42493d]">
-          Kiểm soát chi phí vận hành, tái cấu trúc mua sắm thiết bị và theo dõi tiền lời ròng thực tế
+          Kiểm soát chi phí vận hành, tái cấu trúc mua sắm thiết bị và theo dõi
+          tiền lời ròng thực tế
         </p>
       </div>
 
       <div class="flex flex-wrap items-center gap-3">
         <!-- Quick Period Selection Pills -->
-        <div class="flex h-10 items-center gap-1 rounded-xl border border-[#c1c9b9]/40 bg-[#F2ECE4] px-1">
+        <div
+          class="flex h-10 items-center gap-1 rounded-xl border border-[#c1c9b9]/40 bg-[#F2ECE4] px-1"
+        >
           <button
             v-for="p in periods"
             :key="p.value"
             @click="selectedPeriod = p.value"
             class="flex h-8 cursor-pointer items-center rounded-lg px-3 text-xs font-semibold transition"
-            :class="selectedPeriod === p.value ? 'bg-[#8E3E2F] text-white shadow-sm' : 'text-[#42493d] hover:bg-white/60'"
+            :class="
+              selectedPeriod === p.value
+                ? 'bg-[#8E3E2F] text-white shadow-sm'
+                : 'text-[#42493d] hover:bg-white/60'
+            "
           >
             {{ p.label }}
           </button>
         </div>
 
         <!-- Custom Date Range Inputs -->
-        <div v-if="isCustomMode" class="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+        <div
+          v-if="isCustomMode"
+          class="flex flex-wrap items-center gap-2 sm:flex-nowrap"
+        >
           <input
             type="date"
             v-model="customFromDate"
@@ -496,7 +514,11 @@ onMounted(async () => {
           class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-[#c1c9b9]/60 bg-white text-[#5D4037] shadow-sm transition hover:bg-[#F2ECE4]"
           title="Tải lại dữ liệu"
         >
-          <span class="material-symbols-outlined text-lg" :class="{ 'animate-spin': loading }">refresh</span>
+          <span
+            class="material-symbols-outlined text-lg"
+            :class="{ 'animate-spin': loading }"
+            >refresh</span
+          >
         </button>
 
         <button
@@ -512,34 +534,59 @@ onMounted(async () => {
     <!-- Realtime Cashflow Financial KPI Cards -->
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
       <!-- Card 1: Total Revenue -->
-      <div class="flex flex-col justify-between rounded-2xl border border-[#E2D7CC] bg-white p-4 shadow-sm">
+      <div
+        class="flex flex-col justify-between rounded-2xl border border-[#E2D7CC] bg-white p-4 shadow-sm"
+      >
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#72796c]">1. Tổng Thu Bán Hàng</span>
-          <span class="material-symbols-outlined text-xl text-[#326824]">trending_up</span>
+          <span
+            class="text-[11px] font-semibold uppercase tracking-wider text-[#72796c]"
+            >1. Tổng Thu Bán Hàng</span
+          >
+          <span class="material-symbols-outlined text-xl text-[#326824]"
+            >trending_up</span
+          >
         </div>
         <div class="font-display mt-2 text-xl font-bold text-[#1e1b1b]">
           {{ formatCurrency(summaryData.totalRevenue) }}
         </div>
-        <span class="mt-1 text-[11px] font-medium text-[#326824]">Doanh thu POS hoàn thành</span>
+        <span class="mt-1 text-[11px] font-medium text-[#326824]"
+          >Doanh thu POS hoàn thành</span
+        >
       </div>
 
       <!-- Card 2: Stock Import Cost -->
-      <div class="flex flex-col justify-between rounded-2xl border border-[#E2D7CC] bg-white p-4 shadow-sm">
+      <div
+        class="flex flex-col justify-between rounded-2xl border border-[#E2D7CC] bg-white p-4 shadow-sm"
+      >
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#72796c]">2. Chi Nhập Kho NVL</span>
-          <span class="material-symbols-outlined text-xl text-[#8E3E2F]">inventory_2</span>
+          <span
+            class="text-[11px] font-semibold uppercase tracking-wider text-[#72796c]"
+            >2. Chi Nhập Kho NVL</span
+          >
+          <span class="material-symbols-outlined text-xl text-[#8E3E2F]"
+            >inventory_2</span
+          >
         </div>
         <div class="font-display mt-2 text-xl font-bold text-[#8E3E2F]">
           {{ formatCurrency(summaryData.totalStockImportCost) }}
         </div>
-        <span class="mt-1 text-[11px] font-medium text-[#72796c]">Nguyên liệu thịt, mì, rau...</span>
+        <span class="mt-1 text-[11px] font-medium text-[#72796c]"
+          >Nguyên liệu thịt, mì, rau...</span
+        >
       </div>
 
       <!-- Card 3: Other Operating & Reinvestment Cost -->
-      <div class="flex flex-col justify-between rounded-2xl border border-[#E2D7CC] bg-white p-4 shadow-sm">
+      <div
+        class="flex flex-col justify-between rounded-2xl border border-[#E2D7CC] bg-white p-4 shadow-sm"
+      >
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#72796c]">3. Chi Phí Vận Hành & CSVC</span>
-          <span class="material-symbols-outlined text-xl text-[#ba1a1a]">receipt_long</span>
+          <span
+            class="text-[11px] font-semibold uppercase tracking-wider text-[#72796c]"
+            >3. Chi Phí Vận Hành & CSVC</span
+          >
+          <span class="material-symbols-outlined text-xl text-[#ba1a1a]"
+            >receipt_long</span
+          >
         </div>
         <div class="font-display mt-2 text-xl font-bold text-[#ba1a1a]">
           {{ formatCurrency(summaryData.totalOtherExpenses) }}
@@ -552,27 +599,42 @@ onMounted(async () => {
       <!-- Card 4: Net Profit (Tiền Lời Ròng Thực Tế) -->
       <div
         class="flex flex-col justify-between rounded-2xl border p-4 shadow-sm"
-        :class="summaryData.isProfitable ? 'border-[#c9edb5] bg-[#f0fdf4]' : 'border-[#ffdad6] bg-[#fff1f2]'"
+        :class="
+          summaryData.isProfitable
+            ? 'border-[#c9edb5] bg-[#f0fdf4]'
+            : 'border-[#ffdad6] bg-[#fff1f2]'
+        "
       >
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-[#1e1b1b]">4. Tiền Lời Ròng (Còn lại)</span>
+          <span
+            class="text-[11px] font-bold uppercase tracking-wider text-[#1e1b1b]"
+            >4. Tiền Lời Ròng (Còn lại)</span
+          >
           <span
             class="material-symbols-outlined text-xl font-bold"
-            :class="summaryData.isProfitable ? 'text-[#326824]' : 'text-[#ba1a1a]'"
+            :class="
+              summaryData.isProfitable ? 'text-[#326824]' : 'text-[#ba1a1a]'
+            "
           >
             account_balance_wallet
           </span>
         </div>
         <div
           class="font-display mt-2 text-2xl font-black"
-          :class="summaryData.isProfitable ? 'text-[#326824]' : 'text-[#ba1a1a]'"
+          :class="
+            summaryData.isProfitable ? 'text-[#326824]' : 'text-[#ba1a1a]'
+          "
         >
           {{ formatCurrency(summaryData.netProfit) }}
         </div>
         <div class="mt-1 flex items-center gap-1.5 text-[11px] font-bold">
           <span
             class="rounded px-1.5 py-0.5"
-            :class="summaryData.isProfitable ? 'bg-[#c9edb5] text-[#326824]' : 'bg-[#ffdad6] text-[#ba1a1a]'"
+            :class="
+              summaryData.isProfitable
+                ? 'bg-[#c9edb5] text-[#326824]'
+                : 'bg-[#ffdad6] text-[#ba1a1a]'
+            "
           >
             {{ summaryData.isProfitable ? '🟢 LÃI DÒNG TIỀN' : '🔴 THÂM HỤT' }}
           </span>
@@ -581,10 +643,17 @@ onMounted(async () => {
       </div>
 
       <!-- Card 5: Expense/Revenue Ratio -->
-      <div class="flex flex-col justify-between rounded-2xl border border-[#E2D7CC] bg-white p-4 shadow-sm">
+      <div
+        class="flex flex-col justify-between rounded-2xl border border-[#E2D7CC] bg-white p-4 shadow-sm"
+      >
         <div class="flex items-center justify-between">
-          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#72796c]">5. Tỷ lệ Chi/Thu</span>
-          <span class="material-symbols-outlined text-xl text-[#0284c7]">pie_chart</span>
+          <span
+            class="text-[11px] font-semibold uppercase tracking-wider text-[#72796c]"
+            >5. Tỷ lệ Chi/Thu</span
+          >
+          <span class="material-symbols-outlined text-xl text-[#0284c7]"
+            >pie_chart</span
+          >
         </div>
         <div class="font-display mt-2 text-xl font-bold text-[#0284c7]">
           {{ summaryData.expenseToRevenueRatio }}%
@@ -596,11 +665,16 @@ onMounted(async () => {
     </div>
 
     <!-- Filter & Search Toolbar -->
-    <div class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#E2D7CC] bg-white p-4 shadow-sm">
+    <div
+      class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#E2D7CC] bg-white p-4 shadow-sm"
+    >
       <div class="flex flex-1 flex-wrap items-center gap-3">
         <!-- Search Input -->
         <div class="relative w-full sm:max-w-xs">
-          <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-[#72796c]">search</span>
+          <span
+            class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-lg text-[#72796c]"
+            >search</span
+          >
           <input
             type="text"
             v-model="searchKeyword"
@@ -616,7 +690,11 @@ onMounted(async () => {
           @change="onSearch"
           class="h-10 rounded-xl border border-[#c1c9b9]/70 bg-white px-3 text-xs font-semibold text-[#1e1b1b] outline-none focus:border-[#8E3E2F]"
         >
-          <option v-for="opt in categoryOptions" :key="opt.code" :value="opt.code">
+          <option
+            v-for="opt in categoryOptions"
+            :key="opt.code"
+            :value="opt.code"
+          >
             {{ opt.emoji }} {{ opt.label }}
           </option>
         </select>
@@ -627,7 +705,11 @@ onMounted(async () => {
           @change="onSearch"
           class="h-10 rounded-xl border border-[#c1c9b9]/70 bg-white px-3 text-xs font-semibold text-[#1e1b1b] outline-none focus:border-[#8E3E2F]"
         >
-          <option v-for="opt in paymentMethodOptions" :key="opt.value" :value="opt.value">
+          <option
+            v-for="opt in paymentMethodOptions"
+            :key="opt.value"
+            :value="opt.value"
+          >
             {{ opt.label }}
           </option>
         </select>
@@ -652,7 +734,9 @@ onMounted(async () => {
     </div>
 
     <!-- Expenditures DataTable -->
-    <div class="overflow-hidden rounded-2xl border border-[#E2D7CC] bg-white shadow-sm">
+    <div
+      class="overflow-hidden rounded-2xl border border-[#E2D7CC] bg-white shadow-sm"
+    >
       <DataTable
         :value="items"
         :loading="loading"
@@ -692,8 +776,13 @@ onMounted(async () => {
         <Column field="title" header="Nội Dung Khoản Chi">
           <template #body="slotProps">
             <div class="flex flex-col gap-0.5">
-              <span class="font-bold text-[#1e1b1b]">{{ slotProps.data.title }}</span>
-              <span v-if="slotProps.data.note" class="text-[11px] text-[#72796c] line-clamp-1 italic">
+              <span class="font-bold text-[#1e1b1b]">{{
+                slotProps.data.title
+              }}</span>
+              <span
+                v-if="slotProps.data.note"
+                class="line-clamp-1 text-[11px] italic text-[#72796c]"
+              >
                 {{ slotProps.data.note }}
               </span>
             </div>
@@ -714,7 +803,13 @@ onMounted(async () => {
         </Column>
 
         <!-- Amount Column -->
-        <Column field="amount" header="Số Tiền Chi" bodyClass="text-right" headerClass="text-right" sortable>
+        <Column
+          field="amount"
+          header="Số Tiền Chi"
+          bodyClass="text-right"
+          headerClass="text-right"
+          sortable
+        >
           <template #body="slotProps">
             <span class="font-mono text-sm font-bold text-[#ba1a1a]">
               {{ formatCurrency(slotProps.data.amount) }}
@@ -741,7 +836,11 @@ onMounted(async () => {
         </Column>
 
         <!-- Receipt Image Preview Thumbnail -->
-        <Column header="Chứng Từ" bodyClass="text-center" headerClass="text-center">
+        <Column
+          header="Chứng Từ"
+          bodyClass="text-center"
+          headerClass="text-center"
+        >
           <template #body="slotProps">
             <button
               v-if="slotProps.data.imageUrl"
@@ -757,7 +856,11 @@ onMounted(async () => {
         </Column>
 
         <!-- Actions Column -->
-        <Column header="Thao Tác" bodyClass="text-center" headerClass="text-center">
+        <Column
+          header="Thao Tác"
+          bodyClass="text-center"
+          headerClass="text-center"
+        >
           <template #body="slotProps">
             <div class="flex items-center justify-center gap-1.5">
               <button
@@ -765,7 +868,9 @@ onMounted(async () => {
                 class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-[#c1c9b9]/60 bg-white text-[#42493d] transition hover:bg-[#F2ECE4]"
                 title="Chi tiết phiếu chi"
               >
-                <span class="material-symbols-outlined text-base">visibility</span>
+                <span class="material-symbols-outlined text-base"
+                  >visibility</span
+                >
               </button>
               <button
                 v-if="canEdit"
@@ -800,7 +905,9 @@ onMounted(async () => {
       <form @submit.prevent="handleSubmitForm" class="flex flex-col gap-4 py-2">
         <!-- Category Selection -->
         <div>
-          <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#1e1b1b]">
+          <label
+            class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#1e1b1b]"
+          >
             Phân loại chi tiêu *
           </label>
           <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -824,7 +931,9 @@ onMounted(async () => {
 
         <!-- Title -->
         <div>
-          <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#1e1b1b]">
+          <label
+            class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#1e1b1b]"
+          >
             Tên / Nội dung khoản chi *
           </label>
           <input
@@ -834,7 +943,10 @@ onMounted(async () => {
             class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white px-3.5 text-xs font-medium text-[#1e1b1b] outline-none transition focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
             :class="{ 'border-[#ba1a1a]': formErrors.title }"
           />
-          <small v-if="formErrors.title" class="mt-1 block text-xs font-semibold text-[#ba1a1a]">
+          <small
+            v-if="formErrors.title"
+            class="mt-1 block text-xs font-semibold text-[#ba1a1a]"
+          >
             {{ formErrors.title }}
           </small>
         </div>
@@ -843,7 +955,9 @@ onMounted(async () => {
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <!-- Amount -->
           <div>
-            <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#1e1b1b]">
+            <label
+              class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#1e1b1b]"
+            >
               Số tiền chi (VNĐ) *
             </label>
             <div class="relative">
@@ -851,19 +965,27 @@ onMounted(async () => {
                 v-model="rawAmountStr"
                 type="text"
                 placeholder="0"
-                class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white pr-9 pl-3.5 font-mono text-sm font-bold text-[#ba1a1a] outline-none transition focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+                class="h-10 w-full rounded-xl border border-[#c1c9b9]/70 bg-white pl-3.5 pr-9 font-mono text-sm font-bold text-[#ba1a1a] outline-none transition focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
                 :class="{ 'border-[#ba1a1a]': formErrors.amount }"
               />
-              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#72796c]">₫</span>
+              <span
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#72796c]"
+                >₫</span
+              >
             </div>
-            <small v-if="formErrors.amount" class="mt-1 block text-xs font-semibold text-[#ba1a1a]">
+            <small
+              v-if="formErrors.amount"
+              class="mt-1 block text-xs font-semibold text-[#ba1a1a]"
+            >
               {{ formErrors.amount }}
             </small>
           </div>
 
           <!-- Payment Method -->
           <div>
-            <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#1e1b1b]">
+            <label
+              class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#1e1b1b]"
+            >
               Hình thức thanh toán
             </label>
             <select
@@ -881,7 +1003,9 @@ onMounted(async () => {
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <!-- Date -->
           <div>
-            <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#1e1b1b]">
+            <label
+              class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#1e1b1b]"
+            >
               Ngày giờ chi *
             </label>
             <input
@@ -893,7 +1017,9 @@ onMounted(async () => {
 
           <!-- Recipient -->
           <div>
-            <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#1e1b1b]">
+            <label
+              class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#1e1b1b]"
+            >
               Người nhận / Đơn vị cung cấp
             </label>
             <input
@@ -907,7 +1033,9 @@ onMounted(async () => {
 
         <!-- Image Receipt Upload / URL -->
         <div>
-          <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#1e1b1b]">
+          <label
+            class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#1e1b1b]"
+          >
             Ảnh hóa đơn / Biên lai thanh toán (Tùy chọn)
           </label>
           <div class="flex items-center gap-3">
@@ -917,19 +1045,32 @@ onMounted(async () => {
               placeholder="Dán link ảnh hoặc tải tệp lên bên cạnh..."
               class="h-10 flex-1 rounded-xl border border-[#c1c9b9]/70 bg-white px-3 text-xs font-medium text-[#1e1b1b] outline-none focus:border-[#8E3E2F]"
             />
-            <label class="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border border-[#c1c9b9]/70 bg-[#F2ECE4] px-3 text-xs font-semibold text-[#42493d] hover:bg-[#E8DFD5]">
+            <label
+              class="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border border-[#c1c9b9]/70 bg-[#F2ECE4] px-3 text-xs font-semibold text-[#42493d] hover:bg-[#E8DFD5]"
+            >
               <span class="material-symbols-outlined text-base">upload</span>
               <span>Tải ảnh</span>
-              <input type="file" accept="image/*" class="hidden" @change="handleFileUpload" />
+              <input
+                type="file"
+                accept="image/*"
+                class="hidden"
+                @change="handleFileUpload"
+              />
             </label>
           </div>
           <div v-if="form.imageUrl" class="mt-2 flex items-center gap-2">
-            <img :src="form.imageUrl" alt="Hóa đơn" class="h-12 w-12 rounded-lg border object-cover shadow-sm" />
-            <span class="text-xs text-green-700 font-semibold">Đã tải ảnh chứng từ</span>
+            <img
+              :src="form.imageUrl"
+              alt="Hóa đơn"
+              class="h-12 w-12 rounded-lg border object-cover shadow-sm"
+            />
+            <span class="text-xs font-semibold text-green-700"
+              >Đã tải ảnh chứng từ</span
+            >
             <button
               type="button"
               @click="form.imageUrl = ''"
-              class="text-xs text-red-600 underline cursor-pointer ml-2"
+              class="ml-2 cursor-pointer text-xs text-red-600 underline"
             >
               Gỡ ảnh
             </button>
@@ -938,7 +1079,9 @@ onMounted(async () => {
 
         <!-- Note -->
         <div>
-          <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#1e1b1b]">
+          <label
+            class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#1e1b1b]"
+          >
             Ghi chú chi tiết
           </label>
           <textarea
@@ -950,7 +1093,9 @@ onMounted(async () => {
         </div>
 
         <!-- Form Actions -->
-        <div class="mt-3 flex items-center justify-end gap-3 border-t border-[#E2D7CC] pt-4">
+        <div
+          class="mt-3 flex items-center justify-end gap-3 border-t border-[#E2D7CC] pt-4"
+        >
           <button
             type="button"
             @click="showCreateEditModal = false"
@@ -963,9 +1108,23 @@ onMounted(async () => {
             :disabled="isSubmitting"
             class="flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-[#8E3E2F] px-5 text-xs font-semibold text-white shadow transition hover:bg-[#6E281C] disabled:opacity-50"
           >
-            <span v-if="!isSubmitting" class="material-symbols-outlined text-base">check</span>
-            <span v-else class="material-symbols-outlined animate-spin text-base">refresh</span>
-            <span>{{ isSubmitting ? 'Đang lưu...' : isEditing ? 'Lưu cập nhật' : 'Xác nhận tạo phiếu' }}</span>
+            <span
+              v-if="!isSubmitting"
+              class="material-symbols-outlined text-base"
+              >check</span
+            >
+            <span
+              v-else
+              class="material-symbols-outlined animate-spin text-base"
+              >refresh</span
+            >
+            <span>{{
+              isSubmitting
+                ? 'Đang lưu...'
+                : isEditing
+                  ? 'Lưu cập nhật'
+                  : 'Xác nhận tạo phiếu'
+            }}</span>
           </button>
         </div>
       </form>
@@ -979,45 +1138,65 @@ onMounted(async () => {
       :style="{ width: '480px', maxWidth: '95vw' }"
     >
       <div v-if="selectedItem" class="flex flex-col gap-4 py-2">
-        <div class="flex items-center justify-between rounded-xl bg-[#F9F6F0] p-4 border border-[#E2D7CC]">
+        <div
+          class="flex items-center justify-between rounded-xl border border-[#E2D7CC] bg-[#F9F6F0] p-4"
+        >
           <div>
-            <span class="text-xs text-[#72796c] block">Mã phiếu chi</span>
-            <span class="font-mono text-base font-bold text-[#8E3E2F]">#{{ selectedItem.expenseCode }}</span>
+            <span class="block text-xs text-[#72796c]">Mã phiếu chi</span>
+            <span class="font-mono text-base font-bold text-[#8E3E2F]"
+              >#{{ selectedItem.expenseCode }}</span
+            >
           </div>
           <div class="text-right">
-            <span class="text-xs text-[#72796c] block">Số tiền</span>
-            <span class="font-mono text-lg font-bold text-[#ba1a1a]">{{ formatCurrency(selectedItem.amount) }}</span>
+            <span class="block text-xs text-[#72796c]">Số tiền</span>
+            <span class="font-mono text-lg font-bold text-[#ba1a1a]">{{
+              formatCurrency(selectedItem.amount)
+            }}</span>
           </div>
         </div>
 
         <div class="space-y-2.5 text-xs">
           <div class="flex justify-between border-b pb-2">
             <span class="text-[#72796c]">Khoản chi:</span>
-            <span class="font-bold text-[#1e1b1b] text-right">{{ selectedItem.title }}</span>
+            <span class="text-right font-bold text-[#1e1b1b]">{{
+              selectedItem.title
+            }}</span>
           </div>
           <div class="flex justify-between border-b pb-2">
             <span class="text-[#72796c]">Phân loại:</span>
             <span class="font-semibold text-[#1e1b1b]">
-              {{ getCategoryBadge(selectedItem.category).emoji }} {{ getCategoryBadge(selectedItem.category).label }}
+              {{ getCategoryBadge(selectedItem.category).emoji }}
+              {{ getCategoryBadge(selectedItem.category).label }}
             </span>
           </div>
           <div class="flex justify-between border-b pb-2">
             <span class="text-[#72796c]">Thời gian chi:</span>
-            <span class="font-medium text-[#1e1b1b]">{{ formatDateTime(selectedItem.expenseDate) }}</span>
+            <span class="font-medium text-[#1e1b1b]">{{
+              formatDateTime(selectedItem.expenseDate)
+            }}</span>
           </div>
           <div class="flex justify-between border-b pb-2">
             <span class="text-[#72796c]">Hình thức thanh toán:</span>
-            <span class="font-semibold text-[#1e1b1b]">{{ getPaymentMethodLabel(selectedItem.paymentMethod) }}</span>
+            <span class="font-semibold text-[#1e1b1b]">{{
+              getPaymentMethodLabel(selectedItem.paymentMethod)
+            }}</span>
           </div>
           <div class="flex justify-between border-b pb-2">
             <span class="text-[#72796c]">Người nhận / NCC:</span>
-            <span class="font-medium text-[#1e1b1b]">{{ selectedItem.recipient || '-' }}</span>
+            <span class="font-medium text-[#1e1b1b]">{{
+              selectedItem.recipient || '-'
+            }}</span>
           </div>
           <div class="flex justify-between border-b pb-2">
             <span class="text-[#72796c]">Người lập phiếu:</span>
-            <span class="font-medium text-[#1e1b1b]">{{ selectedItem.creator?.name || 'Quản lý' }}</span>
+            <span class="font-medium text-[#1e1b1b]">{{
+              selectedItem.creator?.name || 'Quản lý'
+            }}</span>
           </div>
-          <div v-if="selectedItem.note" class="flex flex-col gap-1 border-b pb-2">
+          <div
+            v-if="selectedItem.note"
+            class="flex flex-col gap-1 border-b pb-2"
+          >
             <span class="text-[#72796c]">Ghi chú:</span>
             <span class="italic text-[#1e1b1b]">{{ selectedItem.note }}</span>
           </div>
@@ -1025,19 +1204,21 @@ onMounted(async () => {
 
         <!-- Receipt Image Preview -->
         <div v-if="selectedItem.imageUrl" class="mt-2">
-          <span class="text-xs font-bold text-[#1e1b1b] block mb-1">Ảnh hóa đơn chứng từ:</span>
+          <span class="mb-1 block text-xs font-bold text-[#1e1b1b]"
+            >Ảnh hóa đơn chứng từ:</span
+          >
           <img
             :src="selectedItem.imageUrl"
             alt="Chứng từ"
             @click="openImagePreview(selectedItem.imageUrl)"
-            class="h-40 w-full rounded-xl border object-contain bg-black/5 cursor-pointer hover:opacity-90 transition"
+            class="h-40 w-full cursor-pointer rounded-xl border bg-black/5 object-contain transition hover:opacity-90"
           />
         </div>
 
         <div class="mt-3 flex justify-end">
           <button
             @click="showDetailModal = false"
-            class="h-9 px-4 rounded-xl bg-[#8E3E2F] text-white text-xs font-semibold hover:bg-[#6E281C] cursor-pointer"
+            class="h-9 cursor-pointer rounded-xl bg-[#8E3E2F] px-4 text-xs font-semibold text-white hover:bg-[#6E281C]"
           >
             Đóng
           </button>
@@ -1046,9 +1227,18 @@ onMounted(async () => {
     </Dialog>
 
     <!-- DIALOG: XEM ẢNH PHÓNG TO -->
-    <Dialog v-model:visible="showImageModal" modal header="Hóa đơn & Chứng từ thanh toán" :style="{ width: '600px', maxWidth: '95vw' }">
+    <Dialog
+      v-model:visible="showImageModal"
+      modal
+      header="Hóa đơn & Chứng từ thanh toán"
+      :style="{ width: '600px', maxWidth: '95vw' }"
+    >
       <div class="flex justify-center p-2">
-        <img :src="previewImageSrc || ''" alt="Hóa đơn phóng to" class="max-h-[75vh] w-auto rounded-xl object-contain shadow" />
+        <img
+          :src="previewImageSrc || ''"
+          alt="Hóa đơn phóng to"
+          class="max-h-[75vh] w-auto rounded-xl object-contain shadow"
+        />
       </div>
     </Dialog>
 

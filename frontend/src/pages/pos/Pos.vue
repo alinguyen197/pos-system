@@ -21,6 +21,7 @@ import {
   Promotion,
 } from '@/api/promotion.api'
 import { useAppToast } from '@/composables/useAppToast'
+import { useAuth } from '@/composables/useAuth'
 
 interface CartItem {
   product: ProductItem
@@ -49,14 +50,19 @@ interface OrderTab {
 
 const router = useRouter()
 const { showSuccess, showError, showWarning } = useAppToast()
+const { currentUser, logout } = useAuth()
 
-// Logged in Staff Name
-const currentStaffName = ref(
-  localStorage.getItem('fullName') ||
+// Logged in Staff Name (derived reactively from useAuth)
+const currentStaffName = computed(() => {
+  return (
+    currentUser.value?.name ||
+    currentUser.value?.email ||
+    localStorage.getItem('fullName') ||
     localStorage.getItem('userName') ||
     localStorage.getItem('email') ||
-    'Nguyễn Văn A (Thu ngân)',
-)
+    'Thu ngân'
+  )
+})
 
 // Data States
 const products = ref<ProductItem[]>([])
@@ -412,6 +418,7 @@ const processSubmitOrder = async () => {
         ? activeTab.value.promoCode.trim().toUpperCase()
         : undefined,
       note: activeTab.value.note || `Đơn POS ${activeTab.value.tableNo}`,
+      createdBy: currentUser.value?.id,
     }
 
     const res = await createOrder(payload)
@@ -476,8 +483,7 @@ const confirmShiftEndAndLogout = () => {
   const nowIso = new Date().toISOString()
   localStorage.setItem('lastShiftEndedAt', nowIso)
   localStorage.setItem('shiftStartedAt', nowIso)
-  localStorage.removeItem('token')
-  localStorage.removeItem('role')
+  logout()
   router.push('/login')
 }
 
@@ -1643,6 +1649,9 @@ onMounted(() => {
           </p>
           <p class="text-[10px] text-gray-500">
             {{ formatDate(selectedPrintOrder.orderDate) }}
+          </p>
+          <p class="text-[10px] text-gray-600">
+            Thu ngân: <strong>{{ currentStaffName }}</strong>
           </p>
         </div>
 
