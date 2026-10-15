@@ -261,31 +261,31 @@ const handleConfirmDelete = async () => {
 <template>
   <div class="ingredient-list-page h-full flex flex-col gap-4 overflow-hidden">
     <!-- Header Title & Action -->
-    <div class="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#E2D7CC]">
+    <div class="shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-2 border-b border-[#E2D7CC]">
       <div>
         <h1 class="text-2xl font-bold font-display text-[#1e1b1b]">Quản lý Kho Nguyên liệu</h1>
         <p class="text-xs text-[#42493d] mt-1 font-medium">Theo dõi tồn kho thực tế, định mức cảnh báo và đơn giá vốn</p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
         <button
           @click="router.push('/stock-imports/create')"
-          class="h-10 px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#326824] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition flex items-center gap-2 cursor-pointer"
+          class="flex-1 sm:flex-none h-10 px-3.5 sm:px-4 bg-[#F2ECE4] hover:bg-[#E8DFD5] text-[#326824] font-semibold text-xs rounded-xl border border-[#c1c9b9]/60 transition flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer whitespace-nowrap"
         >
           <span class="material-symbols-outlined text-lg">add_circle</span>
-          <span>Tạo phiếu nhập kho</span>
+          <span>Nhập kho NVL</span>
         </button>
         <button
           @click="router.push('/ingredients/create')"
-          class="h-10 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 cursor-pointer"
+          class="flex-1 sm:flex-none h-10 px-3.5 sm:px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer whitespace-nowrap"
         >
           <span class="material-symbols-outlined text-lg">add</span>
-          <span>Thêm nguyên liệu mới</span>
+          <span>Thêm nguyên liệu</span>
         </button>
       </div>
     </div>
 
     <!-- Summary Cards Row (5 Stock Status Cards) -->
-    <div class="shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    <div class="shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
       <!-- Card 1: Total Ingredients -->
       <div class="bg-white rounded-2xl p-4 border border-[#E2D7CC] shadow-sm flex items-center gap-3.5">
         <div class="w-11 h-11 rounded-xl bg-[#F2ECE4] text-[#8E3E2F] flex items-center justify-center shrink-0">
@@ -345,9 +345,9 @@ const handleConfirmDelete = async () => {
     <!-- Main Card -->
     <div class="flex-1 min-h-0 bg-white rounded-2xl border border-[#E2D7CC] shadow-sm overflow-hidden flex flex-col">
       <!-- Search & Filters -->
-      <div class="shrink-0 p-4 border-b border-[#E2D7CC] bg-[#F9F6F0]">
+      <div class="shrink-0 p-3.5 sm:p-4 border-b border-[#E2D7CC] bg-[#F9F6F0]">
         <!-- Form Search with Category Select Dropdown, Search and Reset buttons -->
-        <form @submit.prevent="handleSearch" class="flex flex-col sm:flex-row items-end gap-3 w-full">
+        <form @submit.prevent="handleSearch" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 w-full">
           <div class="w-full sm:w-64">
             <label class="block text-[11px] font-bold text-[#42493d] uppercase mb-1">Từ khóa tìm kiếm</label>
             <div class="relative">

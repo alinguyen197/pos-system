@@ -1,28 +1,47 @@
-﻿.app-header-toolbar {
+.app-header-toolbar {
   background-color: #8E3E2F !important;
   border: none !important;
   border-radius: 0 !important;
-  height: 60px;
-  padding: 0 1.25rem !important;
+  height: 56px;
+  padding: 0 1rem !important;
   position: sticky;
   top: 0;
   z-index: 100;
 
+  @media (max-width: 640px) {
+    height: 52px;
+    padding: 0 0.5rem !important;
+  }
+
   .header-left {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
 
     .breadcrumb-title {
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 600;
       color: #ffffff;
+
+      @media (max-width: 640px) {
+        font-size: 0.875rem;
+      }
     }
   }
 
   .header-right {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
+
+    @media (min-width: 640px) {
+      gap: 0.75rem;
+    }
   }
 }
+
+:deep(.user-menu-popover),
+:global(.user-menu-popover) {
+  max-width: calc(100vw - 24px) !important;
+}
+

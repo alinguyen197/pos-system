@@ -644,20 +644,20 @@ const confirmDelete = async () => {
           dõi lịch sử các lần nhập hàng
         </p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
         <button
           @click="router.push('/ingredients')"
           type="button"
-          class="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] px-4 text-xs font-semibold text-[#42493d] transition hover:bg-[#E8DFD5]"
+          class="flex-1 sm:flex-none flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] px-3.5 sm:px-4 text-xs font-semibold text-[#42493d] transition hover:bg-[#E8DFD5] whitespace-nowrap"
         >
           <span class="material-symbols-outlined text-base">arrow_back</span>
-          <span>Về kho nguyên liệu</span>
+          <span>Về kho</span>
         </button>
         <button
           v-if="editingId"
           @click="resetForm"
           type="button"
-          class="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] px-4 text-xs font-semibold text-[#ba1a1a] transition hover:bg-[#E8DFD5]"
+          class="flex-1 sm:flex-none flex h-10 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] px-3.5 sm:px-4 text-xs font-semibold text-[#ba1a1a] transition hover:bg-[#E8DFD5] whitespace-nowrap"
         >
           <span class="material-symbols-outlined text-base">close</span>
           <span>Hủy sửa</span>
@@ -665,7 +665,7 @@ const confirmDelete = async () => {
         <button
           @click="handleSave"
           :disabled="isSubmitting"
-          class="flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-[#8E3E2F] px-5 text-xs font-semibold text-white shadow transition hover:bg-[#6E281C] disabled:opacity-50"
+          class="flex-1 sm:flex-none flex h-10 cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#8E3E2F] px-4 sm:px-5 text-xs font-semibold text-white shadow transition hover:bg-[#6E281C] disabled:opacity-50 whitespace-nowrap"
         >
           <span
             v-if="!isSubmitting"

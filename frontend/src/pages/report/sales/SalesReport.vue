@@ -344,12 +344,12 @@ onMounted(() => {
         </button>
 
         <!-- Quick Period Selection Pills -->
-        <div class="flex items-center bg-[#F2ECE4] h-10 px-1 rounded-xl border border-[#c1c9b9]/40 gap-1">
+        <div class="flex items-center bg-[#F2ECE4] h-10 px-1 rounded-xl border border-[#c1c9b9]/40 gap-1 overflow-x-auto scrollbar-none max-w-full">
           <button
             v-for="p in periods"
             :key="p.value"
             @click="selectedPeriod = p.value"
-            class="h-8 px-3.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center"
+            class="h-8 px-2.5 sm:px-3.5 rounded-lg text-xs font-semibold transition cursor-pointer flex items-center shrink-0 whitespace-nowrap"
             :class="selectedPeriod === p.value ? 'bg-[#8E3E2F] text-white shadow-sm' : 'text-[#42493d] hover:bg-white/60'"
           >
             {{ p.label }}
@@ -380,10 +380,10 @@ onMounted(() => {
         <button
           @click="handleExport"
           :disabled="isExporting"
-          class="h-10 px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+          class="flex-1 sm:flex-none h-10 px-3.5 sm:px-4 bg-[#8E3E2F] hover:bg-[#6E281C] text-white font-semibold text-xs rounded-xl shadow transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer whitespace-nowrap"
         >
           <span class="material-symbols-outlined text-lg" :class="{ 'animate-spin': isExporting }">download</span>
-          <span>{{ isExporting ? 'Đang xuất...' : 'Xuất báo cáo CSV' }}</span>
+          <span>{{ isExporting ? 'Đang xuất...' : 'Xuất CSV' }}</span>
         </button>
       </div>
     </div>
@@ -434,11 +434,11 @@ onMounted(() => {
     <!-- Main Content Container with Tabs -->
     <div class="bg-white rounded-2xl border border-[#E2D7CC] shadow-sm overflow-hidden flex flex-col">
       <!-- Tabs Bar -->
-      <div class="p-4 border-b border-[#E2D7CC] flex flex-wrap items-center justify-between gap-3 bg-[#F9F6F0]">
-        <div class="flex flex-wrap items-center gap-2">
+      <div class="p-3 sm:p-4 border-b border-[#E2D7CC] flex flex-wrap items-center justify-between gap-3 bg-[#F9F6F0]">
+        <div class="flex items-center gap-2 overflow-x-auto scrollbar-none max-w-full pb-1">
           <button
             @click="activeTab = 'date'"
-            class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 whitespace-nowrap"
             :class="activeTab === 'date' ? 'bg-[#8E3E2F] text-white shadow' : 'bg-white text-[#42493d] border border-[#E2D7CC] hover:bg-[#F2ECE4]'"
           >
             <span class="material-symbols-outlined text-base">calendar_month</span>
@@ -446,7 +446,7 @@ onMounted(() => {
           </button>
           <button
             @click="activeTab = 'category'"
-            class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 whitespace-nowrap"
             :class="activeTab === 'category' ? 'bg-[#8E3E2F] text-white shadow' : 'bg-white text-[#42493d] border border-[#E2D7CC] hover:bg-[#F2ECE4]'"
           >
             <span class="material-symbols-outlined text-base">lunch_dining</span>
@@ -454,7 +454,7 @@ onMounted(() => {
           </button>
           <button
             @click="activeTab = 'product'"
-            class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 whitespace-nowrap"
             :class="activeTab === 'product' ? 'bg-[#8E3E2F] text-white shadow' : 'bg-white text-[#42493d] border border-[#E2D7CC] hover:bg-[#F2ECE4]'"
           >
             <span class="material-symbols-outlined text-base">ramen_dining</span>
@@ -462,7 +462,7 @@ onMounted(() => {
           </button>
           <button
             @click="activeTab = 'payment'"
-            class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 whitespace-nowrap"
             :class="activeTab === 'payment' ? 'bg-[#8E3E2F] text-white shadow' : 'bg-white text-[#42493d] border border-[#E2D7CC] hover:bg-[#F2ECE4]'"
           >
             <span class="material-symbols-outlined text-base">credit_card</span>
@@ -470,7 +470,7 @@ onMounted(() => {
           </button>
           <button
             @click="activeTab = 'staff'"
-            class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 whitespace-nowrap"
             :class="activeTab === 'staff' ? 'bg-[#8E3E2F] text-white shadow' : 'bg-white text-[#42493d] border border-[#E2D7CC] hover:bg-[#F2ECE4]'"
           >
             <span class="material-symbols-outlined text-base">badge</span>
@@ -478,7 +478,7 @@ onMounted(() => {
           </button>
           <button
             @click="activeTab = 'cashflow'"
-            class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 whitespace-nowrap"
             :class="activeTab === 'cashflow' ? 'bg-[#8E3E2F] text-white shadow' : 'bg-white text-[#42493d] border border-[#E2D7CC] hover:bg-[#F2ECE4]'"
           >
             <span class="material-symbols-outlined text-base">account_balance_wallet</span>

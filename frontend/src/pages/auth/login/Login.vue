@@ -87,31 +87,31 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <div class="login-wrapper min-h-screen bg-[#F9F6F0] text-[#1e1b1b] flex flex-col justify-between font-sans relative overflow-hidden">
+  <div class="login-wrapper min-h-screen min-h-[100dvh] bg-[#F9F6F0] text-[#1e1b1b] flex flex-col justify-between font-sans relative overflow-hidden">
     <!-- Navbar -->
-    <header class="w-full bg-white border-b border-[#E2D7CC] px-6 py-4 flex justify-between items-center z-10">
+    <header class="w-full bg-white border-b border-[#E2D7CC] px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center z-10">
       <div class="flex items-center gap-3">
-        <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-[#8E3E2F]/25 shadow-md bg-white flex items-center justify-center flex-shrink-0">
+        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 border-[#8E3E2F]/25 shadow-md bg-white flex items-center justify-center flex-shrink-0">
           <img src="/logo.png" alt="Mì Trộn Cô Xi Logo" class="w-full h-full object-cover" />
         </div>
         <div>
-          <h1 class="text-xl font-bold font-display text-[#2A1C16] leading-none">Mì Trộn Cô Xi</h1>
-          <p class="text-xs text-[#6E584D] mt-0.5 font-medium">XUXI • Hệ thống Quản lý</p>
+          <h1 class="text-lg sm:text-xl font-bold font-display text-[#2A1C16] leading-none">Mì Trộn Cô Xi</h1>
+          <p class="text-[11px] sm:text-xs text-[#6E584D] mt-0.5 font-medium">XUXI • Hệ thống Quản lý</p>
         </div>
       </div>
       <div class="flex items-center gap-4 text-sm font-medium text-[#42493d]">
-        <span class="px-3 py-1.5 rounded-lg bg-[#F2ECE4] text-[#326824] font-semibold text-xs">v2.0 Stitch RBAC</span>
+        <span class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-[#F2ECE4] text-[#326824] font-semibold text-[11px] sm:text-xs">v2.0 RBAC</span>
       </div>
     </header>
 
     <!-- Main Section -->
-    <main class="flex-grow flex items-center justify-center px-4 py-10 relative z-10">
+    <main class="flex-grow flex items-center justify-center px-3 sm:px-4 py-6 sm:py-10 relative z-10">
       <!-- Background Blurs -->
       <div class="absolute -top-20 -left-20 w-80 h-80 bg-[#8E3E2F]/10 rounded-full blur-3xl pointer-events-none"></div>
       <div class="absolute -bottom-20 -right-20 w-96 h-96 bg-[#C46D28]/10 rounded-full blur-3xl pointer-events-none"></div>
 
       <!-- Login Card -->
-      <div class="w-full max-w-[460px] bg-white rounded-2xl border border-[#E2D7CC] shadow-xl p-8 sm:p-10 relative">
+      <div class="w-full max-w-[460px] bg-white rounded-2xl border border-[#E2D7CC] shadow-xl p-5 sm:p-10 relative">
         <div class="text-center mb-6">
           <div class="w-16 h-16 rounded-full overflow-hidden mx-auto mb-3 border-2 border-[#E2D7CC] shadow-md bg-white flex items-center justify-center">
             <img src="/logo.png" alt="Mì Trộn Cô Xi Logo" class="w-full h-full object-cover" />

@@ -227,6 +227,12 @@ const setQty = (index: number, value: string | number) => {
   }
 }
 
+// Mobile Navigation Tab State
+const mobileTab = ref<'menu' | 'cart'>('menu')
+const totalCartItemsCount = computed(() => {
+  return activeTab.value.cart.reduce((sum, item) => sum + item.quantity, 0)
+})
+
 // Discount & Calculation
 const subtotalPrice = computed(() => {
   return activeTab.value.cart.reduce(
@@ -238,6 +244,7 @@ const subtotalPrice = computed(() => {
 const finalPrice = computed(() => {
   return Math.max(0, subtotalPrice.value - activeTab.value.discountAmount)
 })
+
 
 const applySuggestedPromoCode = (code: string) => {
   activeTab.value.promoCode = code
@@ -511,17 +518,46 @@ onMounted(() => {
 
 <template>
   <div
-    class="pos-layout flex h-[calc(100vh-80px)] flex-col overflow-hidden rounded-2xl border border-[#E2D7CC] bg-[#F9F6F0] shadow-sm lg:flex-row"
+    class="pos-layout flex h-full min-h-[calc(100dvh-130px)] lg:h-[calc(100vh-80px)] flex-col overflow-hidden rounded-2xl border border-[#E2D7CC] bg-[#F9F6F0] shadow-sm lg:flex-row relative"
   >
-    <!-- Left Section: Products (60%) -->
+    <!-- Mobile Segmented View Switcher (Visible only on < lg screens) -->
+    <div class="pos-mobile-nav flex lg:hidden items-center justify-between border-b border-[#E2D7CC] bg-white p-2 gap-2 shrink-0">
+      <button
+        type="button"
+        @click="mobileTab = 'menu'"
+        class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5"
+        :class="mobileTab === 'menu' ? 'bg-[#8E3E2F] text-white shadow-sm' : 'bg-[#F2ECE4] text-[#42493d]'"
+      >
+        <span class="material-symbols-outlined text-base">restaurant_menu</span>
+        <span>Thực đơn món</span>
+      </button>
+      <button
+        type="button"
+        @click="mobileTab = 'cart'"
+        class="flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 relative"
+        :class="mobileTab === 'cart' ? 'bg-[#8E3E2F] text-white shadow-sm' : 'bg-[#F2ECE4] text-[#42493d]'"
+      >
+        <span class="material-symbols-outlined text-base">shopping_cart</span>
+        <span>Giỏ hàng</span>
+        <span
+          v-if="totalCartItemsCount > 0"
+          class="ml-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-[#326824] text-white shadow"
+        >
+          {{ totalCartItemsCount }}
+        </span>
+      </button>
+    </div>
+
+    <!-- Left Section: Products (60% on desktop, 100% on mobile when mobileTab === 'menu') -->
     <section
-      class="flex h-full flex-col gap-4 overflow-hidden border-r border-[#E2D7CC] bg-white p-5 lg:w-[60%]"
+      class="h-full flex-col gap-3 sm:gap-4 overflow-hidden border-r border-[#E2D7CC] bg-white p-3 sm:p-5 lg:w-[60%]"
+      :class="[mobileTab === 'menu' ? 'flex flex-1' : 'hidden lg:flex']"
     >
       <!-- Stitch 2.0 Shift Summary Bar (With Shift & Staff Info) -->
       <div
         class="flex shrink-0 flex-col items-start justify-between gap-3 rounded-xl border border-[#E2D7CC] bg-white p-3 shadow-sm sm:flex-row sm:items-center"
       >
-        <div class="flex flex-col gap-1">
+        <div class="flex flex-col gap-1 w-full sm:w-auto">
           <div class="flex items-center gap-2">
             <span
               class="rounded-lg bg-[#326824]/10 px-2.5 py-0.5 text-[11px] font-bold text-[#326824]"
@@ -538,43 +574,43 @@ onMounted(() => {
             </span>
           </div>
 
-          <div class="mt-1 flex items-center gap-4">
-            <div class="flex flex-col">
+          <div class="mt-1 flex items-center gap-3 sm:gap-4 overflow-x-auto pb-1 sm:pb-0">
+            <div class="flex flex-col shrink-0">
               <span
                 class="text-[10px] font-bold uppercase tracking-wider text-[#72796c]"
                 >Doanh thu ca</span
               >
-              <span class="font-display text-base font-bold text-[#326824]">{{
+              <span class="font-display text-sm sm:text-base font-bold text-[#326824]">{{
                 formatCurrency(shiftSummary.shiftRevenue)
               }}</span>
             </div>
-            <div class="h-6 w-px bg-[#E2D7CC]"></div>
-            <div class="flex flex-col">
+            <div class="h-6 w-px bg-[#E2D7CC] shrink-0"></div>
+            <div class="flex flex-col shrink-0">
               <span
                 class="text-[10px] font-bold uppercase tracking-wider text-[#72796c]"
                 >Đơn hàng</span
               >
-              <span class="text-sm font-bold text-[#1e1b1b]">{{
+              <span class="text-xs sm:text-sm font-bold text-[#1e1b1b]">{{
                 shiftSummary.totalOrders
               }}</span>
             </div>
-            <div class="h-6 w-px bg-[#E2D7CC]"></div>
-            <div class="flex flex-col">
+            <div class="h-6 w-px bg-[#E2D7CC] shrink-0"></div>
+            <div class="flex flex-col shrink-0">
               <span
                 class="text-[10px] font-bold uppercase tracking-wider text-[#72796c]"
                 >Số phần</span
               >
-              <span class="text-sm font-bold text-[#1e1b1b]">{{
+              <span class="text-xs sm:text-sm font-bold text-[#1e1b1b]">{{
                 shiftSummary.totalCupsSold
               }}</span>
             </div>
           </div>
         </div>
 
-        <div class="flex items-center gap-2 self-end sm:self-center">
+        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
           <button
             @click="openShiftEndModal"
-            class="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-[#8E3E2F] px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6E281C]"
+            class="flex-1 sm:flex-none flex h-9 sm:h-10 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-[#8E3E2F] px-3 sm:px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6E281C]"
             title="Bàn giao ca làm việc & Đăng xuất"
           >
             <span class="material-symbols-outlined text-base">output</span>
@@ -583,7 +619,7 @@ onMounted(() => {
 
           <button
             @click="router.push('/reports/sales')"
-            class="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] px-4 text-xs font-semibold text-[#42493d] transition hover:bg-[#E8DFD5]"
+            class="flex-1 sm:flex-none flex h-9 sm:h-10 cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] px-3 sm:px-4 text-xs font-semibold text-[#42493d] transition hover:bg-[#E8DFD5]"
           >
             <span class="material-symbols-outlined text-base">bar_chart</span>
             <span>Xem báo cáo</span>
@@ -592,7 +628,7 @@ onMounted(() => {
       </div>
 
       <!-- Search & Header Controls -->
-      <div class="flex flex-col items-center justify-between gap-3 sm:flex-row">
+      <div class="flex flex-col items-center justify-between gap-2.5 sm:gap-3 sm:flex-row">
         <div class="relative w-full flex-1">
           <span
             class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-xl text-[#72796c]"
@@ -608,7 +644,7 @@ onMounted(() => {
 
         <button
           @click="openOrderHistory(1)"
-          class="flex h-10 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] px-4 text-xs font-semibold text-[#5D4037] transition hover:bg-[#E8DFD5]"
+          class="w-full sm:w-auto flex h-10 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-[#c1c9b9]/60 bg-[#F2ECE4] px-4 text-xs font-semibold text-[#5D4037] transition hover:bg-[#E8DFD5]"
         >
           <span class="material-symbols-outlined text-base">history</span>
           <span>Lịch sử đơn</span>
@@ -653,7 +689,7 @@ onMounted(() => {
 
         <div
           v-else
-          class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4"
+          class="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 xl:grid-cols-4 pb-20 lg:pb-0"
         >
           <div
             v-for="p in filteredProducts"
@@ -703,7 +739,7 @@ onMounted(() => {
             </div>
 
             <div
-              class="relative flex h-32 w-full items-center justify-center overflow-hidden bg-[#F2ECE4]"
+              class="relative flex h-28 sm:h-32 w-full items-center justify-center overflow-hidden bg-[#F2ECE4]"
             >
               <img
                 v-if="p.img"
@@ -720,7 +756,7 @@ onMounted(() => {
                 v-else
                 class="flex h-full w-full flex-col items-center justify-center bg-[#F9F6F0] text-[#8E3E2F]/60"
               >
-                <span class="material-symbols-outlined text-4xl"
+                <span class="material-symbols-outlined text-3xl sm:text-4xl"
                   >ramen_dining</span
                 >
                 <span class="mt-1 text-[10px] font-medium text-[#72796c]"
@@ -757,7 +793,7 @@ onMounted(() => {
                 </span>
               </div>
             </div>
-            <div class="flex flex-1 flex-col justify-between gap-1 p-3">
+            <div class="flex flex-1 flex-col justify-between gap-1 p-2.5 sm:p-3">
               <h3
                 class="line-clamp-2 text-xs font-bold"
                 :class="
@@ -784,8 +820,24 @@ onMounted(() => {
       </div>
     </section>
 
-    <!-- Right Section: Cart & Order (40%) -->
-    <section class="z-10 flex h-full flex-col bg-white shadow-lg lg:w-[40%]">
+    <!-- Right Section: Cart & Order (40% on desktop, 100% on mobile when mobileTab === 'cart') -->
+    <section
+      class="z-10 h-full flex-col bg-white shadow-lg lg:w-[40%]"
+      :class="[mobileTab === 'cart' ? 'flex flex-1' : 'hidden lg:flex']"
+    >
+      <!-- Mobile Back to Menu Header -->
+      <div class="lg:hidden flex items-center justify-between border-b border-[#E2D7CC] bg-[#F9F6F0] px-3.5 py-2">
+        <button
+          @click="mobileTab = 'menu'"
+          type="button"
+          class="flex items-center gap-1 text-xs font-bold text-[#8E3E2F] hover:underline"
+        >
+          <span class="material-symbols-outlined text-base">arrow_back</span>
+          <span>Tiếp tục chọn món</span>
+        </button>
+        <span class="text-xs font-bold text-[#1e1b1b]">Đơn #{{ activeTab.name }} ({{ activeTab.tableNo }})</span>
+      </div>
+
       <!-- Order Tabs Header -->
       <div
         class="scrollbar-none flex shrink-0 items-center gap-1.5 overflow-x-auto border-b border-[#E2D7CC] bg-white px-4 pt-3"
@@ -839,6 +891,7 @@ onMounted(() => {
           <span class="material-symbols-outlined text-lg">delete</span>
         </button>
       </div>
+
 
       <!-- Scrollable Cart Content -->
       <div class="flex-1 space-y-3 overflow-y-auto p-4">
@@ -1027,6 +1080,27 @@ onMounted(() => {
         </button>
       </div>
     </section>
+
+    <!-- Sticky Floating Cart Bar on Mobile when browsing menu -->
+    <div
+      v-if="mobileTab === 'menu' && totalCartItemsCount > 0"
+      class="lg:hidden fixed bottom-3 left-3 right-3 z-30 bg-[#326824] text-white p-3 rounded-2xl shadow-2xl flex items-center justify-between cursor-pointer animate-fade-in-up border border-[#4a813a]"
+      @click="mobileTab = 'cart'"
+    >
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs">
+          {{ totalCartItemsCount }}
+        </div>
+        <div class="flex flex-col text-left">
+          <span class="text-[11px] font-semibold text-white/90">Đơn #{{ activeTab.name }} • {{ activeTab.tableNo }}</span>
+          <span class="text-sm font-black">{{ formatCurrency(finalPrice) }}</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-1 bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-xl text-xs font-bold">
+        <span>Xem giỏ & Thanh toán</span>
+        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+      </div>
+    </div>
 
     <!-- Shift End / Handover Modal -->
     <Dialog

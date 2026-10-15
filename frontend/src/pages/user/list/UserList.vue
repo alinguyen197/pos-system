@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import DataTable from 'primevue/datatable'
@@ -203,12 +203,12 @@ const confirmDelete = async () => {
           />
         </div>
 
-        <div class="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
+        <div class="flex items-center gap-2 overflow-x-auto scrollbar-none w-full sm:w-auto pb-1 sm:pb-0">
           <button
             v-for="r in roleFilterOptions"
             :key="r.code"
             @click="selectedRoleCode = r.code"
-            class="h-9 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center"
+            class="h-9 px-3.5 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer flex items-center shrink-0"
             :class="selectedRoleCode === r.code ? 'bg-[#8E3E2F] text-white shadow-sm' : 'bg-[#F2ECE4] text-[#42493d] hover:bg-[#E8DFD5]'"
           >
             {{ r.label }}

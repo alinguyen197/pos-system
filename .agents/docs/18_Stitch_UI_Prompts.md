@@ -1,334 +1,321 @@
-# Google Stitch — UI Prompts
+# Google Stitch — UI Prompts (Đồng bộ UI v2.0 - XUXI Management)
 
-## Các prompt bên dưới dùng để paste vào **Google Stitch** (stitch.withgoogle.com) để generate UI cho hệ thống Coffee Shop Management.
+Tài liệu tập hợp các **Stitch Prompts chuẩn hóa** dùng để paste vào **Google Stitch** (stitch.withgoogle.com) nhằm generate hoặc tái hiện giao diện cho hệ thống **Mì Trộn Cô Xi (XUXI Management System)**, hỗ trợ đa nền tảng Responsive (Desktop, iPad/Tablet, Điện thoại di động).
 
-## Prompt 1: Layout chung + Sidebar
+---
+
+## 🎨 Thông số Thiết kế & Bảng màu Chuẩn (Design System & Branding)
+
+- **Thương hiệu:** Mì Trộn Cô Xi — XUXI Management System
+- **Bảng màu chủ đạo:**
+  - **Primary Brand (Đỏ Nâu Mì Trộn):** `#8E3E2F` (Hover: `#6E281C`, Surface tint: `#F2ECE4`)
+  - **Success / Revenue (Xanh Lá Cây):** `#326824` (Hover: `#254f1b`, Light: `#c9edb5` / `#f0fdf4`)
+  - **Accent / Warning (Cam Đất):** `#C46D28` (Light: `#fff7ed`)
+  - **Danger / Error (Đỏ Đậm):** `#ba1a1a` (Light: `#ffdad6`)
+  - **Background Canvas:** `#F9F6F0`
+  - **Card / Surface:** `#FFFFFF`, Border: `#E2D7CC` (hoặc `rgba(193, 201, 185, 0.7)`)
+  - **Text Main:** `#1e1b1b` / `#2A1C16`, **Text Muted:** `#72796c` / `#6E584D`
+- **Typography:** `Be Vietnam Pro`, `Manrope`, `Inter` (Hỗ trợ tiếng Việt 100%).
+- **Bo góc & Hiệu ứng:** `rounded-xl` (12px), `rounded-2xl` (16px), shadow mịn màng, hiệu ứng chuyển động Spring Animation và Ripple.
+
+---
+
+## Prompt 1: Layout Chung, Header & Responsive Sidebar Drawer
 
 ```
-Design a modern coffee shop management web application with a clean, professional UI.
-Layout:
-- Left sidebar (240px width, dark brown #3E2723 background, white text) with:
-  - Logo area at top: coffee cup icon + "COFFEE SHOP" text
-  - Navigation menu items with icons:
-    1. Dashboard (chart icon)
-    2. Bán hàng (shopping cart icon)
-    3. Sản phẩm (coffee cup icon)
-    4. Kho nguyên liệu (warehouse icon)
-    5. Nhập kho (truck icon)
-    6. Người dùng (people icon)
-    7. Phân quyền (shield icon)
-    8. Thông báo (bell icon with red badge "3")
-  - Active menu item has lighter brown #5D4037 background with left border accent #FF9800
-  - User info at bottom: avatar circle + name "Nguyễn Văn A" + role "Quản lý" + logout icon
-- Top header bar (64px height, white background, bottom shadow):
-  - Left: Breadcrumb "Dashboard > Tổng quan"
-  - Right: Notification bell icon with red dot, user avatar dropdown
-- Main content area: light gray #F5F5F5 background with 24px padding
-Color palette: Primary brown #5D4037, Accent orange #FF9800, Success green #4CAF50, Error red #F44336, Background #F5F5F5, Cards white #FFFFFF.
-Font: Inter or Roboto, Vietnamese language support.
+Design a modern restaurant & coffee management web application layout for "Mì Trộn Cô Xi - XUXI Management". Clean, warm, premium F&B aesthetic. Vietnamese language.
+
+1. Responsive Sidebar Navigation:
+- Desktop (>= 1024px): 240px width, brand brown-red #8E3E2F background, white text.
+- Tablet (768px - 1023px): Collapsible icon-only mode (72px width).
+- Mobile Phone (< 768px): Off-Canvas slide-in Drawer (280px width) with dark backdrop scrim (blur 4px, background rgba(30, 27, 27, 0.65)), top brand logo area with close button (✕), auto-closing on route navigation.
+- Sidebar Content:
+  - Top Brand Box: Circular logo avatar + "Mì Trộn Cô Xi" bold title + "XUXI Management" subtitle.
+  - Navigation Items with emojis/icons:
+    1. 🏪 Tổng quan quán (/)
+    2. 🥢 Bán hàng (POS) (/pos)
+    3. 🍜 Thực đơn món (/products)
+    4. 🥬 Kho nguyên liệu (/ingredients)
+    5. 📦 Nhập hàng kho (/stock-imports/create)
+    6. 💸 Quản lý chi tiêu (/expenditures)
+    7. 👨‍🍳 Quản lý nhân viên (/users)
+    8. 📊 Báo cáo doanh số (/reports/sales)
+  - Active Item Style: Background rgba(255, 255, 255, 0.25), bold white text, elevated shadow.
+
+2. Top Header Bar (56px height, background #8E3E2F, sticky top):
+- Left: Hamburger button (toggles mobile drawer on phone, collapses sidebar on desktop) + Breadcrumb title (e.g., "Dashboard > Tổng quan", auto-truncates on mobile to "Tổng quan").
+- Right: Notification Bell icon with badge + User Profile Pill (Avatar circle + Staff name + Role badge like "Super Admin" / "Quản lý"). Clicking opens user profile popover with account status and logout button.
+
+3. Main Content Viewport:
+- Background: #F9F6F0, height: 100dvh, padding: 0.65rem (mobile) / 1rem (tablet) / 1.25rem (desktop), smooth vertical scrolling.
 ```
 
 ---
 
-## Prompt 2: Màn hình Dashboard
+## Prompt 2: Màn hình Tổng quan Quán (Dashboard)
 
 ```
-Design a Dashboard page for a coffee shop management system. Vietnamese language. Clean modern UI with brown/orange color scheme.
-Top row - 4 summary cards in a horizontal grid:
-- Card 1: "Doanh thu hôm nay" with large number "4,350,000 ₫", green up arrow "+12% so với hôm qua", icon: dollar sign on orange circle
-- Card 2: "Số đơn hàng" with large number "47", green up arrow "+5", icon: receipt on blue circle
-- Card 3: "Số ly đã bán" with large number "126", icon: coffee cup on brown circle
-- Card 4: "Tồn kho thấp" with large number "3" in red, icon: warning triangle on red circle
-Second row - 2 columns:
-- Left (60%): Line chart "Doanh thu 30 ngày gần nhất" with x-axis dates, y-axis VND amounts. Orange line with gradient fill below. Hover tooltip showing date + revenue.
-- Right (40%): Doughnut/Pie chart "Doanh thu theo danh mục" with segments: Cà phê (45% brown), Trà (25% green), Sinh tố (15% orange), Nước ép (10% yellow), Khác (5% gray). Legend below.
-Third row - 2 columns:
-- Left (50%): Table "Top 10 sản phẩm bán chạy" with columns: #, Tên sản phẩm, Danh mục, Số lượng bán, Doanh thu. Sample rows: 1. Cà phê sữa đá - Cà phê - 45 ly - 1,305,000₫. Horizontal bar indicator for quantity.
-- Right (50%): Card "Cảnh báo tồn kho" listing items with red/yellow warning badges: "Cà phê hạt Robusta: còn 2kg (tối thiểu 5kg)" with red badge, "Sữa tươi TH: còn 8 lít (tối thiểu 10 lít)" with yellow badge, "Trân châu đen: còn 1kg (tối thiểu 3kg)" with red badge. Each item has a "Nhập kho" button.
-All cards have white background, 8px border-radius, subtle shadow, 16px padding.
-```
+Design a real-time Analytics Dashboard page for "Mì Trộn Cô Xi". Vietnamese language. Modern Bento Grid layout with warm brown #8E3E2F and green #326824 theme.
 
----
+Top Header Banner:
+- Title "Tổng quan cửa hàng" + Subtitle "Báo cáo tình hình kinh doanh & tồn kho thời gian thực"
+- Responsive Actions: Refresh data button (spin icon), "Bán hàng POS" primary button (#8E3E2F), "Nhập kho NVL" secondary button (#F2ECE4). Auto-wrapping on mobile.
 
-## Prompt 3: Màn hình Bán hàng (POS) - Toàn diện 2.0
+Row 1 - 4 KPI Summary Cards (Grid: 1 col mobile, 2 cols tablet, 4 cols desktop):
+- Card 1: "Doanh thu hôm nay" with large bold currency "4,350,000 ₫", trend "+12% so với hôm qua", icon: payments on green circle #c9edb5.
+- Card 2: "Số đơn hàng" with large number "47", trend "+5 đơn so với hôm qua", icon: receipt_long.
+- Card 3: "Số phần đã bán" with large number "126", trend "Hôm nay", icon: restaurant.
+- Card 4: "Tồn kho thấp" with large number "2", trend "Cần bổ sung kho ngay", warning icon with red/peach background #ffdad6.
 
-```
-Design a Point-of-Sale (POS) screen for a coffee shop. Vietnamese language. Optimized for quick order taking by staff.
-Split layout - 2 panels:
+Row 2 - Charts Grid (1 col mobile, 3 cols desktop):
+- Left (2 cols): Line Chart "Doanh thu 30 ngày gần nhất" with curved tension, green line #326824, translucent fill below. Real-time badge in header.
+- Right (1 col): Doughnut Chart "Doanh thu theo danh mục" (Mì trộn, Topping, Đồ uống, Khác) with clean bottom legend.
 
-TOP BANNER:
-- Shift Summary Bar: "Doanh thu ca hiện tại: 4,250,000 ₫ (47 đơn • 126 ly)" in green text #326824 with trending icon.
+Row 3 - Tables Grid (1 col mobile, 2 cols desktop):
+- Left: "Top sản phẩm bán chạy" with columns: #, Tên sản phẩm, Số phần bán, Doanh thu. "Xem tất cả" link.
+- Right: "Cảnh báo tồn kho NVL" listing low-stock items with red badges, current quantity vs min threshold, and 1-click "Nhập hàng" button.
 
-LEFT PANEL (60% width) - Menu sản phẩm:
-- Top Search & Header:
-  - Search input with placeholder "Tìm kiếm sản phẩm theo tên hoặc mã SP..."
-  - "Lịch sử đơn" button with history icon next to search bar.
-- Category pills horizontally scrollable: "Tất cả" (active, green background #326824), "Cà phê", "Trà", "Sinh tố", "Bánh ngọt".
-- Below: Grid of product cards (4 columns), each card contains:
-  - Product image (square, rounded corners)
-  - Category tag in small brown uppercase text
-  - Product name: "Cà phê sữa đá"
-  - Price: "29,000 ₫" in bold green #326824
-  - Add icon button "+" to add to cart
-- Status indicator: "Tạm ngừng" red badge for inactive items.
-
-RIGHT PANEL (40% width) - Quản lý giỏ hàng & Đơn hàng:
-- Order Tabs Header:
-  - Scrollable tabs: "Đơn #1042" (active, brown background #8D6749), "Đơn #1043", and "+" button to add new draft order tabs.
-- Active Order Info Bar:
-  - "Đơn hàng #1042" | "Khách lẻ - Bàn 04" | Red Trash icon button to clear cart.
-- Order items list, each item row:
-  - Product name + Unit price aligned left
-  - Quantity control buttons (- / quantity / +)
-  - Subtotal aligned right
-  - Per-item text input field: "Ghi chú món (VD: ít đường, đá riêng...)"
-- Promo code input section:
-  - Text input placeholder "Nhập mã giảm giá (VD: GIAM10K)" + "Áp dụng" button.
-  - Preset suggestion chips: "GIAM10K", "FREESHIP".
-- Summary section:
-  - "Tạm tính (3 món): 93,000 ₫"
-  - "Giảm giá: -10,000 ₫"
-  - "Tổng cộng thanh toán: 83,000 ₫" in large bold green font.
-- Payment method selector: 4 toggle buttons "Tiền mặt" (active), "Quét QR", "Chuyển khoản", "Thẻ".
-- Large green button "THANH TOÁN 83,000 ₫" (full width, 48px height, arrow icon).
-
-MODAL & POPUP DIALOGS:
-1. VietQR Payment Dialog:
-   - Header "Thanh toán VietQR / Chuyển khoản"
-   - Centered VietQR Code image with amount "83,000 ₫" and transfer content "SKY DH1042".
-   - "Xác nhận Đã thu tiền" green button.
-2. Order History Modal:
-   - Header "Lịch sử đơn hàng gần đây"
-   - Data table columns: Mã đơn | Thời gian | Tổng tiền | PTTT | Trạng thái | Thao tác (Eye icon, Print icon, Cancel icon).
-   - Expandable Rows (>): Click expander arrow to view nested sub-table listing all sold products (image, product name, qty x unit price, subtotal, item notes).
-3. Order Details Modal:
-   - Header "Chi tiết đơn hàng #DH20260831-001"
-   - Header summary card + detailed list of products sold with images, unit prices, subtotals, item notes, payment summary, Print Bill button, and Cancel Order button.
-
-Color palette: Primary Green #326824, Warm Brown #8D6749, Soft Gray #F5ECEB, White Cards #FFFFFF.
-Font: Inter or Roboto, Vietnamese language support.
+All cards: White background, 16px border-radius, border #E2D7CC, subtle shadow.
 ```
 
 ---
 
-## Prompt 4: Màn hình Quản lý SSearch/Filter area (form layout with field labels):
-- Form with explicit field labels above inputs:
-  - Label "TỪ KHÓA TÌM KIẾM": Input "Tìm tên sản phẩm, mã SP..."
-  - Label "DANH MỤC SẢN PHẨM": Filterable Select Dropdown (with search input inside, options: Tất cả danh mục, Cà phê, Trà, Bánh ngọt)
-- Action buttons: "Tìm kiếm" (primary brown button with search icon, executes API query), "Đặt lại" (secondary light button with refresh icon, clears form inputs without calling API)
-Data table with columns:
-- Mã SP (sortable) | Tên sản phẩm (sortable) | Danh mục | Giá bán (sortable, right-aligned) | Cost NVL | % Lãi gộp | Trạng thái | Thao tác
-- Sample rows:
-  - SP-001 | Cà phê Robusta Đậm Đà | Cà phê | 29,000₫ | 8,500₫ | 70.7% | Green badge "Đang kinh doanh" | Edit/Delete icons
-  - SP-002 | Cà phê Arabica Thơm Nhẹ | Cà phê | 35,000₫ | 11,200₫ | 68.0% | Green badge "Đang kinh doanh" | Edit/Delete icons
-  - SP-005 | Matcha Latte Thượng Hạng | Trà | 45,000₫ | 15,500₫ | 65.6% | Red badge "Tạm ngừng" | Edit/Delete icons
-- Sortable column headers with ▲▼ arrows
-- Alternating row background colors
-Pagination bar at bottom:
-- Left: "Hiển thị 1 đến 10 trong tổng số 45 sản phẩm"
-- Right: "‹ Trước | 1 / 5 | Sau ›" + Dropdown "10 / trang" (options: 10, 20, 50)
-Table has white background, subtle borders, 16px border-radius on the card container.
+## Prompt 3: Màn hình Bán hàng POS (Responsive cho Mobile & iPad)
+
+```
+Design a Point-of-Sale (POS) order taking screen for "Mì Trộn Cô Xi". Vietnamese language. Ultra-responsive for both Desktop, iPad (tabletop POS), and Staff Mobile Phones.
+
+Responsive Layout Modes:
+- Desktop & iPad Landscape (>= 1024px): Side-by-side 2 panels (Left: Products 60%, Right: Cart & Checkout 40%).
+- Mobile Phone (< 768px):
+  - Top Segmented View Switcher: [ 🍜 Thực đơn món ] and [ 🛒 Giỏ hàng (N món) ].
+  - When in Menu view: Grid of products (2 columns) with a Floating Sticky Cart Bar at the bottom ("🛒 Đơn #1042 (N món) • [Total VNĐ] | Xem giỏ & Thanh toán ➔") clicking switches to cart.
+  - When in Cart view: Full cart breakdown with a top "← Tiếp tục chọn món" button.
+
+LEFT PANEL - Thực đơn món:
+1. Top Shift Summary Bar:
+   - Chip: "Ca sáng (06:00 - 14:00)" or "Ca chiều (14:00 - 22:00)" in green #326824.
+   - Current Staff name: "NV: Nguyễn Văn A".
+   - Real-time stats: Doanh thu ca | Đơn hàng | Số phần bán.
+   - Actions: "Kết ca" (opens shift handover dialog) + "Xem báo cáo" button.
+2. Search & Filter Bar:
+   - Search input: "Tìm kiếm sản phẩm theo tên hoặc mã SP..."
+   - "Lịch sử đơn" button next to search.
+   - Category filter pills: "Tất cả" (active #8E3E2F), "Mì trộn", "Topping", "Đồ uống", "Ăn kèm".
+3. Product Cards Grid (2 cols mobile, 3 cols tablet, 4 cols desktop):
+   - Square food photo (fallback bowl icon if no image).
+   - Category chip top-left, quick "+" add button top-right (#326824).
+   - Product name + Bold price (e.g., "35,000 ₫").
+   - Out of Stock handling: When out of stock, dimmed with badge "Hết nguyên liệu" - clicking opens Missing Ingredients popup showing which ingredients ran out.
+   - Suspended item handling: Dimmed with "Tạm ngừng" badge and blocked from selection.
+
+RIGHT PANEL - Giỏ hàng & Thanh toán:
+1. Order Tabs: "Đơn #1042" (active), "Đơn #1043", "+" create new draft tab button.
+2. Order Info & Clear: "Đơn hàng #1042 | Khách lẻ - Bàn 04", trash delete button.
+3. Promo Code Section: Input "Nhập mã giảm giá" + "Áp dụng" button + Suggestion chips "GIAM10K", "FREESHIP".
+4. Cart Items List (with smooth enter/exit animations):
+   - Item row: Name, price, [-] [qty input] [+] controls, subtotal.
+   - Per-item note input: "Ghi chú món (VD: ít cay, nhiều tương...)".
+5. Financial Summary:
+   - Tạm tính (N món)
+   - Giảm giá (-10,000 ₫)
+   - Tổng cộng thanh toán (Large bold green font #326824)
+6. Payment Method Selector: 4 toggle buttons "Tiền mặt", "Quét QR", "Chuyển khoản", "Thẻ".
+7. Large Checkout Button: "THANH TOÁN 85,000 ₫" (Green #326824, full-width).
+
+DIALOGS:
+- VietQR Dynamic Payment Modal: QR Code image with amount and transfer syntax "XUXI DH1042".
+- Shift End / Handover Modal: Detailed breakdown of cash, transfer, card revenue, print shift report, and logout.
+- Order History Modal: Searchable list of past orders with expandable item details.
 ```
 
 ---
 
-## Prompt 5: Form Thêm/Sửa Sản phẩm (Dialog & 3D BOM Recipe Editor)
+## Prompt 4: Màn hình Quản lý Thực đơn & Sản phẩm (Product List)
 
 ```
-Design a product management dialog and create screen with 3D BOM recipe costing and live image upload for a coffee shop management system. Vietnamese language.
-Layout specs:
-- Single Screen Viewport Layout (100vh): No main page body scroll. Header, search bar & pagination fixed, only internal data table body scrolls (`scrollable scrollHeight="flex"`).
-- Image Upload: Drag-drop & click file picker card (PNG, JPG max 5MB), live image preview, server upload endpoint `POST /api/upload`.
-- BOM Recipe Editor in Edit Product Dialog:
-  - Add ingredients from inventory stock with searchable Select dropdown
-  - Editable amount inputs per ingredient
-  - Real-time Cost NVL and Gross Profit Margin % calculation
-  - Saves recipe items to `product_recipes` table for automatic POS inventory deduction (`stockItem.quantity -= recipe.amount * soldQty`).
-- Global Toast Notifications: Un-scoped CSS `z-index: 999999999 !important` ensuring success/error toasts float strictly above all overlays.
-```
+Design a Product Management screen for "Mì Trộn Cô Xi". Vietnamese language. Single-viewport card table layout.
 
----
+Top Header:
+- Title "Quản lý Sản phẩm" + Subtitle "Danh sách thực đơn, định mức nguyên liệu BOM và trừ kho POS".
+- Action: "+ Thêm sản phẩm mới" primary button (#8E3E2F).
 
-## Prompt 6: Màn hình Quản lý Kho
+Search & Filter Bar (Form layout with explicit labels):
+- Label "TỪ KHÓA TÌM KIẾM": Input "Tìm tên sản phẩm, mã SP..."
+- Label "DANH MỤC SẢN PHẨM": Searchable Select Dropdown ("Tất cả danh mục", "Mì trộn", "Topping", "Đồ uống"...)
+- Action buttons: "Tìm kiếm" (primary brown #8E3E2F) and "Đặt lại" (secondary light #F2ECE4).
 
-```
-Design an Inventory Management page for a coffee shop. Vietnamese language.
-Top section:
-- Page title: "Quản lý kho nguyên liệu"
-- Buttons: "+ Thêm nguyên liệu mới" (brown), "Tạo phiếu nhập kho" (green outline button)
-Search area (Form search layout with field labels):
-- Label "TỪ KHÓA TÌM KIẾM": Input "Tìm tên nguyên liệu, mã NL..."
-- Label "PHÂN LOẠI KHO": Filterable Select Dropdown (with search input inside, options: Tất cả phân loại, Cà phê hạt, Sữa & Kem, Siro & Đường, Đóng gói)
-- Action buttons: "Tìm kiếm" (primary brown button, executes query), "Đặt lại" (secondary light button, clears form inputs only)
-Data table columns:
-- Mã NL (sortable) | Tên nguyên liệu (sortable) | Phân loại | Tồn kho / Ngưỡng min | ĐVT | Đơn giá vốn | Trạng thái kho | Thao tác
-Sample rows with status indicators:
-- NL-001 | Cà phê Robusta Hạt | Cà phê hạt | 15.5 / 5 | kg | 180,000 ₫ | 🟢 Green badge "Bình thường" | Edit/Delete icons
-- NL-002 | Cà phê Arabica Hạt | Cà phê hạt | 1.5 / 5 | kg | 260,000 ₫ | 🔴 Red badge "Cần nhập gấp" | Edit/Delete icons
-- NL-003 | Sữa tươi thanh trùng 1L | Sữa & Kem | 2 / 10 | hộp | 34,000 ₫ | 🟡 Yellow badge "Sắp hết" | Edit/Delete icons
-Progress bar in "Tồn kho" column: visual bar showing quantity relative to min_quantity. Red when below min, green when above.
-Server-side Pagination at bottom (lazy mode: page, pageSize, totalRecords).
+Data Table:
+- Columns: Mã SP (sortable) | Sản phẩm (image + name + category) | Giá bán (sortable, right aligned) | Giá vốn BOM | % Lãi gộp | Trạng thái (Green "Đang kinh doanh" / Red "Tạm ngừng") | Thao tác (Edit pencil, Clone copy, Delete trash).
+- Alternating subtle rows, hover highlight #FBF1F1.
+- Responsive horizontal scrolling for tablet & mobile.
+- Bottom Paginator: Page numbers, "Hiển thị 1 đến 10 trong tổng số...", rows per page dropdown (10, 20, 50).
+
+Edit Product Dialog:
+- Edit basic info (Name, Price, Category, Status, Image file upload).
+- BOM Recipe Editor: Add ingredients from stock with amount and auto unit conversion, live cost & gross profit calculation.
 ```
 
 ---
 
-## Prompt 8: Cute Coffee Pouring Loading Overlay (Global UI Loading)
+## Prompt 5: Màn hình Thêm Sản Phẩm & Tính Cost 3D (Product Create)
 
 ```
-Design a cute coffee pouring loading overlay for a coffee shop management web application. Vietnamese language.
-Full-screen modal backdrop overlay:
-- Fixed full-screen position, z-index 999999
-- Backdrop blur effect: backdrop-filter: blur(5px); background: rgba(30, 27, 27, 0.45);
-- Complete interaction lock: pointer-events: auto (blocks all user mouse/keyboard clicks on underlying screen while API calls execute).
-Centered white rounded glassmorphism card (280px width, 24px padding, shadow 2xl):
-- Animated Cute SVG Coffee Pouring Illustration:
-  - Top: Brown coffee filter dripper pot #8d6749
-  - Middle: Continuous dark coffee stream #5D4037 pouring downwards into cup
-  - Cute ceramic coffee cup with rounded handle #8d6749
-  - Rising liquid fill animation: Dark brown coffee liquid #5D4037 filling up from bottom to top with a smooth waving cream foam layer #FFE0B2 on top
-  - 3 steam lines wiggling and floating upwards from the cup
-- Text indicator below illustration:
-  - Title: "Đang pha cà phê..." in bold dark text with subtle pulse effect
-  - Subtitle: "Vui lòng chờ trong giây lát" in soft gray text
-```ác
-Sample rows with status indicators:
-- NL001 | Cà phê hạt Robusta | kg | 2.000 | 5.000 | 🔴 Red badge "Sắp hết" | 180,000₫/kg | Edit icon
-- NL002 | Sữa đặc Ông Thọ | hộp | 25 | 20 | 🟢 Green badge "Đủ" | 28,000₫/hộp | Edit icon
-- NL003 | Đường cát trắng | kg | 12.500 | 10.000 | 🟢 Green badge "Đủ" | 22,000₫/kg | Edit icon
-- NL004 | Sữa tươi TH | lít | 8.000 | 10.000 | 🟡 Yellow badge "Sắp hết" | 32,000₫/lít | Edit icon
-Progress bar in "Tồn kho" column: visual bar showing quantity relative to min_quantity. Red when below min, green when above.
-Pagination at bottom.
-```
+Design a Create Product page with 3D BOM Recipe Costing for "Mì Trộn Cô Xi". Vietnamese language.
 
----
+Header:
+- Title "Thêm sản phẩm & Tính Cost 3D" + Subtitle "Khai báo thông tin món và cấu hình định mức nguyên liệu (BOM)".
+- Actions: "Hủy bỏ" secondary button + "Lưu sản phẩm" primary button (#8E3E2F).
 
-## Prompt 7: Màn hình Nhập kho (Tạo đơn nhập kho)
+Bento Grid Section 1 - Thông tin cơ bản (Grid: 1 col mobile, 3 cols desktop):
+- Upload Card: Drag & drop image picker with live preview, upload status, file size validation (max 5MB).
+- General Info Card (2 cols):
+  - Tên sản phẩm * (Text input)
+  - Giá bán (VNĐ) * (Number input)
+  - Danh mục * (Searchable Select dropdown with "+ Nhập danh mục mới" toggle)
+  - Trạng thái kinh doanh toggle switch (Active / Inactive)
 
-```
-Design a Stock Import form page for a coffee shop. Vietnamese language.
-Page title: "Tạo đơn nhập kho mới"
-Top info section (card):
-- Row: "Nhà cung cấp" (searchable dropdown / text), "Kho nhập" (dropdown), "Thời gian nhập" (datetime picker, default now)
-- Row: "Ghi chú" textarea
-Item adding & calculator section (card):
-- Searchable ingredient dropdown, custom import unit selector (bình, chai, lon, kg, lít, hộp, thùng...), decimal quantity input (e.g. 2.1)
-- 2-way price calculator: "Tổng tiền mua" (e.g. 57,000₫) <-> "Đơn giá tính ra" (e.g. 27,143₫/kg)
-- Preview formula chip: "2.1 kg × 27,143₫ = 57,000₫"
-- "+ Thêm vào đơn" button
-Detail table section:
-- Header: "Danh sách nguyên liệu nhập" with total item badge
-- Editable table columns:
-  - # | Tên nguyên liệu | ĐVT nhập (editable) | Số lượng (number input) | Đơn giá nhập (number input) | Thành tiền (number input) | Xóa
-- Sample rows:
-  - 1 | Tương cà Cholimex | bình | [2.1] | [27,143] | 57,000₫
-  - 2 | Cà phê hạt Robusta | kg | [5.0] | [180,000] | 900,000₫
-- Summary card: "Tổng tiền đơn nhập: 957,000₫" green bold text
-Footer/Header actions:
-- "Hủy bỏ" (gray outline button)
-- "Lưu đơn nhập" (brown solid button, check icon)
+Bento Grid Section 2 - Định mức nguyên liệu BOM (Grid: 1 col mobile, 3 cols desktop):
+- BOM Costing Form (2 cols):
+  - Ingredient select from warehouse stock
+  - Input amount & unit (auto conversion e.g. g -> kg, ml -> lít)
+  - Table of added recipe ingredients with unit cost and delete button
+- Real-time Cost Summary Card (1 col):
+  - Total Cost price (VNĐ)
+  - Selling price (VNĐ)
+  - Gross profit margin % with visual progress meter.
 ```
 
 ---
 
-## Prompt 8: Màn hình Quản lý User
+## Prompt 6: Màn hình Quản lý Kho Nguyên liệu (Ingredient List)
 
 ```
-Design a User Management page for a coffee shop system. Vietnamese language.
-Page title: "Quản lý người dùng"
-Action: "+ Thêm người dùng" orange button
-Search area:
-- Input "Họ tên / Email", Dropdown "Vai trò" (Tất cả, Quản trị viên, Quản lý, Nhân viên, Chỉ xem), Dropdown "Trạng thái" (Tất cả, Hoạt động, Đã khóa)
-- "Tìm kiếm" button
-Data table columns:
-- Avatar | Họ tên | Email | Số điện thoại | Vai trò | Trạng thái | Ngày tạo | Thao tác
-Sample rows:
-- [Avatar circle "NA"] | Nguyễn Văn A | a.nguyen@email.com | 0901234567 | Blue badge "Quản trị viên" | Green dot "Hoạt động" | 26/08/2026 | Edit/Lock/Delete icons
-- [Avatar circle "TB"] | Trần Thị B | b.tran@email.com | 0907654321 | Orange badge "Quản lý" | Green dot "Hoạt động" | 26/08/2026 | Edit/Lock/Delete icons
-- [Avatar circle "LC"] | Lê Văn C | c.le@email.com | 0912345678 | Gray badge "Nhân viên" | Green dot "Hoạt động" | 26/08/2026 | Edit/Lock/Delete icons
-- [Avatar circle "PD"] | Phạm Văn D | d.pham@email.com | 0918765432 | Light gray badge "Chỉ xem" | Red dot "Đã khóa" | 26/08/2026 | Edit/Unlock/Delete icons
-Role badges have different colors. Status shown as colored dots.
-Pagination at bottom.
-```
+Design an Inventory Stock Management page for "Mì Trộn Cô Xi". Vietnamese language.
 
----
+Header:
+- Title "Quản lý Kho Nguyên liệu" + Subtitle "Theo dõi tồn kho thực tế, định mức cảnh báo và đơn giá vốn".
+- Actions: "Nhập kho NVL" button (#F2ECE4) + "Thêm nguyên liệu" primary button (#8E3E2F).
 
-## Prompt 9: Màn hình Thông báo
+Stock Status KPI Cards (Grid: 1 col mobile, 2 cols tablet, 5 cols desktop):
+1. Tổng nguyên liệu (e.g., 24 loại)
+2. Tổng giá trị kho (e.g., 18,500,000 ₫)
+3. An toàn (Green badge, e.g., 19 loại)
+4. Cần nhập / Sắp hết (Yellow badge, e.g., 3 loại)
+5. Đã hết hàng (Red badge, e.g., 2 loại)
 
-```
-Design a Notifications page for a coffee shop management system. Vietnamese language.
-Page title: "Thông báo" with badge count "(5 chưa đọc)"
-Filter tabs: "Tất cả" (active), "Chưa đọc (5)", "Đã đọc"
-Right side: "Đánh dấu tất cả đã đọc" text button (blue)
-Notification list (card-based, vertical stack):
-Each notification card has:
-- Left: Icon circle (color by type)
-- Center: Title (bold if unread) + Content text (gray) + Timestamp "2 phút trước"
-- Right: Blue dot indicator if unread
-Sample notifications (newest first):
-1. 🔴 [stock_alert] UNREAD - "Cảnh báo tồn kho" / "Cà phê hạt Robusta còn 2kg, dưới mức tối thiểu 5kg" / "5 phút trước" — Click navigates to stock detail
-2. 🟢 [order_new] UNREAD - "Đơn hàng mới" / "Đơn hàng DH20260826-047 đã được tạo - 93,000₫" / "15 phút trước"
-3. 🔵 [system] UNREAD - "Thông báo hệ thống" / "Hệ thống sẽ bảo trì từ 2:00 - 4:00 sáng ngày 27/08" / "1 giờ trước"
-4. 🟡 [security] READ - "Cảnh báo bảo mật" / "Phát hiện đăng nhập bất thường từ IP 192.168.1.100" / "3 giờ trước"
-5. 🟢 [order_new] READ - "Đơn hàng mới" / "Đơn hàng DH20260826-046 đã được tạo - 58,000₫" / "5 giờ trước"
-Unread cards have light orange-tinted left border and slightly different background.
-Read cards have normal white background.
-Pagination or "Tải thêm" button at bottom.
+Search Toolbar:
+- Input "Từ khóa tìm kiếm" + Select "Phân loại kho" (Tất cả, Thịt & Hải sản, Mì & Bột, Rau củ, Gia vị...) + "Tìm kiếm" & "Đặt lại" buttons.
+
+Data Table:
+- Columns: Mã NL | Tên nguyên liệu | Phân loại | Tồn kho thực tế / Ngưỡng min | ĐVT | Đơn giá vốn | Trạng thái kho (🟢 An toàn / 🟡 Sắp hết / 🔴 Hết hàng) | Thao tác (Sửa, Xóa).
+- Progress bar indicator showing remaining stock ratio against minimum safe threshold.
 ```
 
 ---
 
-## Prompt 10: Màn hình Login
+## Prompt 7: Màn hình Tạo Đơn Nhập Kho (Stock Import Create)
 
 ```
-Design a login page for a coffee shop management system. Vietnamese language. Warm, inviting design.
-Full-screen split layout:
-- Left half (50%): Large background image of a cozy coffee shop interior with warm lighting. Dark overlay gradient.
-  - Centered white text: Large "COFFEE SHOP" logo/text
-  - Subtitle: "Hệ thống quản lý quán cà phê"
-  - Small tagline: "Quản lý hiệu quả, phục vụ tận tâm"
-- Right half (50%): White background, centered login form card (400px width):
-  - "Đăng nhập" heading (24px, dark brown)
-  - Subtext: "Vui lòng nhập thông tin tài khoản"
-  - Email input field with envelope icon, placeholder "Email"
-  - Password input field with lock icon, placeholder "Mật khẩu", show/hide toggle eye icon
-  - "Ghi nhớ đăng nhập" checkbox
-  - "Đăng nhập" full-width button (brown #5D4037 background, white text, 44px height, rounded)
-  - Divider "hoặc"
-  - "Quên mật khẩu?" link text centered
-Color: Warm brown tones, orange accent. Professional but welcoming.
+Design a Stock Import Creation & History page for "Mì Trộn Cô Xi". Vietnamese language.
+
+Header:
+- Title "Quản lý & Nhập hàng kho" + Actions: "Về kho" button + "Lưu đơn nhập" primary button.
+
+Bento Grid Form:
+- Left: General Info Card (Nhà cung cấp, Kho nhập, Thời gian nhập, Ghi chú).
+- Right: Item Adding & Calculator (Searchable ingredient, custom packaging unit e.g. 5 thùng x 24 gói x 85g, 2-way price calculator: Tổng tiền mua <-> Đơn giá tính ra, "+ Thêm vào đơn" button).
+- Detail Table: List of added import items with quantities, units, prices, subtotals, and delete actions.
+- Grand total amount card in bold green font.
+
+Bottom Section:
+- Data table of recent stock import history with expander row to view invoice line items, edit and delete actions.
 ```
 
 ---
 
-## Prompt 11: Màn hình Phân quyền
+## Prompt 8: Màn hình Quản lý Chi tiêu & Dòng tiền (Expenditure Management)
 
 ```
-Design a Role-Screen Permission Management page for a coffee shop system. Vietnamese language.
-Page title: "Phân quyền màn hình"
-Description text: "Cấu hình quyền truy cập màn hình cho từng vai trò"
-Layout: Matrix/Grid table
-Columns: Màn hình | Admin | Quản lý | Nhân viên | Chỉ xem
-Each role column is split into 2 sub-columns: "Xem" (checkbox) | "Sửa" (checkbox)
-Rows (one per screen):
-- SC001 - Dashboard          | ☑ Xem ☑ Sửa | ☑ Xem ☑ Sửa | ☐ Xem ☐ Sửa | ☑ Xem ☐ Sửa
-- SC002 - Danh sách sản phẩm | ☑ Xem ☑ Sửa | ☑ Xem ☑ Sửa | ☑ Xem ☐ Sửa | ☑ Xem ☐ Sửa
-- SC003 - Thêm/Sửa sản phẩm | ☑ Xem ☑ Sửa | ☑ Xem ☑ Sửa | ☐ Xem ☐ Sửa | ☐ Xem ☐ Sửa
-- SC004 - Kho nguyên liệu    | ☑ Xem ☑ Sửa | ☑ Xem ☑ Sửa | ☑ Xem ☐ Sửa | ☑ Xem ☐ Sửa
-- SC005 - Nhập kho            | ☑ Xem ☑ Sửa | ☑ Xem ☑ Sửa | ☐ Xem ☐ Sửa | ☐ Xem ☐ Sửa
-- SC006 - Bán hàng (POS)      | ☑ Xem ☑ Sửa | ☑ Xem ☑ Sửa | ☑ Xem ☑ Sửa | ☐ Xem ☐ Sửa
-- SC007 - Quản lý người dùng  | ☑ Xem ☑ Sửa | ☐ Xem ☐ Sửa | ☐ Xem ☐ Sửa | ☐ Xem ☐ Sửa
-Admin column has all checkboxes checked and disabled (always full access).
-Checked checkboxes are orange. Unchecked are gray.
-Each checkbox change triggers auto-save with a small "Đã lưu" toast.
-Footer: "Lưu thay đổi" orange button + "Khôi phục mặc định" outline button.
-Table has sticky first column and sticky header. White card with subtle shadow.
+Design a Financial Cashflow & Expenditure Management page for "Mì Trộn Cô Xi". Vietnamese language. Modern financial dashboard.
+
+Header:
+- Title "Quản lý Chi tiêu & Dòng tiền" + Subtitle "Kiểm soát chi phí vận hành, tái cấu trúc mua sắm thiết bị và theo dõi tiền lời ròng thực tế".
+- Quick Period Selection Pills: "Hôm nay", "7 ngày qua", "Tháng này" (active #8E3E2F), "Quý này", "Tùy chọn" (with date range inputs).
+- Refresh button + "Lập phiếu chi mới" primary button (#8E3E2F).
+
+Real-time Financial KPI Cards (Grid: 1 col mobile, 2 cols tablet, 5 cols desktop):
+1. Tổng Thu Bán Hàng: Large bold number (Doanh thu POS hoàn thành) with green trending icon.
+2. Chi Nhập Kho NVL: Total ingredient purchase costs with brown inventory icon.
+3. Chi Phí Vận Hành & CSVC: Total operating and capital expenses with red receipt icon.
+4. Tiền Lời Ròng (Còn lại): Extra-large bold text with dynamic card styling:
+   - Green background #f0fdf4 if profitable: "🟢 LÃI DÒNG TIỀN = Thu - Tổng Chi"
+   - Red background #fff1f2 if deficit: "🔴 THÂM HỤT"
+5. Tỷ lệ Chi/Thu: Percentage metric (e.g., 42.5%) with blue pie chart icon.
+
+Filter & Search Toolbar:
+- Search input (Tiêu đề, mã phiếu, người nhận) + Phân loại dropdown (Tất cả, Tái đầu tư & CSVC, Vận hành, Mặt bằng, Lương & Thưởng, Marketing, Sửa chữa, Khác) + Phương thức thanh toán (Tiền mặt, Chuyển khoản, Thẻ).
+
+Expenditure Data Table:
+- Columns: Mã phiếu | Ngày chi | Phân loại (with category emoji) | Tiêu đề khoản chi | Số tiền chi (Bold red font) | PTTT | Người nhận / NCC | Người lập | Thao tác (Chi tiết, Sửa, Xóa).
+- Server-side pagination and sorting.
+
+Create/Edit Expenditure Modal:
+- Form fields: Phân loại, Tiêu đề khoản chi *, Số tiền (VNĐ) *, Ngày giờ chi, Phương thức thanh toán, Người nhận tiền / Đơn vị cung cấp, Ghi chú chi tiết, Đính kèm hình ảnh hóa đơn/chứng từ.
 ```
 
 ---
 
-## Ghi chú sử dụng
+## Prompt 9: Màn hình Báo cáo Bán hàng & Dòng tiền (Sales & Cashflow Report)
 
-1. Copy từng prompt vào Google Stitch tại https://stitch.withgoogle.com
-2. Sau khi generate, có thể tinh chỉnh bằng cách thêm yêu cầu bổ sung
-3. Export code từ Stitch → tích hợp vào project Vue.js theo cấu trúc tại `15_FE_Skeleton_Templates.md`
-4. Thay thế dữ liệu mẫu bằng API call thực tế
+```
+Design a Comprehensive Sales & Cashflow Report page for "Mì Trộn Cô Xi". Vietnamese language.
+
+Header:
+- Title "Báo cáo Bán hàng & Doanh số" + Subtitle "Phân tích chi tiết doanh thu theo ngày, danh mục, sản phẩm và dòng tiền".
+- Period Selection Pills: "Hôm nay", "7 ngày qua", "Tháng này", "Quý này", "Tùy chọn" + Export CSV button.
+
+Summary KPI Cards:
+- Tổng Doanh thu (VND) | Giá trị đơn TB (AOV) | Chi phí Nguyên liệu BOM (VND) | Lợi nhuận gộp & Tỷ lệ lãi gộp %.
+
+Scrollable Tab Navigation Bar:
+1. 📅 Chi tiết theo Ngày: Daily sales table with revenue, discount, cost, and gross profit.
+2. 🍱 Theo Danh mục: Revenue breakdown by category with bar charts.
+3. 🍜 Theo Món ăn: Searchable product performance table with total units sold and revenue.
+4. 💳 PTTT: Payment method breakdown (Cash, QR VietQR, Bank Transfer, Card).
+5. 👤 Theo Nhân viên: Staff sales performance table.
+6. 💸 Dòng tiền & Lợi nhuận Ròng:
+   - Dual Bar Chart: Comparing Monthly Total Revenue (Thu) vs Total Expenditure (Chi) vs Net Profit.
+   - Category expense breakdown table & daily net profit cashflow tracking.
+```
+
+---
+
+## Prompt 10: Màn hình Đăng nhập (Login Screen)
+
+```
+Design a Login page for "Mì Trộn Cô Xi - XUXI Management System". Vietnamese language. Clean, warm, appetizing aesthetic.
+
+Top Navbar:
+- Circular logo + "Mì Trộn Cô Xi" title + "XUXI • Hệ thống Quản lý" subtitle + "v2.0 RBAC" chip.
+
+Centered Card (460px max-width, white card, rounded-2xl, border #E2D7CC, shadow-xl):
+- Centered logo avatar + "Đăng nhập hệ thống" title.
+- Quick Demo Account Selector (4 pills):
+  - Admin (Super Admin - #8E3E2F)
+  - Quản lý (Manager - #6E281C)
+  - Nhân viên (Staff Cashier/Kitchen - #C46D28)
+  - Người xem (Viewer - #6E584D)
+- Form:
+  - Email input with user icon (placeholder: admin@skycoffee.vn)
+  - Password input with key icon & show/hide visibility toggle (default: 123123)
+  - Full-width "Đăng nhập hệ thống" primary button (#8E3E2F).
+- Background: Warm cream #F9F6F0 with soft blurred ambient glow accents.
+```
+
+---
+
+## Ghi chú Triển khai & Tích hợp
+
+1. Sao chép trực tiếp nội dung từng Prompt vào **Google Stitch** tại [stitch.withgoogle.com](https://stitch.withgoogle.com).
+2. Toàn bộ mã màu, font chữ, bố cục lưới Bento Grid, hành vi Responsive (Mobile Drawer, Tab Switcher, Floating Cart Bar) đều đã được chuẩn hóa đồng nhất 100% với source code tại `frontend/src`.

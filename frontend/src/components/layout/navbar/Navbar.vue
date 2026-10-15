@@ -5,7 +5,7 @@ import { useLayout } from '@/composables/useLayout'
 import { useAuth } from '@/composables/useAuth'
 
 const route = useRoute()
-const { isSidebarCollapsed } = useLayout()
+const { isSidebarCollapsed, isMobileSidebarOpen, closeMobileSidebar } = useLayout()
 const { isAllowedRoute } = useAuth()
 
 const allMenuItems = [
@@ -28,19 +28,51 @@ const isActiveRoute = (item: { path: string; matchPrefix: boolean }) => {
   if (item.matchPrefix) return route.path.startsWith(item.path)
   return route.path === item.path
 }
+
+const handleNavClick = () => {
+  closeMobileSidebar()
+}
 </script>
 
 <template>
-  <aside class="app-sidebar" :class="{ collapsed: isSidebarCollapsed }">
+  <!-- Mobile Backdrop Overlay -->
+  <Transition name="fade-backdrop">
+    <div
+      v-if="isMobileSidebarOpen"
+      class="sidebar-mobile-backdrop"
+      @click="closeMobileSidebar"
+      aria-hidden="true"
+    ></div>
+  </Transition>
+
+  <aside
+    class="app-sidebar"
+    :class="{
+      collapsed: isSidebarCollapsed,
+      'mobile-open': isMobileSidebarOpen,
+    }"
+  >
     <!-- Brand Logo -->
     <div class="brand-box">
-      <div class="brand-icon">
-        <img src="/logo.png" alt="Mì Trộn Cô Xi Logo" class="brand-logo-img" />
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="brand-icon">
+          <img src="/logo.png" alt="Mì Trộn Cô Xi Logo" class="brand-logo-img" />
+        </div>
+        <div class="brand-text">
+          <span class="title">Mì Trộn Cô Xi</span>
+          <span class="subtitle">XUXI Management</span>
+        </div>
       </div>
-      <div class="brand-text">
-        <span class="title">Mì Trộn Cô Xi</span>
-        <span class="subtitle">XUXI Management</span>
-      </div>
+      
+      <!-- Mobile Close Button (X) -->
+      <button
+        class="mobile-close-btn"
+        @click="closeMobileSidebar"
+        title="Đóng menu"
+        aria-label="Đóng menu"
+      >
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
     </div>
 
     <!-- Dynamic Navigation List based on Role -->
@@ -52,6 +84,7 @@ const isActiveRoute = (item: { path: string; matchPrefix: boolean }) => {
         class="nav-item"
         :class="{ active: isActiveRoute(item) }"
         :title="item.title"
+        @click="handleNavClick"
       >
         <span class="nav-emoji">{{ item.emoji }}</span>
         <span class="nav-title">{{ item.title }}</span>
@@ -61,3 +94,4 @@ const isActiveRoute = (item: { path: string; matchPrefix: boolean }) => {
 </template>
 
 <style scoped lang="scss" src="./Navbar.scss"></style>
+
