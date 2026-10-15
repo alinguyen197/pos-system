@@ -19,6 +19,7 @@
 | SC009 | Quản lý người dùng                   | /users                |
 | SC010 | Thêm người dùng mới                  | /users/new            |
 | SC011 | Quản lý Chi tiêu & Dòng tiền         | /expenditures         |
+| SC012 | Quản lý Khuyến mãi & Chiến dịch      | /promotions           |
 
 ---
 
@@ -230,6 +231,38 @@ Query params: `?period=today|7days|this_month|this_quarter|custom&from=YYYY-MM-D
   "notes": "Bổ sung đồ dùng phục vụ mở rộng khu vực sân vườn"
 }
 ```
+
+---
+
+## SC012 - Quản lý Khuyến mãi & Chiến dịch Sự kiện
+
+**Mô tả:** Màn hình quản lý trọn gói các chương trình khuyến mãi, sự kiện ưu đãi, mã giảm giá (voucher), theo dõi tỷ lệ sử dụng, số tiền đã ưu đãi cho khách và tích hợp tự động với màn hình bán hàng POS.  
+**Route Frontend:** GET `/promotions`  
+**Phân quyền truy cập:** `admin`, `manager`
+
+**Nghiệp vụ cốt lõi:**
+1. **Thiết lập mã Voucher:**
+   - Mã code duy nhất (tự động uppercase & trim, hỗ trợ sinh mã ngẫu nhiên dạng `SKY-XXXXX`).
+   - Hình thức chiết khấu: Giảm theo phần trăm (`PERCENT`, có thể kèm hạn mức giảm trần tối đa `maxDiscountAmount`) hoặc Giảm theo số tiền cố định (`FIXED_AMOUNT`).
+   - Ràng buộc: Giá trị đơn hàng tối thiểu (`minOrderAmount`), thời hạn áp dụng (`startDate` - `endDate`), giới hạn số lượt sử dụng toàn hệ thống (`usageLimit`).
+2. **Tích hợp thời gian thực với Màn hình POS (SC002):**
+   - Thu ngân chọn trực tiếp voucher từ Modal **"Khuyến mãi khả dụng"** hoặc nhập mã code thủ công.
+   - Hệ thống tự động tính toán số tiền giảm và cảnh báo nếu đơn hàng chưa đủ điều kiện (hỗ trợ gợi ý upsell khách mua thêm).
+   - Tự động gỡ mã nếu thu ngân bớt món trong giỏ hàng làm tổng tiền rớt xuống dưới mức tối thiểu.
+   - Khi hoàn tất đơn hàng, hệ thống khóa dòng trong Transaction để chống race condition và tự động tăng `usedCount`.
+3. **Lưu vết và In hóa đơn:**
+   - Đơn hàng lưu `promotionId` và `discountCode` để phục vụ báo cáo và in bill chi tiết.
+
+| Phương thức | Endpoint | Mô tả | Auth | Role |
+| :--- | :--- | :--- | :---: | :--- |
+| `GET` | `/api/promotions` | Lấy danh sách khuyến mãi, phân trang, tìm kiếm, lọc theo trạng thái và hình thức chiết khấu kèm KPI | ✅ | `admin`, `manager` |
+| `POST` | `/api/promotions` | Tạo mới chiến dịch khuyến mãi / mã voucher | ✅ | `admin`, `manager` |
+| `GET` | `/api/promotions/:id` | Xem chi tiết chiến dịch khuyến mãi | ✅ | `admin`, `manager` |
+| `PUT` | `/api/promotions/:id` | Cập nhật cấu hình khuyến mãi | ✅ | `admin`, `manager` |
+| `PATCH` | `/api/promotions/:id/status` | Bật / Tắt nhanh trạng thái chiến dịch (`active` <-> `inactive`) | ✅ | `admin`, `manager` |
+| `DELETE` | `/api/promotions/:id` | Xóa mềm chiến dịch khuyến mãi | ✅ | `admin` |
+| `GET` | `/api/promotions/active-list` | Lấy danh sách voucher đang hiệu lực cho Modal POS | ✅ | `admin`, `manager`, `staff` |
+| `POST` | `/api/promotions/validate` | Kiểm tra tính hợp lệ của mã và tính tiền giảm cho đơn POS | ✅ | `admin`, `manager`, `staff` |
 
 ---
 

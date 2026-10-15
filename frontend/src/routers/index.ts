@@ -12,7 +12,10 @@ export const routes = [
     path: '/',
     name: 'Dashboard',
     component: () => import('@/pages/dashboard/Dashboard.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'manager', 'staff', 'viewer'] },
+    meta: {
+      requiresAuth: true,
+      roles: ['admin', 'manager', 'staff', 'viewer'],
+    },
   },
   {
     path: '/pos',
@@ -54,7 +57,16 @@ export const routes = [
     path: '/expenditures',
     name: 'ExpenditureList',
     component: () => import('@/pages/expenditure/list/ExpenditureList.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'manager', 'staff', 'viewer'] },
+    meta: {
+      requiresAuth: true,
+      roles: ['admin', 'manager', 'staff', 'viewer'],
+    },
+  },
+  {
+    path: '/promotions',
+    name: 'PromotionList',
+    component: () => import('@/pages/promotion/list/PromotionList.vue'),
+    meta: { requiresAuth: true, roles: ['admin', 'manager'] },
   },
   {
     path: '/users',
@@ -72,7 +84,10 @@ export const routes = [
     path: '/reports/sales',
     name: 'SalesReport',
     component: () => import('@/pages/report/sales/SalesReport.vue'),
-    meta: { requiresAuth: true, roles: ['admin', 'manager', 'staff', 'viewer'] },
+    meta: {
+      requiresAuth: true,
+      roles: ['admin', 'manager', 'staff', 'viewer'],
+    },
   },
   {
     path: '/error',

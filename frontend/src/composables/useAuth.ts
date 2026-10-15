@@ -11,8 +11,32 @@ export interface AuthUser {
 
 // Role-based Screen Permissions Matrix
 export const ROLE_PERMISSIONS: Record<string, string[]> = {
-  admin: ['/', '/pos', '/products', '/products/create', '/ingredients', '/ingredients/create', '/stock-imports/create', '/expenditures', '/users', '/users/create', '/reports/sales'],
-  manager: ['/', '/pos', '/products', '/products/create', '/ingredients', '/ingredients/create', '/stock-imports/create', '/expenditures', '/reports/sales'],
+  admin: [
+    '/',
+    '/pos',
+    '/products',
+    '/products/create',
+    '/ingredients',
+    '/ingredients/create',
+    '/stock-imports/create',
+    '/expenditures',
+    '/promotions',
+    '/users',
+    '/users/create',
+    '/reports/sales',
+  ],
+  manager: [
+    '/',
+    '/pos',
+    '/products',
+    '/products/create',
+    '/ingredients',
+    '/ingredients/create',
+    '/stock-imports/create',
+    '/expenditures',
+    '/promotions',
+    '/reports/sales',
+  ],
   staff: ['/', '/pos', '/expenditures', '/reports/sales'],
   viewer: ['/', '/expenditures', '/reports/sales'],
 }
@@ -21,7 +45,9 @@ const getStoredUser = (): AuthUser => {
   try {
     const data = localStorage.getItem('user')
     if (data) return JSON.parse(data)
-  } catch (e) {}
+  } catch {
+    /* empty */
+  }
   const storedRole = localStorage.getItem('role')
   if (storedRole) {
     return {
@@ -57,10 +83,11 @@ export function useAuth() {
 
   const isAllowedRoute = (path: string, userRole?: string): boolean => {
     const targetRole = userRole || role.value || 'admin'
-    const allowedPaths = ROLE_PERMISSIONS[targetRole] || ROLE_PERMISSIONS['admin']
+    const allowedPaths =
+      ROLE_PERMISSIONS[targetRole] || ROLE_PERMISSIONS['admin']
 
     if (allowedPaths.includes(path)) return true
-    
+
     // Prefix matching for child routes (e.g. /products/create)
     return allowedPaths.some((p) => p !== '/' && path.startsWith(p))
   }

@@ -7,6 +7,8 @@ class Order extends Model {
   public status!: string
   public totalAmount!: number
   public discountAmount!: number
+  public promotionId?: number
+  public discountCode?: string
   public finalAmount!: number
   public paymentMethod!: string
   public note?: string
@@ -25,6 +27,12 @@ class Order extends Model {
       foreignKey: 'createdBy',
       as: 'creator',
     })
+    if (models.Promotion) {
+      Order.belongsTo(models.Promotion, {
+        foreignKey: 'promotionId',
+        as: 'promotion',
+      })
+    }
   }
 
   static initModel(sequelize: Sequelize) {
@@ -59,6 +67,14 @@ class Order extends Model {
           type: DataTypes.DOUBLE,
           allowNull: false,
           defaultValue: 0,
+        },
+        promotionId: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+        },
+        discountCode: {
+          type: DataTypes.STRING(50),
+          allowNull: true,
         },
         finalAmount: {
           type: DataTypes.DOUBLE,

@@ -10,6 +10,7 @@ import orderRouters from './orderRouters'
 import dashboardRouters from './dashboardRouters'
 import reportRouters from './reportRouters'
 import expenditureRouters from './expenditureRouters'
+import promotionRouters from './promotionRouters'
 
 const initWebRoutes = (app: Application) => {
   app.use('/api/auth', authRouters)
@@ -23,6 +24,7 @@ const initWebRoutes = (app: Application) => {
   app.use('/api/dashboard', dashboardRouters)
   app.use('/api/reports', reportRouters)
   app.use('/api/expenditures', expenditureRouters)
+  app.use('/api/promotions', promotionRouters)
 }
 
 export default initWebRoutes

@@ -12,11 +12,42 @@ const allMenuItems = [
   { path: '/', title: 'Tổng quan quán', emoji: '🏪', matchPrefix: false },
   { path: '/pos', title: 'Bán hàng (POS)', emoji: '🥢', matchPrefix: false },
   { path: '/products', title: 'Thực đơn món', emoji: '🍜', matchPrefix: true },
-  { path: '/ingredients', title: 'Kho nguyên liệu', emoji: '🥬', matchPrefix: true },
-  { path: '/stock-imports/create', title: 'Nhập hàng kho', emoji: '📦', matchPrefix: true },
-  { path: '/expenditures', title: 'Quản lý chi tiêu', emoji: '💸', matchPrefix: true },
-  { path: '/users', title: 'Quản lý nhân viên', emoji: '👨‍🍳', matchPrefix: true },
-  { path: '/reports/sales', title: 'Báo cáo doanh số', emoji: '📊', matchPrefix: true },
+  {
+    path: '/ingredients',
+    title: 'Kho nguyên liệu',
+    emoji: '🥬',
+    matchPrefix: true,
+  },
+  {
+    path: '/stock-imports/create',
+    title: 'Nhập hàng kho',
+    emoji: '📦',
+    matchPrefix: true,
+  },
+  {
+    path: '/expenditures',
+    title: 'Quản lý chi tiêu',
+    emoji: '💸',
+    matchPrefix: true,
+  },
+  {
+    path: '/promotions',
+    title: 'Quản lý khuyến mãi',
+    emoji: '🎟️',
+    matchPrefix: true,
+  },
+  {
+    path: '/users',
+    title: 'Quản lý nhân viên',
+    emoji: '👨‍🍳',
+    matchPrefix: true,
+  },
+  {
+    path: '/reports/sales',
+    title: 'Báo cáo doanh số',
+    emoji: '📊',
+    matchPrefix: true,
+  },
 ]
 
 const visibleMenuItems = computed(() => {

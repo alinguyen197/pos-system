@@ -322,6 +322,54 @@ Checked checkboxes are orange. Unchecked are gray.
 Each checkbox change triggers auto-save with a small "Đã lưu" toast.
 Footer: "Lưu thay đổi" orange button + "Khôi phục mặc định" outline button.
 Table has sticky first column and sticky header. White card with subtle shadow.
+---
+
+## Prompt 12: Màn hình Quản lý Khuyến mãi & Chiến dịch (SC012)
+
+```
+Design a modern, elegant Promotion and Campaign Management page for a coffee shop / food establishment management system. Vietnamese language.
+Color palette: Warm terracotta brown #8E3E2F, Forest green #326824, Canvas cream #F9F6F0, White cards #FFFFFF.
+Page Title: "Quản lý Khuyến mãi & Chiến dịch" with coupon emoji 🎟️
+Subtitle: "Thiết lập mã voucher ưu đãi, quản lý sự kiện khuyến mãi và theo dõi số lượt sử dụng thời gian thực"
+
+Header Bar:
+- Left: Page title and subtitle
+- Right: Refresh button with spin icon + "+ Tạo chiến dịch mới" primary button in dark red/brown #8E3E2F with add_circle icon.
+
+KPI Summary Cards (Grid of 4):
+1. "Đang áp dụng": green badge, large number "8", label "chiến dịch"
+2. "Sắp diễn ra": orange badge, large number "3", label "đã lên lịch"
+3. "Đã kết thúc": gray badge, large number "12", label "hết hạn"
+4. "Tổng tiền đã ưu đãi": terracotta brown badge, large currency amount "45,250,000 ₫"
+
+Search & Filter Bar:
+- Text search input: "Tìm theo mã voucher, tên sự kiện..."
+- Dropdown status: Tất cả trạng thái, Đang hoạt động, Sắp diễn ra, Tạm dừng, Đã hết hạn
+- Dropdown discount type: Tất cả hình thức, Theo phần trăm (%), Số tiền cố định (₫)
+- Action buttons: "Lọc" (#8E3E2F) and "Đặt lại" (outline white).
+
+Data Table (Single Screen Scrollable):
+- Columns:
+  1. Mã Voucher: dashed coupon badge with coupon icon, monospace bold code (e.g., CHAOHAN2026), click to copy.
+  2. Tên chiến dịch: Bold title + 1-line description.
+  3. Mức giảm: Tag green for percent (e.g., "Giảm 20% (Tối đa 30,000 ₫)") or brown for fixed (e.g., "Giảm 15,000 ₫").
+  4. Đơn tối thiểu: "Từ 80,000 ₫" or "Không yêu cầu".
+  5. Thời gian hiệu lực: "Từ: dd/mm/yyyy - Đến: dd/mm/yyyy".
+  6. Lượt dùng: Progress bar showing used_count / usage_limit (e.g., 45 / 100).
+  7. Trạng thái: Status badge + Toggle switch to quickly activate/pause campaign.
+  8. Thao tác: Edit icon button and Delete icon button.
+
+Create/Edit Modal Dialog (2 Columns):
+- Left (7 cols):
+  - Mã voucher with "Tạo ngẫu nhiên" button
+  - Tên chiến dịch
+  - Hình thức giảm (% or ₫) toggle buttons
+  - Mức giảm, Giảm tối đa, Đơn tối thiểu
+  - Bắt đầu & Kết thúc datetime pickers
+  - Giới hạn số lượt dùng (with "Không giới hạn" checkbox)
+  - Mô tả thể lệ
+- Right (5 cols):
+  - Realtime Graphic Coupon Card simulation with jagged cutout borders, gradient background, Sky Coffee branding, live discount value, and code box that updates dynamically with user input.
 ```
 
 ---

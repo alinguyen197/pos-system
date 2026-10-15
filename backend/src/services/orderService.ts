@@ -18,6 +18,8 @@ export interface CreateOrderPayload {
   items: CreateOrderItemPayload[]
   paymentMethod?: string
   discountAmount?: number
+  promotionId?: number
+  discountCode?: string
   note?: string
   createdBy?: number
 }
@@ -38,7 +40,15 @@ const createOrder = async (payload: CreateOrderPayload) => {
   try {
     await syncSequences()
 
-    const { items, paymentMethod = 'cash', discountAmount = 0, note, createdBy } = payload
+    const {
+      items,
+      paymentMethod = 'cash',
+      discountAmount = 0,
+      promotionId,
+      discountCode,
+      note,
+      createdBy,
+    } = payload
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       throw new Error('Danh sách món trong đơn hàng không được rỗng')
@@ -104,7 +114,33 @@ const createOrder = async (payload: CreateOrderPayload) => {
       })
     }
 
-    const finalDiscount = Number(discountAmount) || 0
+    let finalDiscount = Number(discountAmount) || 0
+    let appliedPromotionId = promotionId ? Number(promotionId) : null
+    let appliedDiscountCode = discountCode ? String(discountCode).trim().toUpperCase() : null
+
+    // Nếu có mã hoặc promotionId, kiểm tra và tăng lượt dùng trong transaction an toàn
+    if (appliedPromotionId || appliedDiscountCode) {
+      const promoWhere: any = { isDeleted: false }
+      if (appliedPromotionId) {
+        promoWhere.id = appliedPromotionId
+      } else if (appliedDiscountCode) {
+        promoWhere.code = appliedDiscountCode
+      }
+
+      const promo = await db.Promotion.findOne({
+        where: promoWhere,
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      })
+
+      if (promo) {
+        appliedPromotionId = promo.id
+        appliedDiscountCode = promo.code
+        // Tăng số lượt sử dụng
+        await promo.increment('usedCount', { by: 1, transaction })
+      }
+    }
+
     const finalAmount = Math.max(0, totalAmount - finalDiscount)
 
     // Create Order Header
@@ -115,6 +151,8 @@ const createOrder = async (payload: CreateOrderPayload) => {
         status: 'completed',
         totalAmount,
         discountAmount: finalDiscount,
+        promotionId: appliedPromotionId,
+        discountCode: appliedDiscountCode,
         finalAmount,
         paymentMethod,
         note,
@@ -230,6 +268,11 @@ const getOrders = async (queryParams: any = {}) => {
           as: 'items',
           include: [{ model: db.Product, as: 'product', attributes: ['id', 'code', 'name', 'imageUrl'] }],
         },
+        {
+          model: db.Promotion,
+          as: 'promotion',
+          attributes: ['id', 'code', 'name', 'discountType', 'discountValue'],
+        },
       ],
       order: [['id', 'DESC']],
       offset,
@@ -249,27 +292,28 @@ const getOrders = async (queryParams: any = {}) => {
 const getOrderById = async (id: string | number) => {
   try {
     let order = null
+    const orderIncludes = [
+      {
+        model: db.OrderItem,
+        as: 'items',
+        include: [{ model: db.Product, as: 'product', attributes: ['id', 'code', 'name', 'imageUrl'] }],
+      },
+      {
+        model: db.Promotion,
+        as: 'promotion',
+        attributes: ['id', 'code', 'name', 'discountType', 'discountValue'],
+      },
+    ]
+
     if (typeof id === 'number' || !isNaN(Number(id))) {
       order = await db.Order.findByPk(id, {
-        include: [
-          {
-            model: db.OrderItem,
-            as: 'items',
-            include: [{ model: db.Product, as: 'product', attributes: ['id', 'code', 'name', 'imageUrl'] }],
-          },
-        ],
+        include: orderIncludes,
       })
     }
     if (!order) {
       order = await db.Order.findOne({
         where: { orderNumber: String(id), isDeleted: false },
-        include: [
-          {
-            model: db.OrderItem,
-            as: 'items',
-            include: [{ model: db.Product, as: 'product', attributes: ['id', 'code', 'name', 'imageUrl'] }],
-          },
-        ],
+        include: orderIncludes,
       })
     }
     return order

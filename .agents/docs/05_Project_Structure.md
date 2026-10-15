@@ -149,7 +149,8 @@ coffee-trade-web/
 │   │   ├── http.ts             # Axios instance + interceptors
 │   │   ├── auth.api.ts
 │   │   ├── product.api.ts
-│   │   └── order.api.ts
+│   │   ├── order.api.ts
+│   │   └── promotion.api.ts
 │   │
 │   ├── assets/                 # Static assets & global SCSS
 │   │   ├── images/
@@ -235,6 +236,9 @@ coffee-trade-web/
 │   │   │   └── sales/
 │   │   │       ├── SalesReport.vue
 │   │   │       └── SalesReport.scss
+│   │   ├── promotion/
+│   │   │   └── list/
+│   │   │       └── PromotionList.vue
 │   │   └── error/
 │   │       └── notFound/
 │   │           ├── NotFoundPage.vue

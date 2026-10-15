@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
@@ -15,6 +15,11 @@ import {
   Order,
   ShiftSummary,
 } from '@/api/order.api'
+import {
+  fetchActivePromotions,
+  validatePromotion,
+  Promotion,
+} from '@/api/promotion.api'
 import { useAppToast } from '@/composables/useAppToast'
 
 interface CartItem {
@@ -30,6 +35,14 @@ interface OrderTab {
   cart: CartItem[]
   promoCode: string
   discountAmount: number
+  promotionId?: number
+  appliedPromotion?: {
+    id: number
+    code: string
+    name: string
+    discountType: string
+    discountValue: number
+  } | null
   paymentMethod: string
   note: string
 }
@@ -98,6 +111,8 @@ const orderTabs = ref<OrderTab[]>([
     cart: [],
     promoCode: '',
     discountAmount: 0,
+    promotionId: undefined,
+    appliedPromotion: null,
     paymentMethod: 'cash',
     note: '',
   },
@@ -159,6 +174,8 @@ const addTab = () => {
     cart: [],
     promoCode: '',
     discountAmount: 0,
+    promotionId: undefined,
+    appliedPromotion: null,
     paymentMethod: 'cash',
     note: '',
   })
@@ -171,6 +188,8 @@ const closeTab = (tabId: string) => {
     orderTabs.value[0].cart = []
     orderTabs.value[0].promoCode = ''
     orderTabs.value[0].discountAmount = 0
+    orderTabs.value[0].promotionId = undefined
+    orderTabs.value[0].appliedPromotion = null
     return
   }
   const idx = orderTabs.value.findIndex((t) => t.id === tabId)
@@ -213,6 +232,8 @@ const clearCart = () => {
   activeTab.value.cart = []
   activeTab.value.promoCode = ''
   activeTab.value.discountAmount = 0
+  activeTab.value.promotionId = undefined
+  activeTab.value.appliedPromotion = null
 }
 
 const setQty = (index: number, value: string | number) => {
@@ -239,34 +260,101 @@ const finalPrice = computed(() => {
   return Math.max(0, subtotalPrice.value - activeTab.value.discountAmount)
 })
 
-const applySuggestedPromoCode = (code: string) => {
-  activeTab.value.promoCode = code
-  applyPromoCode()
+// Voucher Picker State
+const showVoucherPickerModal = ref(false)
+const availablePromotions = ref<Promotion[]>([])
+const loadingVouchers = ref(false)
+const isValidatingPromo = ref(false)
+
+const openVoucherPicker = async () => {
+  showVoucherPickerModal.value = true
+  loadingVouchers.value = true
+  try {
+    availablePromotions.value = await fetchActivePromotions()
+  } catch (e) {
+    console.error('Fetch active promotions error:', e)
+  } finally {
+    loadingVouchers.value = false
+  }
 }
 
-const applyPromoCode = () => {
+const applyPromoFromPicker = (promo: Promotion) => {
+  activeTab.value.promoCode = promo.code
+  applyPromoCode()
+  showVoucherPickerModal.value = false
+}
+
+const applyPromoCode = async () => {
   const code = activeTab.value.promoCode.trim().toUpperCase()
   if (!code) {
-    activeTab.value.discountAmount = 0
+    removePromoCode()
     return
   }
-  if (code === 'GIAM10K') {
-    activeTab.value.discountAmount = 10000
-    showSuccess('Áp dụng mã GIAM10K: Giảm 10,000 ₫')
-  } else if (code === 'FREESHIP') {
-    activeTab.value.discountAmount = 15000
-    showSuccess('Áp dụng mã FREESHIP: Giảm 15,000 ₫')
-  } else if (
-    code.startsWith('GIAM') &&
-    !isNaN(Number(code.replace('GIAM', '')))
-  ) {
-    const amount = Number(code.replace('GIAM', ''))
-    activeTab.value.discountAmount = amount
-    showSuccess(`Áp dụng mã giảm ${amount.toLocaleString('vi-VN')} ₫`)
-  } else {
-    showWarning('Mã giảm giá không hợp lệ')
+  if (activeTab.value.cart.length === 0) {
+    showWarning('Vui lòng chọn sản phẩm vào giỏ hàng trước khi áp dụng mã')
+    return
+  }
+
+  isValidatingPromo.value = true
+  try {
+    const res = await validatePromotion({
+      code,
+      subtotal: subtotalPrice.value,
+    })
+    activeTab.value.promoCode = res.code
+    activeTab.value.discountAmount = res.discountAmount
+    activeTab.value.promotionId = res.promotionId
+    activeTab.value.appliedPromotion = {
+      id: res.promotionId,
+      code: res.code,
+      name: res.name,
+      discountType: res.discountType,
+      discountValue: res.discountValue,
+    }
+    showSuccess(res.message)
+  } catch (err: any) {
+    const msg =
+      err?.response?.data?.message || err?.message || 'Mã giảm giá không hợp lệ'
+    activeTab.value.discountAmount = 0
+    activeTab.value.promotionId = undefined
+    activeTab.value.appliedPromotion = null
+    showWarning(msg)
+  } finally {
+    isValidatingPromo.value = false
   }
 }
+
+const removePromoCode = () => {
+  activeTab.value.promoCode = ''
+  activeTab.value.discountAmount = 0
+  activeTab.value.promotionId = undefined
+  activeTab.value.appliedPromotion = null
+}
+
+// Auto re-validate promotion if cart subtotal changes
+watch(subtotalPrice, (newSubtotal) => {
+  if (activeTab.value.appliedPromotion && activeTab.value.discountAmount > 0) {
+    if (newSubtotal === 0) {
+      removePromoCode()
+    } else {
+      validatePromotion({
+        code: activeTab.value.promoCode,
+        subtotal: newSubtotal,
+      })
+        .then((res) => {
+          activeTab.value.discountAmount = res.discountAmount
+        })
+        .catch((err) => {
+          const msg =
+            err?.response?.data?.message ||
+            err?.message ||
+            'Mã giảm giá không còn đủ điều kiện áp dụng'
+          removePromoCode()
+          showWarning(`Đã gỡ mã: ${msg}`)
+        })
+    }
+  }
+})
 
 // Payment & VietQR Dialog State
 const showQrModal = ref(false)
@@ -319,6 +407,10 @@ const processSubmitOrder = async () => {
       items: itemsPayload,
       paymentMethod: activeTab.value.paymentMethod,
       discountAmount: activeTab.value.discountAmount,
+      promotionId: activeTab.value.promotionId,
+      discountCode: activeTab.value.promoCode
+        ? activeTab.value.promoCode.trim().toUpperCase()
+        : undefined,
       note: activeTab.value.note || `Đơn POS ${activeTab.value.tableNo}`,
     }
 
@@ -842,35 +934,73 @@ onMounted(() => {
 
       <!-- Scrollable Cart Content -->
       <div class="flex-1 space-y-3 overflow-y-auto p-4">
-        <!-- Promo Code Input -->
-        <div class="space-y-1.5">
-          <div class="flex gap-2">
-            <input
-              v-model="activeTab.promoCode"
-              type="text"
-              placeholder="Nhập mã giảm giá (VD: GIAM10K)"
-              class="h-10 flex-1 rounded-xl border border-[#c1c9b9]/70 bg-white px-3.5 text-xs text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
-            />
+        <!-- Promo Code Input & Voucher Selector -->
+        <div class="space-y-2">
+          <!-- Applied Voucher Banner (if applied) -->
+          <div
+            v-if="activeTab.discountAmount > 0"
+            class="flex items-center justify-between rounded-xl border border-dashed border-[#326824] bg-[#326824]/10 p-2 text-xs"
+          >
+            <div class="flex min-w-0 items-center gap-2">
+              <span class="material-symbols-outlined text-base text-[#326824]"
+                >verified</span
+              >
+              <div class="min-w-0">
+                <p class="truncate font-bold text-[#326824]">
+                  {{ activeTab.appliedPromotion?.name || activeTab.promoCode }}
+                </p>
+                <p class="text-[10px] text-[#42493d]">
+                  Tiết kiệm
+                  <strong class="text-[#326824]">{{
+                    formatCurrency(activeTab.discountAmount)
+                  }}</strong>
+                  cho đơn hàng
+                </p>
+              </div>
+            </div>
             <button
-              @click="applyPromoCode"
-              class="flex h-10 cursor-pointer items-center justify-center rounded-xl bg-[#8E3E2F] px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6E281C]"
+              @click="removePromoCode"
+              class="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-lg text-red-500 transition hover:bg-red-100"
+              title="Hủy áp dụng mã này"
             >
-              Áp dụng
+              <span class="material-symbols-outlined text-sm">close</span>
             </button>
           </div>
-          <div class="flex items-center gap-1.5">
-            <span class="text-[10px] font-semibold text-[#72796c]">Gợi ý:</span>
+
+          <!-- Input Row (if not applied or changing) -->
+          <div v-else class="space-y-1.5">
+            <div class="flex gap-2">
+              <input
+                v-model="activeTab.promoCode"
+                @keyup.enter="applyPromoCode"
+                type="text"
+                placeholder="Nhập mã voucher (VD: CHAOHAN2026)"
+                class="h-10 flex-1 rounded-xl border border-[#c1c9b9]/70 bg-white px-3.5 font-mono text-xs font-bold uppercase text-[#1e1b1b] outline-none focus:border-[#8E3E2F] focus:ring-2 focus:ring-[#8E3E2F]/20"
+              />
+              <button
+                @click="applyPromoCode"
+                :disabled="isValidatingPromo"
+                class="flex h-10 cursor-pointer items-center justify-center gap-1 rounded-xl bg-[#8E3E2F] px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6E281C] disabled:opacity-50"
+              >
+                <span
+                  v-if="isValidatingPromo"
+                  class="material-symbols-outlined animate-spin text-sm"
+                  >refresh</span
+                >
+                <span>Áp dụng</span>
+              </button>
+            </div>
+
+            <!-- Open Voucher Picker Button -->
             <button
-              @click="applySuggestedPromoCode('GIAM10K')"
-              class="flex h-6 cursor-pointer items-center rounded-lg border border-[#c1c9b9]/60 bg-[#F2ECE4] px-2.5 text-[10px] font-bold text-[#8E3E2F] transition hover:bg-[#E8DFD5]"
+              type="button"
+              @click="openVoucherPicker"
+              class="flex h-8 w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-dashed border-[#8E3E2F]/60 bg-[#8E3E2F]/5 px-3 text-[11px] font-bold text-[#8E3E2F] transition hover:bg-[#8E3E2F]/15"
             >
-              GIAM10K
-            </button>
-            <button
-              @click="applySuggestedPromoCode('FREESHIP')"
-              class="flex h-6 cursor-pointer items-center rounded-lg border border-[#c1c9b9]/60 bg-[#F2ECE4] px-2.5 text-[10px] font-bold text-[#8E3E2F] transition hover:bg-[#E8DFD5]"
-            >
-              FREESHIP
+              <span class="material-symbols-outlined text-sm"
+                >confirmation_number</span
+              >
+              <span>Chọn khuyến mãi & voucher khả dụng</span>
             </button>
           </div>
         </div>
@@ -1444,7 +1574,13 @@ onMounted(() => {
             class="flex justify-between text-[#326824]"
             v-if="selectedOrderDetail.discountAmount > 0"
           >
-            <span>Mã giảm giá:</span>
+            <span
+              >Mã giảm giá{{
+                selectedOrderDetail.discountCode
+                  ? ` (${selectedOrderDetail.discountCode})`
+                  : ''
+              }}:</span
+            >
             <span class="font-semibold"
               >-{{ formatCurrency(selectedOrderDetail.discountAmount) }}</span
             >
@@ -1542,7 +1678,13 @@ onMounted(() => {
             class="flex justify-between"
             v-if="selectedPrintOrder.discountAmount > 0"
           >
-            <span>Giảm giá:</span>
+            <span
+              >Giảm giá{{
+                selectedPrintOrder.discountCode
+                  ? ` (${selectedPrintOrder.discountCode})`
+                  : ''
+              }}:</span
+            >
             <span
               >-{{ formatCurrency(selectedPrintOrder.discountAmount) }}</span
             >
@@ -1656,6 +1798,193 @@ onMounted(() => {
             label="Đã hiểu"
             severity="secondary"
             @click="showMissingIngredientsModal = false"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Voucher Picker Dialog Modal -->
+    <Dialog
+      v-model:visible="showVoucherPickerModal"
+      modal
+      header="Khuyến mãi & Voucher khả dụng"
+      :style="{ width: '560px', maxWidth: '95vw' }"
+    >
+      <div class="space-y-4 py-1 text-xs">
+        <!-- Subtotal reminder banner -->
+        <div
+          class="flex items-center justify-between rounded-xl border border-[#E2D7CC] bg-[#F9F6F0] p-3"
+        >
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-lg text-[#8E3E2F]"
+              >shopping_bag</span
+            >
+            <span class="text-xs text-[#42493d]"
+              >Tạm tính giỏ hàng hiện tại:</span
+            >
+          </div>
+          <span class="font-display text-sm font-bold text-[#1e1b1b]">{{
+            formatCurrency(subtotalPrice)
+          }}</span>
+        </div>
+
+        <div
+          v-if="loadingVouchers"
+          class="py-10 text-center text-xs text-[#72796c]"
+        >
+          <span
+            class="material-symbols-outlined animate-spin text-3xl text-[#8E3E2F]"
+            >refresh</span
+          >
+          <p class="mt-2">Đang tải danh sách ưu đãi...</p>
+        </div>
+
+        <div
+          v-else-if="availablePromotions.length === 0"
+          class="py-10 text-center text-xs text-[#72796c]"
+        >
+          <span class="material-symbols-outlined text-3xl text-[#c1c9b9]"
+            >loyalty</span
+          >
+          <p class="mt-2">
+            Hiện chưa có chiến dịch khuyến mãi nào đang kích hoạt
+          </p>
+        </div>
+
+        <div v-else class="max-h-[420px] space-y-3 overflow-y-auto pr-1">
+          <!-- Eligible Vouchers Section -->
+          <div
+            v-if="
+              availablePromotions.some((p) => subtotalPrice >= p.minOrderAmount)
+            "
+            class="space-y-2"
+          >
+            <p
+              class="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#326824]"
+            >
+              <span class="material-symbols-outlined text-sm"
+                >check_circle</span
+              >
+              <span>Đủ điều kiện áp dụng</span>
+            </p>
+
+            <div
+              v-for="p in availablePromotions.filter(
+                (p) => subtotalPrice >= p.minOrderAmount,
+              )"
+              :key="p.id"
+              class="relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-[#326824]/40 bg-white p-3 shadow-sm transition hover:border-[#326824]"
+            >
+              <div class="min-w-0 flex-1 space-y-1">
+                <div class="flex items-center gap-2">
+                  <span
+                    class="rounded-md border border-dashed border-[#8E3E2F]/50 bg-[#8E3E2F]/10 px-2 py-0.5 font-mono text-xs font-bold text-[#8E3E2F]"
+                  >
+                    {{ p.code }}
+                  </span>
+                  <span class="truncate font-bold text-[#1e1b1b]">{{
+                    p.name
+                  }}</span>
+                </div>
+                <p class="text-[11px] text-[#42493d]">
+                  <span
+                    v-if="p.discountType === 'PERCENT'"
+                    class="font-semibold text-[#326824]"
+                  >
+                    Giảm {{ p.discountValue }}%
+                    <span v-if="p.maxDiscountAmount"
+                      >(Tối đa {{ formatCurrency(p.maxDiscountAmount) }})</span
+                    >
+                  </span>
+                  <span v-else class="font-semibold text-[#326824]">
+                    Giảm {{ formatCurrency(p.discountValue) }}
+                  </span>
+                  • Đơn từ {{ formatCurrency(p.minOrderAmount) }}
+                </p>
+                <p
+                  v-if="p.description"
+                  class="line-clamp-1 text-[10px] text-[#72796c]"
+                >
+                  {{ p.description }}
+                </p>
+              </div>
+
+              <button
+                @click="applyPromoFromPicker(p)"
+                class="flex h-8 shrink-0 cursor-pointer items-center gap-1 rounded-xl bg-[#326824] px-3.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#255219] active:scale-95"
+              >
+                <span>Áp dụng</span>
+                <span class="material-symbols-outlined text-xs"
+                  >arrow_forward</span
+                >
+              </button>
+            </div>
+          </div>
+
+          <!-- Ineligible Vouchers Section (Upsell suggestions) -->
+          <div
+            v-if="
+              availablePromotions.some((p) => subtotalPrice < p.minOrderAmount)
+            "
+            class="space-y-2 pt-2"
+          >
+            <p
+              class="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[#72796c]"
+            >
+              <span class="material-symbols-outlined text-sm"
+                >add_shopping_cart</span
+              >
+              <span>Mua thêm để nhận ưu đãi</span>
+            </p>
+
+            <div
+              v-for="p in availablePromotions.filter(
+                (p) => subtotalPrice < p.minOrderAmount,
+              )"
+              :key="p.id"
+              class="flex items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-gray-50/70 p-3 opacity-80"
+            >
+              <div class="min-w-0 flex-1 space-y-1">
+                <div class="flex items-center gap-2">
+                  <span
+                    class="rounded-md border border-dashed border-gray-300 bg-gray-200 px-2 py-0.5 font-mono text-xs font-bold text-gray-600"
+                  >
+                    {{ p.code }}
+                  </span>
+                  <span class="truncate font-bold text-gray-800">{{
+                    p.name
+                  }}</span>
+                </div>
+                <p class="text-[11px] text-gray-600">
+                  <span v-if="p.discountType === 'PERCENT'"
+                    >Giảm {{ p.discountValue }}%</span
+                  >
+                  <span v-else>Giảm {{ formatCurrency(p.discountValue) }}</span>
+                  • Đơn từ {{ formatCurrency(p.minOrderAmount) }}
+                </p>
+                <p class="text-[11px] font-semibold text-[#8E3E2F]">
+                  💡 Mua thêm
+                  {{ formatCurrency(p.minOrderAmount - subtotalPrice) }} để áp
+                  dụng mã này
+                </p>
+              </div>
+
+              <div class="shrink-0 text-center">
+                <span
+                  class="rounded-lg bg-gray-200 px-2 py-1 text-[10px] font-bold text-gray-600"
+                  >Chưa đủ ĐK</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <div class="flex justify-end">
+          <Button
+            label="Đóng"
+            severity="secondary"
+            @click="showVoucherPickerModal = false"
           />
         </div>
       </template>

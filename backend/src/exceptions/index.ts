@@ -12,6 +12,12 @@ export class AppError extends Error {
   }
 }
 
+export class BadRequestError extends AppError {
+  constructor(message = 'Yêu cầu không hợp lệ.') {
+    super(400, message, 'MSG_ERR_COM_00400')
+  }
+}
+
 export class ValidationError extends AppError {
   public errors: Array<{ field: string; messageCode: string; message: string }>
 

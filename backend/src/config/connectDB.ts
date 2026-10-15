@@ -24,11 +24,13 @@ export const syncAllPostgresSequences = async () => {
       await db.sequelize.query(`ALTER TABLE stock_items DROP COLUMN IF EXISTS "conversionRate";`)
       await db.sequelize.query(`ALTER TABLE product_recipes DROP COLUMN IF EXISTS "quantityNeeded";`)
       await db.sequelize.query(`ALTER TABLE product_recipes ALTER COLUMN amount DROP NOT NULL;`)
+      await db.sequelize.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS "promotionId" INTEGER;`)
+      await db.sequelize.query(`ALTER TABLE orders ADD COLUMN IF NOT EXISTS "discountCode" VARCHAR(50);`)
     } catch (tblErr) {
       // Bỏ qua nếu bảng đã tồn tại hoặc đã xử lý DDL
     }
 
-    // Đồng bộ lại Sequence ID cho toàn bộ 10 bảng (tránh lỗi duplicate key khi insert sau khi seed)
+    // Đồng bộ lại Sequence ID cho toàn bộ các bảng (tránh lỗi duplicate key khi insert sau khi seed)
     const tables = [
       'users',
       'products',
@@ -42,6 +44,7 @@ export const syncAllPostgresSequences = async () => {
       'expenditures',
       'otp_codes',
       'refresh_tokens',
+      'promotions',
     ]
     for (const table of tables) {
       try {
@@ -75,6 +78,10 @@ export const connectDB = async () => {
     // 4. Tự động seed dữ liệu MasterCode (bao gồm nhóm UNIT) vào DB khi startup
     await masterCodeService.seedInitialMasterCodes()
     console.log('✅ Master code seed data (including UNIT) synchronized into database!')
+
+    // 5. Tự động seed dữ liệu khuyến mãi ban đầu nếu chưa có
+    const promotionService = require('../services/promotionService').default
+    await promotionService.seedInitialPromotions()
   } catch (error) {
     console.error('❌ Unable to connect to the database:', error)
   }

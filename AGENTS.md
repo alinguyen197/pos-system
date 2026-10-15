@@ -24,3 +24,5 @@ Bất kỳ công việc nào đều tuân theo 2 quy trình đóng gói dưới 
 - `06_Coding_Convention.md` & `08_Database_Convention.md`: Quy chuẩn đặt tên & DB
 - `15_FE_Skeleton_Templates.md` & `16_BE_Skeleton_Templates.md`: Template mẫu code FE & BE
 - `18_Stitch_UI_Prompts.md` & `20_Screen_Docs_SC001_SC010.md`: Thiết kế UI & Màn hình
+- `22_Full_System_Business_Operations_Manual.md`: Sổ tay Vận hành & Tài liệu Nghiệp vụ Toàn diện Hệ thống Sky Coffee (Master Unified Edition)
+

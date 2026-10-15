@@ -17,6 +17,7 @@
 | 1.2 | 2026-08-26 | Thêm 4 bảng: refresh_tokens, roles, role_screens, notifications                                                        | KhoaNA15        |
 | 1.3 | 2026-08-29 | Tối ưu 100% UI: Bổ sung avatar_url cho users, cost_price cho products, bổ sung bảng product_recipes (BOM định mức NVL) | Sky Agent       |
 | 1.4 | 2026-10-07 | Thêm bảng `expenditures` quản lý phiếu chi, phân loại chi tiêu vận hành & tái đầu tư CSVC, báo cáo dòng tiền ròng        | Sky Agent       |
+| 1.5 | 2026-10-15 | Thêm bảng `promotions` (quản lý voucher & chiến dịch sự kiện), bổ sung `promotion_id` và `discount_code` vào `orders`  | Sky Agent       |
 
 ---
 
@@ -28,7 +29,8 @@
 | Phân quyền màn hình | Role nào được vào màn hình nào               | `roles`, `role_screens`                                |
 | Quản lý sản phẩm    | Nhập menu, giá bán, Cost NVL & Định mức      | `categories`, `products`, `product_recipes`            |
 | Quản lý kho         | Nhập kho nguyên liệu, theo dõi tồn kho       | `stock_items`, `stock_imports`, `stock_import_details` |
-| Bán hàng trong ngày | Tạo đơn, ghi nhận từng ly bán                | `orders`, `order_items`                                |
+| Bán hàng trong ngày | Tạo đơn, ghi nhận từng ly bán, áp voucher KM | `orders`, `order_items`, `promotions`                  |
+| Quản lý Khuyến mãi  | CRUD chiến dịch, mã voucher, giảm %, hạn mức | `promotions`, `orders`                                 |
 | Quản lý Chi tiêu    | CRUD phiếu chi, mua sắm CSVC, chi phí khác   | `expenditures`, `users`                                |
 | Báo cáo Dòng tiền   | Dòng tiền Thu - Chi, Lợi nhuận ròng thực tế  | `orders`, `stock_imports`, `expenditures`              |
 | Dashboard           | Thống kê doanh số, top sản phẩm              | Truy vấn từ `orders`, `order_items`, `products`        |
@@ -176,11 +178,32 @@ erDiagram
         varchar status
         decimal total_amount
         decimal discount_amount
+        int promotion_id FK
+        varchar discount_code
         decimal final_amount
         varchar payment_method
         text note
         uuid created_by FK
         boolean is_deleted
+        timestamp created_at
+        timestamp updated_at
+    }
+    promotions {
+        int id PK
+        varchar code UK
+        varchar name
+        text description
+        varchar discount_type
+        decimal discount_value
+        decimal min_order_amount
+        decimal max_discount_amount
+        timestamp start_date
+        timestamp end_date
+        int usage_limit
+        int used_count
+        varchar status
+        boolean is_deleted
+        int created_by FK
         timestamp created_at
         timestamp updated_at
     }
@@ -198,7 +221,9 @@ erDiagram
     products ||--o{ product_recipes : "has recipe"
     stock_items ||--o{ product_recipes : "used in"
     orders ||--|{ order_items : "contains"
+    promotions ||--o{ orders : "applied in"
     users ||--o{ orders : "creates"
+    users ||--o{ promotions : "creates"
     users ||--o{ stock_imports : "imports"
     stock_imports ||--|{ stock_import_details : "contains"
     stock_items ||--o{ stock_import_details : "imported in"

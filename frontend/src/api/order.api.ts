@@ -12,6 +12,8 @@ export interface CreateOrderPayload {
   items: CreateOrderItemPayload[]
   paymentMethod?: string
   discountAmount?: number
+  promotionId?: number
+  discountCode?: string
   note?: string
   createdBy?: number
 }
@@ -39,6 +41,15 @@ export interface Order {
   status: string
   totalAmount: number
   discountAmount: number
+  promotionId?: number
+  discountCode?: string
+  promotion?: {
+    id: number
+    code: string
+    name: string
+    discountType: string
+    discountValue: number
+  }
   finalAmount: number
   paymentMethod: string
   note?: string
@@ -61,23 +72,38 @@ export interface ShiftSummary {
   totalDiscount?: number
 }
 
-export const fetchOrders = async (params?: any): Promise<{ items: Order[]; pagination: any }> => {
+export const fetchOrders = async (
+  params?: any,
+): Promise<{ items: Order[]; pagination: any }> => {
   try {
     const response = await http.get('/api/orders', { params })
     if (response.data && response.data.success && response.data.data) {
       return {
         items: response.data.data.items || [],
-        pagination: response.data.data.pagination || { page: 1, pageSize: 20, totalRecords: 0, totalPages: 1 },
+        pagination: response.data.data.pagination || {
+          page: 1,
+          pageSize: 20,
+          totalRecords: 0,
+          totalPages: 1,
+        },
       }
     }
-    return { items: [], pagination: { page: 1, pageSize: 20, totalRecords: 0, totalPages: 1 } }
+    return {
+      items: [],
+      pagination: { page: 1, pageSize: 20, totalRecords: 0, totalPages: 1 },
+    }
   } catch (error) {
     console.error('Error fetching orders:', error)
-    return { items: [], pagination: { page: 1, pageSize: 20, totalRecords: 0, totalPages: 1 } }
+    return {
+      items: [],
+      pagination: { page: 1, pageSize: 20, totalRecords: 0, totalPages: 1 },
+    }
   }
 }
 
-export const fetchOrderById = async (id: number | string): Promise<Order | null> => {
+export const fetchOrderById = async (
+  id: number | string,
+): Promise<Order | null> => {
   try {
     const response = await http.get(`/api/orders/${id}`)
     if (response.data && response.data.success) {
@@ -90,12 +116,17 @@ export const fetchOrderById = async (id: number | string): Promise<Order | null>
   }
 }
 
-export const createOrder = async (payload: CreateOrderPayload): Promise<any> => {
+export const createOrder = async (
+  payload: CreateOrderPayload,
+): Promise<any> => {
   const response = await http.post('/api/orders', payload)
   return response.data
 }
 
-export const updateOrderStatus = async (id: number | string, status: string): Promise<any> => {
+export const updateOrderStatus = async (
+  id: number | string,
+  status: string,
+): Promise<any> => {
   const response = await http.put(`/api/orders/${id}`, { status })
   return response.data
 }
@@ -105,7 +136,11 @@ export const deleteOrder = async (id: number | string): Promise<any> => {
   return response.data
 }
 
-export const fetchShiftSummary = async (isSilent = false, afterTime?: string, createdBy?: number | string): Promise<ShiftSummary> => {
+export const fetchShiftSummary = async (
+  isSilent = false,
+  afterTime?: string,
+  createdBy?: number | string,
+): Promise<ShiftSummary> => {
   try {
     const params: any = {}
     if (afterTime) params.afterTime = afterTime
