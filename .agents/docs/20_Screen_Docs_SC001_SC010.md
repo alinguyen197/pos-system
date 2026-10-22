@@ -60,6 +60,19 @@ Query params (revenue-chart): `?period=day|week|month&from=YYYY-MM-DD&to=YYYY-MM
 5. **Khóa chọn sản phẩm Tạm ngừng kinh doanh:**
    - Trên giao diện POS: Sản phẩm có trạng thái `status = 'Tạm ngừng'` hoặc `statusCode = 'suspended'` sẽ bị khóa chọn hoàn toàn (làm mờ `opacity-50`, gắn `pointer-events-none`, đổi nút `+` thành icon khóa `block`, không nhận bất kỳ tương tác click nào).
    - Tại Backend: API `POST /api/orders` kiểm tra và từ chối tạo đơn nếu bất kỳ món nào có trạng thái `Tạm ngừng` hoặc `isActive = false`.
+6. **Chế độ Nhập Bán Bù Sự Cố (Retroactive Order Entry / Incident Backdate Mode):**
+   - **Mục đích:** Khắc phục sự cố mất điện, mất internet hoặc lỗi hệ thống khiến thu ngân phải dùng giấy bút ghi chép; sang ngày hôm sau Quản lý / Admin có thể nhập bổ sung vào máy với ngày phát sinh bán thực tế thay vì bị tính lệch sang ngày hôm sau.
+   - **Phân quyền nghiêm ngặt (RBAC):** Chỉ `admin` và `manager` mới có quyền kích hoạt chế độ và gửi `orderDate` hồi tố. Nhân viên (`staff`) bị chặn để chống gian lận số liệu ca trực.
+   - **Giao diện & Luồng trải nghiệm POS:**
+     - Nút bật/tắt `⚡ Nhập bán bù sự cố` trên thanh điều khiển POS.
+     - Banner điều khiển nổi bật màu cam `#FFF8E1` / viền `#FF9800` chọn Ngày bán thực tế, Giờ bán, Phím tắt nhanh (`Hôm qua`, `2 ngày trước`, `Hôm nay`), Lý do sự cố và Checkbox duy trì chế độ theo xấp giấy (Batch mode).
+     - Badge cảnh báo màu cam trong Giỏ hàng, nút Thanh toán, Modal Lịch sử đơn hàng, Modal Chi tiết đơn và Phiếu in Hóa đơn bán hàng.
+   - **Cơ chế Backend (`POST /api/orders`):**
+     - Nhận `orderDate`, `isRetroactive`, `retroactiveReason`.
+     - Tự động sinh `orderNumber` theo ngày phát sinh thực tế (VD: `DH20261021-001`).
+     - Lưu vết kiểm toán (Audit trail) trong `note`: `[NHẬP BÙ SỰ CỐ - Ngày bán: DD/MM/YYYY HH:mm - Lý do: ...]`.
+     - Trừ tồn kho nguyên liệu BOM theo công thức bình thường.
+     - Toàn bộ Báo cáo Bán hàng (`/reports/sales`) và Dashboard tự động cập nhật chính xác 100% doanh thu theo ngày sự cố đó.
 
 | Phương thức | Endpoint | Mô tả | Auth |
 |-------------|----------|-------|------|

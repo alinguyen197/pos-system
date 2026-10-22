@@ -16,6 +16,9 @@ export interface CreateOrderPayload {
   discountCode?: string
   note?: string
   createdBy?: number
+  orderDate?: string
+  isRetroactive?: boolean
+  retroactiveReason?: string
 }
 
 export interface OrderItem {

@@ -22,6 +22,9 @@ export interface CreateOrderPayload {
   discountCode?: string
   note?: string
   createdBy?: number
+  orderDate?: string | Date
+  isRetroactive?: boolean
+  retroactiveReason?: string
 }
 
 const syncSequences = async () => {
@@ -35,7 +38,7 @@ const syncSequences = async () => {
   }
 }
 
-const createOrder = async (payload: CreateOrderPayload) => {
+const createOrder = async (payload: CreateOrderPayload, requestingUser?: any) => {
   const transaction = await db.sequelize.transaction()
   try {
     await syncSequences()
@@ -48,22 +51,76 @@ const createOrder = async (payload: CreateOrderPayload) => {
       discountCode,
       note,
       createdBy,
+      orderDate: rawOrderDate,
+      isRetroactive,
+      retroactiveReason,
     } = payload
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       throw new Error('Danh sách món trong đơn hàng không được rỗng')
     }
 
-    // Generate Order Number: DH + YYYYMMDD + -XXX
-    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '')
-    const orderCountToday = await db.Order.count({
+    // Determine Effective Order Date & Validate Retroactive Rights
+    let effectiveDate = new Date()
+    let isBackdated = false
+
+    if (rawOrderDate) {
+      const parsedDate = new Date(rawOrderDate)
+      if (isNaN(parsedDate.getTime())) {
+        throw new Error('Ngày đặt hàng không hợp lệ')
+      }
+
+      // Check if order date is backdated or differs by more than 10 minutes from now
+      const diffMs = Date.now() - parsedDate.getTime()
+      if (diffMs > 10 * 60 * 1000 || diffMs < -5 * 60 * 1000) {
+        // Enforce role authorization: Only admin and manager can backdate orders
+        const userRole = requestingUser?.role || 'staff'
+        if (userRole !== 'admin' && userRole !== 'manager') {
+          throw new Error('Chỉ Quản lý (Manager) hoặc Quản trị viên (Admin) mới có quyền tạo đơn hàng nhập bù / hồi tố')
+        }
+
+        // Cannot be in the future (tolerance 5 mins)
+        if (parsedDate.getTime() > Date.now() + 5 * 60 * 1000) {
+          throw new Error('Ngày đặt hàng không thể lớn hơn thời điểm hiện tại')
+        }
+
+        // Cannot be more than 60 days in the past
+        if (diffMs > 60 * 24 * 60 * 60 * 1000) {
+          throw new Error('Không được nhập bù đơn hàng quá 60 ngày trong quá khứ')
+        }
+
+        effectiveDate = parsedDate
+        isBackdated = true
+      }
+    }
+
+    // Generate Order Number: DH + YYYYMMDD + -XXX based on effectiveDate
+    const yearStr = effectiveDate.getFullYear()
+    const monthStr = String(effectiveDate.getMonth() + 1).padStart(2, '0')
+    const dayStr = String(effectiveDate.getDate()).padStart(2, '0')
+    const dateStr = `${yearStr}${monthStr}${dayStr}`
+
+    const startOfDay = new Date(effectiveDate)
+    startOfDay.setHours(0, 0, 0, 0)
+    const endOfDay = new Date(effectiveDate)
+    endOfDay.setHours(23, 59, 59, 999)
+
+    const orderCountOnDate = await db.Order.count({
       where: {
         orderDate: {
-          [db.Op.gte]: new Date(new Date().setHours(0, 0, 0, 0)),
+          [db.Op.between]: [startOfDay, endOfDay],
         },
       },
     })
-    const orderNumber = `DH${todayStr}-${String(orderCountToday + 1).padStart(3, '0')}`
+    const orderNumber = `DH${dateStr}-${String(orderCountOnDate + 1).padStart(3, '0')}`
+
+    // Construct final note with audit trail if backdated
+    let finalNote = note || ''
+    if (isBackdated || isRetroactive) {
+      const formattedRetroTime = `${dayStr}/${monthStr}/${yearStr} ${String(effectiveDate.getHours()).padStart(2, '0')}:${String(effectiveDate.getMinutes()).padStart(2, '0')}`
+      const reasonText = retroactiveReason ? ` - Lý do: ${retroactiveReason}` : ''
+      finalNote = `[NHẬP BÙ SỰ CỐ - Ngày bán: ${formattedRetroTime}${reasonText}] ${finalNote}`.trim()
+    }
 
     let totalAmount = 0
     const processedItems: Array<{
@@ -147,7 +204,7 @@ const createOrder = async (payload: CreateOrderPayload) => {
     const newOrder = await db.Order.create(
       {
         orderNumber,
-        orderDate: new Date(),
+        orderDate: effectiveDate,
         status: 'completed',
         totalAmount,
         discountAmount: finalDiscount,
@@ -155,8 +212,8 @@ const createOrder = async (payload: CreateOrderPayload) => {
         discountCode: appliedDiscountCode,
         finalAmount,
         paymentMethod,
-        note,
-        createdBy: createdBy || null,
+        note: finalNote,
+        createdBy: createdBy || requestingUser?.userId || null,
         isDeleted: false,
       },
       { transaction }

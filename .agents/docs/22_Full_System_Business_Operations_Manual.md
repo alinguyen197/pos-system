@@ -366,5 +366,15 @@ Thanh toán:                       VietQR
 > [!NOTE]
 > **Trả lời:** **Có.** Hệ thống tính giá vốn món dựa trên `costPerUnit` bình quân mới nhất của nguyên liệu trong kho. Khi giá nhập tăng, giá vốn (Cost Price) của món sẽ tự động cập nhật, giúp chủ quán biết ngay tỷ lệ lãi gộp (% Margin) của món đó có đang bị giảm sút hay không để kịp thời điều chỉnh giá bán.
 
+### Q6: Nếu quán bị mất điện hoặc mất mạng cả buổi, thu ngân ghi chép trên sổ giấy thì hôm sau nhập vào hệ thống thế nào để không bị sai lệch ngày doanh thu?
+> [!NOTE]
+> **Trả lời:** **Sử dụng Chế độ "Nhập Bán Bù Sự Cố (Retroactive Order Mode)":**
+> 1. Đăng nhập bằng tài khoản **Admin** hoặc **Quản lý (Manager)**.
+> 2. Trên màn hình POS (`/pos`), bấm nút **"⚡ Nhập bán bù sự cố"**.
+> 3. Chọn ngày & giờ bán thực tế hôm qua (sử dụng phím tắt nhanh *"Hôm qua"*), điền lý do sự cố (VD: *"Mất điện ca tối 21/10"*).
+> 4. Tích chọn *"Giữ ngày này cho các đơn tiếp theo"* để nhập liên tục toàn bộ xấp hóa đơn giấy.
+> 5. Bấm thanh toán: Hệ thống tự động sinh mã đơn theo ngày hôm qua (`DH20261021-XXX`), ghi nhận `orderDate` đúng vào ngày hôm qua, trừ tồn kho nguyên liệu BOM chính xác và tự động cập nhật toàn bộ Báo cáo Doanh số (`/reports/sales`) của ngày hôm qua mà không làm sai lệch doanh thu hay tiền két ca của ngày hôm nay.
+
 ---
 *Tài liệu này là cẩm nang vận hành chính thức và duy nhất cho toàn bộ nhân sự và nhà đầu tư thuộc Hệ thống Sky Coffee Management.*
+
