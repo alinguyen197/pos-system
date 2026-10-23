@@ -50,7 +50,67 @@ interface OrderTab {
 
 const router = useRouter()
 const { showSuccess, showError, showWarning } = useAppToast()
-const { currentUser, logout } = useAuth()
+const { currentUser, role, logout } = useAuth()
+
+const canManageRetroactiveOrders = computed(() => {
+  const currentRole =
+    role.value ||
+    currentUser.value?.role ||
+    localStorage.getItem('role') ||
+    'staff'
+  return currentRole === 'admin' || currentRole === 'manager'
+})
+
+// Retroactive / Backdate Order Entry Mode
+const isRetroactiveMode = ref(false)
+const todayYmd = computed(() => new Date().toISOString().slice(0, 10))
+const retroactiveDate = ref(new Date().toISOString().slice(0, 10))
+const retroactiveTime = ref('12:00')
+const retroactiveReason = ref('Mất điện / Sự cố hệ thống ghi sổ tay')
+const keepRetroactiveActive = ref(true)
+
+const quickSetYesterday = () => {
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  retroactiveDate.value = yesterday.toISOString().slice(0, 10)
+}
+
+const quickSetTwoDaysAgo = () => {
+  const d = new Date()
+  d.setDate(d.getDate() - 2)
+  retroactiveDate.value = d.toISOString().slice(0, 10)
+}
+
+const quickSetToday = () => {
+  retroactiveDate.value = new Date().toISOString().slice(0, 10)
+}
+
+const formattedRetroactiveDisplay = computed(() => {
+  if (!retroactiveDate.value) return ''
+  const parts = retroactiveDate.value.split('-')
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]} ${retroactiveTime.value || '12:00'}`
+  }
+  return `${retroactiveDate.value} ${retroactiveTime.value || '12:00'}`
+})
+
+const showRetroactiveConfigModal = ref(false)
+
+const openRetroactiveConfigModal = () => {
+  showRetroactiveConfigModal.value = true
+}
+
+const confirmEnableRetroactiveMode = () => {
+  if (!retroactiveDate.value) {
+    showError('Vui lòng chọn ngày phát sinh thực tế')
+    return
+  }
+  isRetroactiveMode.value = true
+  showRetroactiveConfigModal.value = false
+  showSuccess(
+    `Đã kích hoạt chế độ nhập bù cho ngày ${formattedRetroactiveDisplay.value}!`,
+  )
+}
 
 // Logged in Staff Name (derived reactively from useAuth)
 const currentStaffName = computed(() => {
@@ -409,6 +469,12 @@ const processSubmitOrder = async () => {
       note: item.note,
     }))
 
+    let orderDatePayload: string | undefined = undefined
+    if (isRetroactiveMode.value && canManageRetroactiveOrders.value) {
+      const combinedDateStr = `${retroactiveDate.value}T${retroactiveTime.value || '12:00'}:00`
+      orderDatePayload = new Date(combinedDateStr).toISOString()
+    }
+
     const payload = {
       items: itemsPayload,
       paymentMethod: activeTab.value.paymentMethod,
@@ -419,12 +485,26 @@ const processSubmitOrder = async () => {
         : undefined,
       note: activeTab.value.note || `Đơn POS ${activeTab.value.tableNo}`,
       createdBy: currentUser.value?.id,
+      orderDate: orderDatePayload,
+      isRetroactive: isRetroactiveMode.value,
+      retroactiveReason: isRetroactiveMode.value
+        ? retroactiveReason.value
+        : undefined,
     }
 
     const res = await createOrder(payload)
     if (res && res.success) {
       const orderData = res.data
-      showSuccess(`Tạo đơn hàng #${orderData.orderNumber} thành công!`)
+      if (isRetroactiveMode.value) {
+        showSuccess(
+          `Đã nhập bù thành công đơn hàng #${orderData.orderNumber} vào ngày ${formattedRetroactiveDisplay.value}!`,
+        )
+        if (!keepRetroactiveActive.value) {
+          isRetroactiveMode.value = false
+        }
+      } else {
+        showSuccess(`Tạo đơn hàng #${orderData.orderNumber} thành công!`)
+      }
       // Refresh shift summary and product stock
       loadShiftSummary()
       loadProducts()
@@ -670,6 +750,24 @@ onMounted(() => {
         </div>
 
         <div class="flex items-center gap-2 self-end sm:self-center">
+          <!-- Retroactive Order Mode Toggle Button (Admin & Manager) -->
+          <button
+            v-if="canManageRetroactiveOrders"
+            @click="openRetroactiveConfigModal"
+            class="flex h-10 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-xl border px-3.5 text-xs font-bold shadow-sm transition"
+            :class="
+              isRetroactiveMode
+                ? 'border-[#FF9800] bg-[#FF9800] text-white shadow-[#FF9800]/30'
+                : 'border-[#FF9800]/60 bg-[#FFF3E0] text-[#E65100] hover:bg-[#FFE0B2]'
+            "
+            title="Thiết lập ngày bán hồi tố khi mất điện hoặc lỗi hệ thống"
+          >
+            <span class="material-symbols-outlined text-base">bolt</span>
+            <span>{{
+              isRetroactiveMode ? 'Đang Nhập Bán Bù' : 'Bán bù sự cố'
+            }}</span>
+          </button>
+
           <button
             @click="openShiftEndModal"
             class="flex h-10 cursor-pointer items-center gap-1.5 rounded-xl bg-[#8E3E2F] px-4 text-xs font-semibold text-white shadow-sm transition hover:bg-[#6E281C]"
@@ -690,8 +788,8 @@ onMounted(() => {
       </div>
 
       <!-- Search & Header Controls -->
-      <div class="flex flex-col items-center justify-between gap-3 sm:flex-row">
-        <div class="relative w-full flex-1">
+      <div class="flex items-center justify-between gap-3">
+        <div class="relative flex-1">
           <span
             class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-xl text-[#72796c]"
             >search</span
@@ -711,6 +809,55 @@ onMounted(() => {
           <span class="material-symbols-outlined text-base">history</span>
           <span>Lịch sử đơn</span>
         </button>
+      </div>
+
+      <!-- Sleek Compact Retroactive Banner (Non-intrusive, 36px) -->
+      <div
+        v-if="isRetroactiveMode && canManageRetroactiveOrders"
+        class="flex shrink-0 items-center justify-between gap-2 rounded-xl border border-[#FF9800] bg-[#FFF8E1] px-3.5 py-1.5 text-xs text-[#E65100] shadow-sm"
+      >
+        <div class="flex min-w-0 items-center gap-2">
+          <span
+            class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#FF9800] text-white"
+          >
+            <span class="material-symbols-outlined text-xs">bolt</span>
+          </span>
+          <div class="flex min-w-0 items-center gap-1.5 text-[11px] font-bold">
+            <span class="shrink-0 uppercase tracking-wide text-[#E65100]"
+              >Đang nhập bù:</span
+            >
+            <span
+              class="rounded bg-[#FFE082] px-1.5 py-0.5 text-xs text-[#BF360C]"
+            >
+              {{ formattedRetroactiveDisplay }}
+            </span>
+            <span
+              v-if="retroactiveReason"
+              class="hidden max-w-[240px] truncate text-[11px] text-[#795548] md:inline"
+            >
+              ({{ retroactiveReason }})
+            </span>
+          </div>
+        </div>
+
+        <div class="flex shrink-0 items-center gap-1.5">
+          <button
+            @click="openRetroactiveConfigModal"
+            class="flex cursor-pointer items-center gap-1 rounded-lg border border-[#FF9800]/50 bg-white px-2 py-0.5 text-[11px] font-bold text-[#E65100] transition hover:bg-[#FFE0B2]"
+            title="Đổi ngày / giờ / lý do nhập bù"
+          >
+            <span class="material-symbols-outlined text-xs">edit_calendar</span>
+            <span>Đổi ngày</span>
+          </button>
+          <button
+            @click="isRetroactiveMode = false"
+            class="flex cursor-pointer items-center gap-0.5 rounded-lg bg-[#E65100] px-2 py-0.5 text-[11px] font-bold text-white transition hover:bg-[#BF360C]"
+            title="Thoát chế độ nhập bù"
+          >
+            <span class="material-symbols-outlined text-xs">close</span>
+            <span>Tắt</span>
+          </button>
+        </div>
       </div>
 
       <!-- Category Filter Pills -->
@@ -938,6 +1085,22 @@ onMounted(() => {
         </button>
       </div>
 
+      <!-- Retroactive Active Notice in Cart -->
+      <div
+        v-if="isRetroactiveMode && canManageRetroactiveOrders"
+        class="flex shrink-0 items-center justify-between border-b border-[#FFE082] bg-[#FFF8E1] px-4 py-2 text-xs"
+      >
+        <div class="flex items-center gap-1.5 font-bold text-[#E65100]">
+          <span class="material-symbols-outlined text-sm">history</span>
+          <span>Ghi nhận ngày bán: {{ formattedRetroactiveDisplay }}</span>
+        </div>
+        <span
+          class="rounded bg-[#FF9800] px-1.5 py-0.5 text-[10px] font-bold text-white"
+        >
+          Nhập bù sự cố
+        </span>
+      </div>
+
       <!-- Scrollable Cart Content -->
       <div class="flex-1 space-y-3 overflow-y-auto p-4">
         <!-- Promo Code Input & Voucher Selector -->
@@ -1147,14 +1310,25 @@ onMounted(() => {
         <button
           @click="handlePaymentClick"
           :disabled="activeTab.cart.length === 0 || isSubmittingPayment"
-          class="flex w-full items-center justify-center gap-2 rounded-xl bg-[#326824] py-3 text-sm font-bold text-white shadow transition hover:bg-[#4a813a] active:scale-[0.99] disabled:opacity-50"
+          class="flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white shadow transition active:scale-[0.99] disabled:opacity-50"
+          :class="
+            isRetroactiveMode
+              ? 'bg-[#E65100] hover:bg-[#EF6C00]'
+              : 'bg-[#326824] hover:bg-[#4a813a]'
+          "
         >
           <span
             v-if="isSubmittingPayment"
             class="material-symbols-outlined animate-spin text-lg"
             >refresh</span
           >
-          <span>THANH TOÁN {{ formatCurrency(finalPrice) }}</span>
+          <span>
+            {{
+              isRetroactiveMode
+                ? `NHẬP BÙ (${retroactiveDate}) - ${formatCurrency(finalPrice)}`
+                : `THANH TOÁN ${formatCurrency(finalPrice)}`
+            }}
+          </span>
           <span
             v-if="!isSubmittingPayment"
             class="material-symbols-outlined text-lg"
@@ -1403,9 +1577,17 @@ onMounted(() => {
         >
           <Column field="orderNumber" header="Mã đơn" sortable>
             <template #body="slotProps">
-              <span class="text-xs font-bold text-[#8E3E2F]">{{
-                slotProps.data.orderNumber
-              }}</span>
+              <div class="flex flex-col items-start gap-1">
+                <span class="text-xs font-bold text-[#8E3E2F]">{{
+                  slotProps.data.orderNumber
+                }}</span>
+                <Tag
+                  v-if="slotProps.data.note?.includes('[NHẬP BÙ')"
+                  value="⚡ Nhập bù sự cố"
+                  severity="warn"
+                  class="text-[10px]"
+                />
+              </div>
             </template>
           </Column>
           <Column field="orderDate" header="Thời gian">
@@ -1515,6 +1697,20 @@ onMounted(() => {
               formatCurrency(selectedOrderDetail.finalAmount)
             }}</span>
           </div>
+        </div>
+
+        <!-- Retroactive Alert Banner in Order Detail -->
+        <div
+          v-if="selectedOrderDetail.note?.includes('[NHẬP BÙ')"
+          class="rounded-xl border border-[#FF9800] bg-[#FFF8E1] p-3 text-xs shadow-sm"
+        >
+          <div class="flex items-center gap-1.5 font-bold text-[#E65100]">
+            <span class="material-symbols-outlined text-base">history</span>
+            <span>Đơn hàng Nhập Bù Sự Cố (Ngoại tuyến / Hồi tố)</span>
+          </div>
+          <p class="mt-1 text-[11px] text-[#5D4037]">
+            {{ selectedOrderDetail.note }}
+          </p>
         </div>
 
         <!-- Products List -->
@@ -1644,6 +1840,12 @@ onMounted(() => {
           <p class="text-[11px] text-gray-500">Hotline: 0901.234.567</p>
           <div class="my-2 border-b border-dashed border-gray-400"></div>
           <h3 class="text-sm font-bold">HÓA ĐƠN BÁN HÀNG</h3>
+          <div
+            v-if="selectedPrintOrder.note?.includes('[NHẬP BÙ')"
+            class="my-1 rounded border border-dashed border-amber-600 bg-amber-50 p-1 text-center text-[10px] font-bold text-amber-800"
+          >
+            *** ĐƠN NHẬP BÙ SỰ CỐ / NGOẠI TUYẾN ***
+          </div>
           <p class="text-[11px]">
             Mã đơn: <strong>{{ selectedPrintOrder.orderNumber }}</strong>
           </p>
@@ -1994,6 +2196,131 @@ onMounted(() => {
             label="Đóng"
             severity="secondary"
             @click="showVoucherPickerModal = false"
+          />
+        </div>
+      </template>
+    </Dialog>
+
+    <!-- Retroactive Order Config Dialog -->
+    <Dialog
+      v-model:visible="showRetroactiveConfigModal"
+      modal
+      header="Thiết lập Chế độ Nhập Bán Bù Sự Cố (Mất điện / Ngoại tuyến)"
+      :style="{ width: '500px' }"
+    >
+      <div class="space-y-4 py-1 text-xs">
+        <div
+          class="flex items-start gap-2.5 rounded-xl border border-[#FFE082] bg-[#FFF8E1] p-3 text-[#5D4037]"
+        >
+          <span
+            class="material-symbols-outlined shrink-0 text-xl text-[#FF9800]"
+            >info</span
+          >
+          <p class="text-[11px] leading-relaxed">
+            Chế độ này cho phép <strong>Admin & Quản lý</strong> nhập bù số
+            lượng bán ghi bằng giấy bút khi quán gặp sự cố cúp điện hoặc mất kết
+            nối. Đơn hàng sẽ được ghi nhận vào ngày phát sinh thực tế trong quá
+            khứ để báo cáo doanh thu và ca trực chính xác 100%.
+          </p>
+        </div>
+
+        <div class="space-y-3.5">
+          <div>
+            <label class="mb-1 block font-bold text-[#1e1b1b]">
+              Ngày phát sinh bán hàng thực tế:
+            </label>
+            <input
+              type="date"
+              v-model="retroactiveDate"
+              :max="todayYmd"
+              class="h-10 w-full rounded-xl border border-[#c1c9b9]/80 bg-[#fdfbf7] px-3 text-xs font-bold text-[#1e1b1b] outline-none focus:border-[#FF9800] focus:ring-1 focus:ring-[#FF9800]"
+            />
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] font-semibold text-[#72796c]"
+              >Chọn nhanh:</span
+            >
+            <button
+              type="button"
+              @click="quickSetYesterday"
+              class="cursor-pointer rounded-lg border border-[#FFE082] bg-[#FFF8E1] px-2.5 py-1 text-[11px] font-bold text-[#E65100] transition hover:bg-[#FFE082]"
+            >
+              Hôm qua
+            </button>
+            <button
+              type="button"
+              @click="quickSetTwoDaysAgo"
+              class="cursor-pointer rounded-lg border border-[#FFE082] bg-[#FFF8E1] px-2.5 py-1 text-[11px] font-bold text-[#E65100] transition hover:bg-[#FFE082]"
+            >
+              2 ngày trước
+            </button>
+            <button
+              type="button"
+              @click="quickSetToday"
+              class="cursor-pointer rounded-lg border border-[#c1c9b9]/60 bg-[#F2ECE4] px-2.5 py-1 text-[11px] font-bold text-[#42493d] transition hover:bg-[#E8DFD5]"
+            >
+              Hôm nay
+            </button>
+          </div>
+
+          <div>
+            <label class="mb-1 block font-bold text-[#1e1b1b]">
+              Giờ bán ước tính:
+            </label>
+            <input
+              type="time"
+              v-model="retroactiveTime"
+              class="h-10 w-full rounded-xl border border-[#c1c9b9]/80 bg-[#fdfbf7] px-3 text-xs font-bold text-[#1e1b1b] outline-none focus:border-[#FF9800] focus:ring-1 focus:ring-[#FF9800]"
+            />
+          </div>
+
+          <div>
+            <label class="mb-1 block font-bold text-[#1e1b1b]">
+              Lý do nhập bù (Ghi vết kiểm toán):
+            </label>
+            <input
+              type="text"
+              v-model="retroactiveReason"
+              placeholder="VD: Cúp điện ca tối 21/10, nhân viên ghi sổ tay..."
+              class="h-10 w-full rounded-xl border border-[#c1c9b9]/80 bg-[#fdfbf7] px-3 text-xs text-[#1e1b1b] outline-none focus:border-[#FF9800] focus:ring-1 focus:ring-[#FF9800]"
+            />
+          </div>
+
+          <div
+            class="flex items-center gap-2 rounded-xl border border-[#E2D7CC] bg-[#fdfbf7] p-3"
+          >
+            <input
+              type="checkbox"
+              id="keepRetroactiveActive"
+              v-model="keepRetroactiveActive"
+              class="h-4 w-4 cursor-pointer accent-[#FF9800]"
+            />
+            <label
+              for="keepRetroactiveActive"
+              class="cursor-pointer text-xs font-semibold text-[#42493d]"
+            >
+              Giữ ngày này cho các đơn tiếp theo (Nhập theo xấp hóa đơn giấy)
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex w-full gap-2">
+          <Button
+            label="Hủy bỏ"
+            severity="secondary"
+            outlined
+            class="flex-1"
+            @click="showRetroactiveConfigModal = false"
+          />
+          <Button
+            label="Kích hoạt Nhập Bù"
+            icon="pi pi-bolt"
+            class="flex-1 !border-[#E65100] !bg-[#E65100] text-white"
+            @click="confirmEnableRetroactiveMode"
           />
         </div>
       </template>

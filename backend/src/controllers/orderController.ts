@@ -37,7 +37,8 @@ const getOrderById = async (
 
 const createOrder = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const newOrder = await orderService.createOrder(req.body)
+    const requestingUser = (req as any).user
+    const newOrder = await orderService.createOrder(req.body, requestingUser)
     return ApiResponder.success(
       res,
       newOrder,
